@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -148,7 +149,16 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // TODO: Navigate to register page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => const WebViewPage(
+                                    url:
+                                        "https://www.sistemwakafelda.org/jom_wakaf_entry_new.asp",
+                                  ),
+                            ),
+                          );
                         },
                         child: const Text(
                           'Klik disini untuk daftar',
@@ -168,6 +178,36 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class WebViewPage extends StatefulWidget {
+  final String url;
+
+  const WebViewPage({Key? key, required this.url}) : super(key: key);
+
+  @override
+  State<WebViewPage> createState() => _WebViewPageState();
+}
+
+class _WebViewPageState extends State<WebViewPage> {
+  late final WebViewController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Jom Wakaf FELDA')),
+      body: WebViewWidget(controller: controller),
     );
   }
 }

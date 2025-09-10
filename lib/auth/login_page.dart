@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../home page/homepage.dart'; // Import the Homepage
+import '../home page/homepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -10,13 +10,25 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final FocusNode _idFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
 
   @override
+  void dispose() {
+    _idFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _idController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFF5F7F6),
       body: Center(
         child: SingleChildScrollView(
@@ -38,11 +50,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo added here
-                  Image.asset(
-                    'assets/images/waqaf_felda_logo.png', // Replace with your actual asset path
-                    height: 80, // Adjust the height as needed
-                  ),
+                  Image.asset('assets/images/waqaf_felda_logo.png', height: 80),
                   const SizedBox(height: 16),
                   const Text(
                     'Selamat Datang ke Sistem Waqafer',
@@ -61,7 +69,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 32),
                   TextField(
+                    focusNode: _idFocusNode,
                     controller: _idController,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       hintText: 'No KP / ID Pengguna',
                       border: OutlineInputBorder(
@@ -72,11 +83,16 @@ class _LoginPageState extends State<LoginPage> {
                         vertical: 12,
                       ),
                     ),
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_passwordFocusNode);
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextField(
+                    focusNode: _passwordFocusNode,
                     controller: _passwordController,
                     obscureText: true,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                       hintText: 'Kata Laluan',
                       border: OutlineInputBorder(
@@ -102,9 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                       const Text('Ingat saya'),
                       const Spacer(),
                       TextButton(
-                        onPressed: () {
-                          // TODO: Navigate to forgot password
-                        },
+                        onPressed: () {},
                         child: const Text(
                           'Lupa Kata Laluan?',
                           style: TextStyle(
@@ -127,7 +141,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       onPressed: () {
-                        // Navigate to Homepage
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

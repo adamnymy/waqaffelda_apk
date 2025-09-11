@@ -16,7 +16,7 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: const Color(0xFFF5F7F6),
         elevation: 0,
         title: Row(
           children: [
@@ -25,19 +25,11 @@ class _HomepageState extends State<Homepage> {
               height: 30,
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Waqaf FELDA',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
+            icon: const Icon(Icons.notifications, color: Color(0xFF2E7D32)),
             onPressed: () {},
           ),
         ],

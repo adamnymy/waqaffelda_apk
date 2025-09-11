@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../navbar.dart';
 import '../prayertimes/prayertimes.dart';
+import '../services/prayer_times_service.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -11,6 +14,75 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
+  String _nextPrayerText = 'Loading...';
+  String _currentTime = '';
+  Timer? _timer;
+  List<Map<String, dynamic>> _prayerTimes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrayerTimes();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateCurrentTime();
+      _updateNextPrayer();
+    });
+  }
+
+  void _updateCurrentTime() {
+    final now = DateTime.now();
+    final timeString = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    if (mounted) {
+      setState(() {
+        _currentTime = timeString;
+      });
+    }
+  }
+
+  Future<void> _loadPrayerTimes() async {
+    try {
+      Position? position = await PrayerTimesService.getCurrentLocation();
+      if (position != null) {
+        final prayerData = await PrayerTimesService.getPrayerTimesForMalaysia(
+          position.latitude, 
+          position.longitude
+        );
+        
+        if (prayerData != null && prayerData['code'] == 200) {
+          _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
+          _updateNextPrayer();
+        }
+      }
+    } catch (e) {
+      print('Error loading prayer times for homepage: $e');
+      if (mounted) {
+        setState(() {
+          _nextPrayerText = 'Prayer times unavailable';
+        });
+      }
+    }
+  }
+
+  void _updateNextPrayer() {
+    if (_prayerTimes.isEmpty) return;
+    
+    final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
+    if (nextPrayer != null && mounted) {
+      setState(() {
+        _nextPrayerText = 'Next Prayer: ${nextPrayer['name']} - ${nextPrayer['time']}';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,11 +156,27 @@ class _HomepageState extends State<Homepage> {
                     children: [
                       const Icon(Icons.access_time, color: Colors.white, size: 20),
                       const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _nextPrayerText,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.schedule, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
                       Text(
-                        'Next Prayer: Maghrib - 7:15 PM',
+                        'Current Time: $_currentTime',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12,
                         ),
                       ),
                     ],

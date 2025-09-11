@@ -1,77 +1,220 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
 
 class PrayerTimesService {
-  static const String _baseUrl = 'http://api.aladhan.com/v1';
+  static const String _baseUrl = 'https://waktu-solat-api.herokuapp.com/api/v1';
   
-  // Malaysia-specific prayer times with JAKIM method
+  // Get prayer times using JAKIM official data
   static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
     double latitude, 
     double longitude
   ) async {
     try {
-      final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
-      // Using method 11 (Majlis Ugama Islam Singapura, Brunei, Indonesia, Malaysia)
-      // with Hanafi school and Malaysia-specific adjustments
-      final url = '$_baseUrl/timings/$date?latitude=$latitude&longitude=$longitude&method=11&school=1&tune=0,0,0,0,0,0,0,0,0';
-      
-      final response = await http.get(Uri.parse(url));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data;
-      } else {
-        print('Failed to load Malaysia prayer times: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching Malaysia prayer times: $e');
-      return null;
-    }
-  }
-  
-  // Get prayer times by coordinates
-  static Future<Map<String, dynamic>?> getPrayerTimesByCoordinates(
-    double latitude, 
-    double longitude
-  ) async {
-    try {
-      final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
-      final url = '$_baseUrl/timings/$date?latitude=$latitude&longitude=$longitude&method=11&school=1';
-      
-      final response = await http.get(Uri.parse(url));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data;
-      } else {
-        print('Failed to load prayer times: ${response.statusCode}');
-        return null;
-      }
+      // Get the closest Malaysian zone for coordinates
+      String zoneCode = _getZoneFromCoordinates(latitude, longitude);
+      return await getPrayerTimesByZone(zoneCode);
     } catch (e) {
       print('Error fetching prayer times: $e');
       return null;
     }
   }
   
-  // Get prayer times by city
-  static Future<Map<String, dynamic>?> getPrayerTimesByCity(String city) async {
+  // Get prayer times by Malaysian zone (JAKIM official data)
+  static Future<Map<String, dynamic>?> getPrayerTimesByZone(String zoneName) async {
     try {
-      final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
-      final url = '$_baseUrl/timingsByCity/$date?city=$city&country=Malaysia&method=11&school=1';
+      final url = '$_baseUrl/prayer_times.json?zon=$zoneName';
       
       final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'];
+        return _formatJakimResponse(data);
+      } else {
+        print('Failed to load JAKIM prayer times: ${response.statusCode}');
+        print('URL attempted: $url');
+        return null;
       }
     } catch (e) {
-      print('Error fetching prayer times by city: $e');
+      print('Error fetching JAKIM prayer times: $e');
+      return null;
     }
-    return null;
+  }
+
+  // Map coordinates to Malaysian prayer zone names (for JAKIM API)
+  static String _getZoneFromCoordinates(double latitude, double longitude) {
+    // Major Malaysian cities and their zone names (as used by JAKIM API)
+    final zones = {
+      // Kuala Lumpur & Selangor
+      'kuala lumpur': {'lat': 3.1390, 'lng': 101.6869},
+      'sepang': {'lat': 3.0738, 'lng': 101.5183},
+      'shah alam': {'lat': 3.0738, 'lng': 101.5183},
+      
+      // Johor
+      'johor bahru': {'lat': 1.4927, 'lng': 103.7414},
+      'kluang': {'lat': 2.0581, 'lng': 102.5689},
+      
+      // Penang
+      'pulau pinang': {'lat': 5.4164, 'lng': 100.3327},
+      
+      // Perak
+      'ipoh': {'lat': 4.5975, 'lng': 101.0901},
+      
+      // Kedah
+      'alor setar': {'lat': 6.1184, 'lng': 100.3685},
+      
+      // Kelantan
+      'kota bharu': {'lat': 6.1254, 'lng': 102.2386},
+      
+      // Terengganu
+      'kuala terengganu': {'lat': 5.3302, 'lng': 103.1408},
+      
+      // Pahang
+      'kuantan': {'lat': 3.8077, 'lng': 103.3260},
+      
+      // Negeri Sembilan
+      'seremban': {'lat': 2.7297, 'lng': 101.9381},
+      
+      // Melaka
+      'melaka': {'lat': 2.1896, 'lng': 102.2501},
+      
+      // Sabah
+      'kota kinabalu': {'lat': 5.9804, 'lng': 116.0735},
+      
+      // Sarawak
+      'kuching': {'lat': 1.5533, 'lng': 110.3592},
+    };
+
+    String closestZone = 'kuala lumpur'; // Default to KL
+    double minDistance = double.infinity;
+
+    zones.forEach((zoneName, zoneData) {
+      double distance = _calculateDistance(
+        latitude, longitude,
+        zoneData['lat'] as double, zoneData['lng'] as double
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestZone = zoneName;
+      }
+    });
+
+    return closestZone;
+  }
+
+  // Calculate distance between two coordinates
+  static double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    return Geolocator.distanceBetween(lat1, lng1, lat2, lng2);
+  }
+
+  // Format JAKIM API response to match expected format
+  static Map<String, dynamic> _formatJakimResponse(Map<String, dynamic> data) {
+    try {
+      if (data['data'] != null && data['data'].isNotEmpty) {
+        // Handle the nested structure from JAKIM API
+        var prayerData;
+        
+        if (data['data'] is List) {
+          // Format: {"data": [{"negeri": "...", "zon": "...", "waktu_solat": [...]}]}
+          prayerData = data['data'][0];
+          if (prayerData['waktu_solat'] != null) {
+            final waktuSolat = prayerData['waktu_solat'] as List;
+            final timings = <String, String>{};
+            
+            for (var prayer in waktuSolat) {
+              final name = prayer['name'] as String;
+              final time = prayer['time'] as String;
+              
+              switch (name.toLowerCase()) {
+                case 'subuh':
+                  timings['Fajr'] = time;
+                  break;
+                case 'syuruk':
+                  timings['Sunrise'] = time;
+                  break;
+                case 'zohor':
+                  timings['Dhuhr'] = time;
+                  break;
+                case 'asar':
+                  timings['Asr'] = time;
+                  break;
+                case 'maghrib':
+                  timings['Maghrib'] = time;
+                  break;
+                case 'isyak':
+                  timings['Isha'] = time;
+                  break;
+              }
+            }
+            
+            return {
+              'code': 200,
+              'status': 'OK',
+              'data': {
+                'timings': timings,
+                'date': {
+                  'readable': DateTime.now().toString().split(' ')[0],
+                  'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+                },
+                'meta': {
+                  'latitude': 0.0,
+                  'longitude': 0.0,
+                  'timezone': 'Asia/Kuala_Lumpur',
+                  'method': {
+                    'id': 11,
+                    'name': 'JAKIM Malaysia',
+                  },
+                },
+              },
+            };
+          }
+        }
+      }
+    } catch (e) {
+      print('Error formatting JAKIM response: $e');
+    }
+    return {'code': 400, 'status': 'No data available'};
+  }
+
+  // Get prayer times by coordinates (uses JAKIM zone mapping)
+  static Future<Map<String, dynamic>?> getPrayerTimesByCoordinates(
+    double latitude, 
+    double longitude
+  ) async {
+    return await getPrayerTimesForMalaysia(latitude, longitude);
+  }
+  
+  // Get prayer times by city (using JAKIM zone mapping)
+  static Future<Map<String, dynamic>?> getPrayerTimesByCity(String city) async {
+    try {
+      // Map city names to coordinates for zone lookup
+      final cityCoordinates = {
+        'Kuala Lumpur': {'lat': 3.1390, 'lng': 101.6869},
+        'Selangor': {'lat': 3.0738, 'lng': 101.5183},
+        'Johor Bahru': {'lat': 1.4927, 'lng': 103.7414},
+        'Penang': {'lat': 5.4164, 'lng': 100.3327},
+        'Ipoh': {'lat': 4.5975, 'lng': 101.0901},
+        'Alor Setar': {'lat': 6.1184, 'lng': 100.3685},
+        'Kota Bharu': {'lat': 6.1254, 'lng': 102.2386},
+        'Kuala Terengganu': {'lat': 5.3302, 'lng': 103.1408},
+        'Kuantan': {'lat': 3.8077, 'lng': 103.3260},
+        'Seremban': {'lat': 2.7297, 'lng': 101.9381},
+        'Melaka': {'lat': 2.1896, 'lng': 102.2501},
+        'Kota Kinabalu': {'lat': 5.9804, 'lng': 116.0735},
+        'Kuching': {'lat': 1.5533, 'lng': 110.3592},
+      };
+      
+      final coords = cityCoordinates[city];
+      if (coords != null) {
+        return await getPrayerTimesForMalaysia(coords['lat']!, coords['lng']!);
+      }
+      
+      // Fallback to KL if city not found
+      return await getPrayerTimesForMalaysia(3.1390, 101.6869);
+    } catch (e) {
+      print('Error fetching prayer times by city: $e');
+      return null;
+    }
   }
   
   // Get current location
@@ -119,7 +262,7 @@ class PrayerTimesService {
         'arabic': 'الظهر',
         'time': _formatTime(timings['Dhuhr']),
         'icon': 'wb_sunny',
-        'color': 0xFFF5A623,
+        'color': 0xFFFFB74D,
         'isPassed': _isPrayerPassed(timings['Dhuhr']),
       },
       {
@@ -127,7 +270,7 @@ class PrayerTimesService {
         'arabic': 'العصر',
         'time': _formatTime(timings['Asr']),
         'icon': 'wb_cloudy',
-        'color': 0xFFFF9500,
+        'color': 0xFFFF8A65,
         'isPassed': _isPrayerPassed(timings['Asr']),
       },
       {
@@ -135,7 +278,7 @@ class PrayerTimesService {
         'arabic': 'المغرب',
         'time': _formatTime(timings['Maghrib']),
         'icon': 'brightness_3',
-        'color': 0xFFE94B3C,
+        'color': 0xFF9575CD,
         'isPassed': _isPrayerPassed(timings['Maghrib']),
       },
       {
@@ -143,7 +286,7 @@ class PrayerTimesService {
         'arabic': 'العشاء',
         'time': _formatTime(timings['Isha']),
         'icon': 'brightness_2',
-        'color': 0xFF7B68EE,
+        'color': 0xFF7986CB,
         'isPassed': _isPrayerPassed(timings['Isha']),
       },
     ];

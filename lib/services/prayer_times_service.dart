@@ -6,6 +6,32 @@ import 'package:intl/intl.dart';
 class PrayerTimesService {
   static const String _baseUrl = 'http://api.aladhan.com/v1';
   
+  // Malaysia-specific prayer times with JAKIM method
+  static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
+    double latitude, 
+    double longitude
+  ) async {
+    try {
+      final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+      // Using method 11 (Majlis Ugama Islam Singapura, Brunei, Indonesia, Malaysia)
+      // with Hanafi school and Malaysia-specific adjustments
+      final url = '$_baseUrl/timings/$date?latitude=$latitude&longitude=$longitude&method=11&school=1&tune=0,0,0,0,0,0,0,0,0';
+      
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        print('Failed to load Malaysia prayer times: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching Malaysia prayer times: $e');
+      return null;
+    }
+  }
+  
   // Get prayer times by coordinates
   static Future<Map<String, dynamic>?> getPrayerTimesByCoordinates(
     double latitude, 
@@ -13,7 +39,7 @@ class PrayerTimesService {
   ) async {
     try {
       final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
-      final url = '$_baseUrl/timings/$date?latitude=$latitude&longitude=$longitude&method=2';
+      final url = '$_baseUrl/timings/$date?latitude=$latitude&longitude=$longitude&method=11&school=1';
       
       final response = await http.get(Uri.parse(url));
       
@@ -31,27 +57,21 @@ class PrayerTimesService {
   }
   
   // Get prayer times by city
-  static Future<Map<String, dynamic>?> getPrayerTimesByCity(
-    String city, 
-    String country
-  ) async {
+  static Future<Map<String, dynamic>?> getPrayerTimesByCity(String city) async {
     try {
       final date = DateFormat('dd-MM-yyyy').format(DateTime.now());
-      final url = '$_baseUrl/timingsByCity/$date?city=$city&country=$country&method=2';
+      final url = '$_baseUrl/timingsByCity/$date?city=$city&country=Malaysia&method=11&school=1';
       
       final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data;
-      } else {
-        print('Failed to load prayer times: ${response.statusCode}');
-        return null;
+        return data['data'];
       }
     } catch (e) {
-      print('Error fetching prayer times: $e');
-      return null;
+      print('Error fetching prayer times by city: $e');
     }
+    return null;
   }
   
   // Get current location
@@ -84,7 +104,6 @@ class PrayerTimesService {
   // Parse prayer times from API response
   static List<Map<String, dynamic>> parsePrayerTimes(Map<String, dynamic> apiData) {
     final timings = apiData['data']['timings'];
-    final date = apiData['data']['date']['readable'];
     
     return [
       {

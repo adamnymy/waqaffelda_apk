@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../services/prayer_times_service.dart';
+import 'package:intl/intl.dart';
+import '../widgets/google_maps_location_picker.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
@@ -17,6 +19,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   String locationName = 'Loading...';
   String currentDate = '';
   Map<String, String>? nextPrayer;
+  
+  // Location selection variables
+  String? selectedLocationName;
+  double? selectedLatitude;
+  double? selectedLongitude;
+  String? selectedCity;
+  Map<String, dynamic>? selectedCoordinates;
+  
+  // Popular Malaysian cities
+  final List<Map<String, dynamic>> malaysianCities = [
+    {'name': 'Kuala Lumpur', 'lat': 3.139, 'lng': 101.6869},
+    {'name': 'Johor Bahru', 'lat': 1.4927, 'lng': 103.7414},
+    {'name': 'Penang', 'lat': 5.4164, 'lng': 100.3327},
+    {'name': 'Kota Kinabalu', 'lat': 5.9804, 'lng': 116.0735},
+    {'name': 'Kuching', 'lat': 1.5533, 'lng': 110.3592},
+    {'name': 'Shah Alam', 'lat': 3.0733, 'lng': 101.5185},
+    {'name': 'Malacca', 'lat': 2.2055, 'lng': 102.2502},
+    {'name': 'Ipoh', 'lat': 4.5975, 'lng': 101.0901},
+    {'name': 'Seremban', 'lat': 2.7297, 'lng': 101.9381},
+    {'name': 'Petaling Jaya', 'lat': 3.1073, 'lng': 101.6067},
+    {'name': 'Klang', 'lat': 3.0319, 'lng': 101.4443},
+    {'name': 'Kajang', 'lat': 2.9929, 'lng': 101.7904},
+    {'name': 'Ampang', 'lat': 3.1478, 'lng': 101.7596},
+    {'name': 'Subang Jaya', 'lat': 3.1478, 'lng': 101.5867},
+    {'name': 'Use Current Location', 'lat': null, 'lng': null},
+  ];
 
   @override
   void initState() {
@@ -36,28 +64,38 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     });
 
     try {
-      // Try to get current location first
-      Position? position = await PrayerTimesService.getCurrentLocation();
-      
       Map<String, dynamic>? apiData;
       
-      if (position != null) {
-        // Use coordinates if location is available
-        apiData = await PrayerTimesService.getPrayerTimesByCoordinates(
-          position.latitude, 
-          position.longitude
+      // Check if user has selected a specific location
+      if (selectedLatitude != null && selectedLongitude != null) {
+        // Use user-selected location
+        apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+          selectedLatitude!, 
+          selectedLongitude!
         );
-        locationName = await PrayerTimesService.getLocationName(
-          position.latitude, 
-          position.longitude
-        );
+        locationName = selectedLocationName ?? 'Selected Location';
       } else {
-        // Fallback to Kuala Lumpur if location is not available
-        apiData = await PrayerTimesService.getPrayerTimesByCity(
-          'Kuala Lumpur', 
-          'Malaysia'
-        );
-        locationName = 'Kuala Lumpur, Malaysia';
+        // Try to get current location first
+        Position? position = await PrayerTimesService.getCurrentLocation();
+        
+        if (position != null) {
+          // Use current GPS location
+          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+            position.latitude, 
+            position.longitude
+          );
+          locationName = await PrayerTimesService.getLocationName(
+            position.latitude, 
+            position.longitude
+          );
+        } else {
+          // Fallback to Kuala Lumpur with Malaysia-specific method
+          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+            3.139, // Kuala Lumpur latitude
+            101.6869 // Kuala Lumpur longitude
+          );
+          locationName = 'Kuala Lumpur, Malaysia';
+        }
       }
 
       if (apiData != null) {
@@ -84,6 +122,140 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         isLoading = false;
       });
     }
+  }
+
+  void _showLocationPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2E7D32),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.white, size: 24),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Select Location',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Location list
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Google Maps picker option
+                  ListTile(
+                    leading: const Icon(Icons.map, color: Color(0xFF2E7D32)),
+                    title: const Text(
+                      'Pick from Map',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text('Choose any location using Google Maps'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openGoogleMapsPicker();
+                    },
+                  ),
+                  const Divider(),
+                  
+                  // Current location option
+                  ListTile(
+                    leading: const Icon(Icons.my_location, color: Color(0xFF2E7D32)),
+                    title: const Text(
+                      'Use Current Location',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text('Get prayer times for your current location'),
+                    onTap: () {
+                      setState(() {
+                        selectedCity = null;
+                        selectedCoordinates = null;
+                      });
+                      Navigator.pop(context);
+                      _loadPrayerTimes();
+                    },
+                  ),
+                  const Divider(),
+                  
+                  // Malaysian cities
+                  ...malaysianCities.map((city) => ListTile(
+                    leading: const Icon(Icons.location_city, color: Color(0xFF2E7D32)),
+                    title: Text(
+                      city['name'],
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text('${city['lat']}, ${city['lng']}'),
+                    onTap: () {
+                      setState(() {
+                        selectedCity = city['name'];
+                        selectedCoordinates = {
+                          'lat': city['lat'],
+                          'lng': city['lng'],
+                        };
+                      });
+                      Navigator.pop(context);
+                      _loadPrayerTimes();
+                    },
+                  )).toList(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openGoogleMapsPicker() {
+    double? initialLat = selectedCoordinates?['lat'];
+    double? initialLng = selectedCoordinates?['lng'];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OpenStreetMapLocationPicker(
+          initialLatitude: initialLat,
+          initialLongitude: initialLng,
+          onLocationSelected: (lat, lng, address) {
+            setState(() {
+              selectedCity = address;
+              selectedCoordinates = {
+                'lat': lat,
+                'lng': lng,
+              };
+            });
+            _loadPrayerTimes();
+          },
+        ),
+      ),
+    );
   }
 
   IconData _getIconFromString(String iconName) {
@@ -123,6 +295,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.location_on, color: Colors.white),
+            onPressed: _showLocationPicker,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadPrayerTimes,

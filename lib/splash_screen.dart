@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'auth/login_page.dart'; // Import your login page
+import 'home page/homepage.dart'; // Import homepage instead of login page
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -13,13 +13,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 2), () {
       // Adjust duration as needed
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const LoginPage(),
-        ), // Navigate to LoginPage
+          builder: (context) => const Homepage(),
+        ), // Navigate to Homepage
       );
     });
   }

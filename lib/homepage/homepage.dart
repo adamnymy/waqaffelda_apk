@@ -398,7 +398,34 @@ class _HomepageState extends State<Homepage> {
           setState(() {
             _currentIndex = index;
           });
-          // TODO: Add navigation logic for different tabs
+          
+          // Navigation logic for different tabs
+          switch (index) {
+            case 0:
+              // Home - already on homepage, no navigation needed
+              break;
+            case 1:
+              // Prayer - navigate to prayer times page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PrayerTimesPage(),
+                ),
+              );
+              break;
+            case 2:
+              // Quran - TODO: implement Quran page
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Quran feature coming soon')),
+              );
+              break;
+            case 3:
+              // Settings - TODO: implement Settings page
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Settings feature coming soon')),
+              );
+              break;
+          }
         },
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../navbar.dart';
+import '../prayertimes/prayertimes.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -112,10 +113,20 @@ class _HomepageState extends State<Homepage> {
             Row(
               children: [
                 Expanded(
-                  child: _buildQuickActionCard(
-                    'Prayer Times',
-                    Icons.access_time,
-                    const Color(0xFF4CAF50),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrayerTimesPage(),
+                        ),
+                      );
+                    },
+                    child: _buildQuickActionCard(
+                      'Prayer Times',
+                      Icons.access_time,
+                      const Color(0xFF4CAF50),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

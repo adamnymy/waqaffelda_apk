@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'splash_screen.dart'; // Import SplashScreen
-//import 'auth/login_page.dart'; // No longer directly importing LoginPage
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); // Add this

@@ -4,6 +4,7 @@ import '../navbar.dart';
 import '../prayertimes/prayertimes.dart';
 import '../services/prayer_times_service.dart';
 import 'package:geolocator/geolocator.dart';
+import '../zikircounter/zikircounter.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -241,10 +242,20 @@ class _HomepageState extends State<Homepage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildQuickActionCard(
-                    'Dhikr Counter',
-                    Icons.radio_button_checked,
-                    const Color(0xFF795548),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ZikirCounterPage(),
+                        ),
+                      );
+                    },
+                    child: _buildQuickActionCard(
+                      'Dhikr Counter',
+                      Icons.radio_button_checked,
+                      const Color(0xFF795548),
+                    ),
                   ),
                 ),
               ],

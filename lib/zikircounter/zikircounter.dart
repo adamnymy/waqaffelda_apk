@@ -59,6 +59,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
   }
 
   void _incrementCounter() {
+    HapticFeedback.vibrate();
     HapticFeedback.lightImpact();
     _animationController.forward().then((_) {
       _animationController.reverse();
@@ -85,6 +86,31 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
       _counter = 0;
     });
     _updateProgress();
+  }
+
+  void _confirmReset() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reset Kiraan?'),
+          content: const Text('Adakah anda pasti mahu menetapkan semula kiraan?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetCounter();
+              },
+              child: const Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showCompletionDialog() {
@@ -337,7 +363,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                   
                   // Reset Button
                   ElevatedButton.icon(
-                    onPressed: _counter > 0 ? _resetCounter : null,
+                    onPressed: _counter > 0 ? _confirmReset : null,
                     icon: const Icon(Icons.refresh),
                     label: const Text('Reset'),
                     style: ElevatedButton.styleFrom(

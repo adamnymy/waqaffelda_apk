@@ -111,62 +111,91 @@ class PrayerTimesService {
   static Map<String, dynamic> _formatJakimResponse(Map<String, dynamic> data) {
     try {
       if (data['data'] != null && data['data'].isNotEmpty) {
-        // Handle the nested structure from JAKIM API
-        var prayerData;
-        
+        // Handle possible arrays of days; select today's entry when available
         if (data['data'] is List) {
-          // Format: {"data": [{"negeri": "...", "zon": "...", "waktu_solat": [...]}]}
-          prayerData = data['data'][0];
-          if (prayerData['waktu_solat'] != null) {
-            final waktuSolat = prayerData['waktu_solat'] as List;
-            final timings = <String, String>{};
-            
-            for (var prayer in waktuSolat) {
-              final name = prayer['name'] as String;
-              final time = prayer['time'] as String;
-              
-              switch (name.toLowerCase()) {
-                case 'subuh':
-                  timings['Fajr'] = time;
+          final List<dynamic> entries = data['data'] as List<dynamic>;
+
+          // Determine today's date in common formats
+          final DateTime now = DateTime.now();
+          final String yyyyMmDd =
+              '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+          final String ddMmYyyy =
+              '${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year.toString().padLeft(4, '0')}';
+
+          Map<String, dynamic>? todayEntry;
+          for (final entry in entries) {
+            if (entry is Map<String, dynamic>) {
+              final dynamic dateVal = entry['date'] ?? entry['tarikh'] ?? entry['hari'];
+              if (dateVal is String) {
+                final String d = dateVal.trim().toLowerCase();
+                if (d.contains(yyyyMmDd) || d.contains(ddMmYyyy)) {
+                  todayEntry = entry;
                   break;
-                case 'syuruk':
-                  timings['Sunrise'] = time;
-                  break;
-                case 'zohor':
-                  timings['Dhuhr'] = time;
-                  break;
-                case 'asar':
-                  timings['Asr'] = time;
-                  break;
-                case 'maghrib':
-                  timings['Maghrib'] = time;
-                  break;
-                case 'isyak':
-                  timings['Isha'] = time;
-                  break;
+                }
               }
             }
-            
-            return {
-              'code': 200,
-              'status': 'OK',
-              'data': {
-                'timings': timings,
-                'date': {
-                  'readable': DateTime.now().toString().split(' ')[0],
-                  'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-                },
-                'meta': {
-                  'latitude': 0.0,
-                  'longitude': 0.0,
-                  'timezone': 'Asia/Kuala_Lumpur',
-                  'method': {
-                    'id': 11,
-                    'name': 'JAKIM Malaysia',
+          }
+
+          // Fallback to the first entry if today's not explicitly found
+          final Map<String, dynamic>? prayerData =
+              todayEntry ?? (entries.isNotEmpty && entries.first is Map<String, dynamic>
+                  ? entries.first as Map<String, dynamic>
+                  : null);
+
+          if (prayerData != null && prayerData['waktu_solat'] != null) {
+            final List<dynamic> waktuSolat = prayerData['waktu_solat'] as List<dynamic>;
+            final timings = <String, String>{};
+
+            for (final item in waktuSolat) {
+              if (item is Map<String, dynamic>) {
+                final String name = (item['name'] ?? item['nama'] ?? '').toString();
+                final String time = (item['time'] ?? item['masa'] ?? '').toString();
+                switch (name.toLowerCase()) {
+                  case 'subuh':
+                    timings['Fajr'] = time;
+                    break;
+                  case 'syuruk':
+                  case 'terbit matahari':
+                    timings['Sunrise'] = time;
+                    break;
+                  case 'zohor':
+                    timings['Dhuhr'] = time;
+                    break;
+                  case 'asar':
+                    timings['Asr'] = time;
+                    break;
+                  case 'maghrib':
+                    timings['Maghrib'] = time;
+                    break;
+                  case 'isyak':
+                    timings['Isha'] = time;
+                    break;
+                }
+              }
+            }
+
+            if (timings.isNotEmpty) {
+              return {
+                'code': 200,
+                'status': 'OK',
+                'data': {
+                  'timings': timings,
+                  'date': {
+                    'readable': yyyyMmDd,
+                    'timestamp': now.millisecondsSinceEpoch.toString(),
+                  },
+                  'meta': {
+                    'latitude': 0.0,
+                    'longitude': 0.0,
+                    'timezone': 'Asia/Kuala_Lumpur',
+                    'method': {
+                      'id': 11,
+                      'name': 'JAKIM Malaysia',
+                    },
                   },
                 },
-              },
-            };
+              };
+            }
           }
         }
       }

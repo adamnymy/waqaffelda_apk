@@ -20,6 +20,25 @@ class _HomepageState extends State<Homepage> {
   Timer? _timer;
   List<Map<String, dynamic>> _prayerTimes = [];
 
+  void _navigateWithTransition(Widget page) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slideTween = Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeInOut));
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(position: animation.drive(slideTween), child: child),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -204,12 +223,7 @@ class _HomepageState extends State<Homepage> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PrayerTimesPage(),
-                        ),
-                      );
+                      _navigateWithTransition(const PrayerTimesPage());
                     },
                     child: _buildQuickActionCard(
                       'Prayer Times',
@@ -417,12 +431,7 @@ class _HomepageState extends State<Homepage> {
               break;
             case 1:
               // Prayer - navigate to prayer times page
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PrayerTimesPage(),
-                ),
-              );
+              _navigateWithTransition(const PrayerTimesPage());
               break;
             case 2:
               // Quran - TODO: implement Quran page

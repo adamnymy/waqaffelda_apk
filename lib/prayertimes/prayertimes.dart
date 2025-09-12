@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../services/prayer_times_service.dart';
 import 'package:intl/intl.dart';
 import '../widgets/google_maps_location_picker.dart';
@@ -315,9 +314,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
     switch (index) {
       case 0: // Home
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Homepage()),
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const Homepage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              final slideTween = Tween<Offset>(
+                begin: const Offset(-1.0, 0.0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeInOut));
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(position: animation.drive(slideTween), child: child),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
         );
         break;
       case 1: // Prayer Times (Already on this page, so do nothing)

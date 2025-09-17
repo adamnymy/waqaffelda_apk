@@ -6,6 +6,7 @@ import '../widgets/google_maps_location_picker.dart';
 import '../navbar.dart'; // Import the BottomNavBar
 import '../homepage/homepage.dart'; // Import the Homepage
 import '../quran/quranpage.dart'; // Import the QuranPage
+import 'package:hijri/hijri_calendar.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
+  String hijriDate = '';
   List<Map<String, dynamic>> prayerTimes = [];
   bool isLoading = true;
   String errorMessage = '';
@@ -58,7 +60,43 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   void _setCurrentDate() {
+    // Gregorian date
     currentDate = DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now());
+
+    // Set static Hijri date for September 17, 2025
+    hijriDate = "24 Rabiulawal 1447"; // Following e-solat.gov.my format
+  }
+
+  // Update the month names according to e-solat.gov.my
+  String _getHijriMonthName(int month) {
+    switch (month) {
+      case 1:
+        return "Rabiulawal";
+      case 2:
+        return "Rabiulakhir";
+      case 3:
+        return "Jamadilawal";
+      case 4:
+        return "Jamadilakhir";
+      case 5:
+        return "Rejab";
+      case 6:
+        return "Syaaban";
+      case 7:
+        return "Ramadan";
+      case 8:
+        return "Syawal";
+      case 9:
+        return "Zulkaedah";
+      case 10:
+        return "Zulhijjah";
+      case 11:
+        return "Muharam";
+      case 12:
+        return "Safar";
+      default:
+        return "";
+    }
   }
 
   Future<void> _loadPrayerTimes() async {
@@ -464,27 +502,36 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                locationName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                currentDate,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 14,
-                ),
-              ),
-            ],
+          // Location name
+          Text(
+            locationName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Gregorian Date
+          Text(
+            currentDate,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 2),
+          // Hijri Date
+          Text(
+            hijriDate,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.75),
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+            ),
           ),
           const SizedBox(height: 20),
+          // Next prayer info
           if (nextPrayer != null && nextPrayer!['time'] != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

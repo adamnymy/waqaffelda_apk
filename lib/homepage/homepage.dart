@@ -231,7 +231,16 @@ class _HomepageState extends State<Homepage> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      _navigateWithTransition(const PrayerTimesPage());
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const PrayerTimesPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
                     },
                     child: _buildQuickActionCard(
                       'Prayer Times',

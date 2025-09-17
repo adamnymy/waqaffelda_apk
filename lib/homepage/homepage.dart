@@ -433,6 +433,8 @@ class _HomepageState extends State<Homepage> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          if (index == _currentIndex) return; // Don't navigate if already on the page
+
           setState(() {
             _currentIndex = index;
           });
@@ -444,18 +446,19 @@ class _HomepageState extends State<Homepage> {
               break;
             case 1:
               // Prayer - navigate to prayer times page
-              _navigateWithTransition(const PrayerTimesPage());
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
               break;
             case 2:
               // Quran - TODO: implement Quran page
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Quran feature coming soon')),
-              );
-              break;
-            case 3:
-              // Settings - TODO: implement Settings page
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
               );
               break;
           }

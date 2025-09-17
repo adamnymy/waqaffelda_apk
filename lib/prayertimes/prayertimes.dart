@@ -309,52 +309,34 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   void _onTabTapped(int index) {
-    if (index == _currentIndex)
-      return; // Do nothing if the current tab is tapped
+    if (index == _currentIndex) return;
 
     switch (index) {
       case 0: // Home
-        Navigator.of(context).pushReplacement(
+        Navigator.pushReplacement(
+          context,
           PageRouteBuilder(
             pageBuilder:
                 (context, animation, secondaryAnimation) => const Homepage(),
-            transitionsBuilder: (
-              context,
-              animation,
-              secondaryAnimation,
-              child,
-            ) {
-              final slideTween = Tween<Offset>(
-                begin: const Offset(-1.0, 0.0),
-                end: Offset.zero,
-              ).chain(CurveTween(curve: Curves.easeInOut));
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: animation.drive(slideTween),
-                  child: child,
-                ),
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 300),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
         );
         break;
-      case 1: // Prayer Times (Already on this page, so do nothing)
+      case 1: // Prayer Times (current page)
         break;
-      case 2: // Quran (Replace with your Quran page)
+      case 2: // Quran
         // Navigator.pushReplacement(
         //   context,
-        //   MaterialPageRoute(builder: (context) => const QuranPage()),
-        // );
-        break;
-      case 3: // Settings (Replace with your Settings page)
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const SettingsPage()),
+        //   PageRouteBuilder(
+        //     pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+        //     transitionDuration: Duration.zero,
+        //     reverseTransitionDuration: Duration.zero,
+        //   ),
         // );
         break;
     }
+
     setState(() {
       _currentIndex = index;
     });
@@ -385,76 +367,72 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
-              ),
-            )
-          : errorMessage.isNotEmpty
+      body:
+          isLoading
+              ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+                ),
+              )
+              : errorMessage.isNotEmpty
               ? _buildErrorWidget()
               : CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeaderCard(),
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Prayer Times',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E7D32),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.refresh_rounded,
-                                color: Color(0xFF2E7D32),
-                              ),
-                              onPressed: _loadPrayerTimes,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SliverPadding(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            if (index >= prayerTimes.length) return null;
-                            return _buildPrayerTimeCard(prayerTimes[index]);
-                          },
-                          childCount: prayerTimes.length,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeaderCard(),
+                          const SizedBox(height: 24),
+                        ],
                       ),
                     ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: _buildQiblaCard(),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Prayer Times',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.refresh_rounded,
+                              color: Color(0xFF2E7D32),
+                            ),
+                            onPressed: _loadPrayerTimes,
+                          ),
+                        ],
                       ),
                     ),
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 16),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index >= prayerTimes.length) return null;
+                        return _buildPrayerTimeCard(prayerTimes[index]);
+                      }, childCount: prayerTimes.length),
                     ),
-                  ],
-                ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildQiblaCard(),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                ],
+              ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
@@ -507,10 +485,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           const SizedBox(height: 20),
           if (nextPrayer != null && nextPrayer!['time'] != null)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(15),
@@ -556,9 +531,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         color: prayer['isPassed'] ? Colors.grey.shade50 : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: prayer['isPassed']
-              ? Colors.grey.withOpacity(0.2)
-              : prayer['color'].withOpacity(0.2),
+          color:
+              prayer['isPassed']
+                  ? Colors.grey.withOpacity(0.2)
+                  : prayer['color'].withOpacity(0.2),
           width: 1,
         ),
         boxShadow: [
@@ -574,9 +550,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: prayer['isPassed']
-                  ? Colors.grey.withOpacity(0.1)
-                  : prayer['color'].withOpacity(0.1),
+              color:
+                  prayer['isPassed']
+                      ? Colors.grey.withOpacity(0.1)
+                      : prayer['color'].withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -595,18 +572,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: prayer['isPassed']
-                        ? Colors.grey
-                        : const Color(0xFF2E7D32),
+                    color:
+                        prayer['isPassed']
+                            ? Colors.grey
+                            : const Color(0xFF2E7D32),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   prayer['arabic'],
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -662,10 +637,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 SizedBox(height: 4),
                 Text(
                   'Find the direction to Mecca',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],
             ),
@@ -696,10 +668,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             Text(
               errorMessage,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(

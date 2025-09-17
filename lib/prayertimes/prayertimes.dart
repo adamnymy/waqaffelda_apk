@@ -316,15 +316,24 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       case 0: // Home
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const Homepage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const Homepage(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
               final slideTween = Tween<Offset>(
                 begin: const Offset(-1.0, 0.0),
                 end: Offset.zero,
               ).chain(CurveTween(curve: Curves.easeInOut));
               return FadeTransition(
                 opacity: animation,
-                child: SlideTransition(position: animation.drive(slideTween), child: child),
+                child: SlideTransition(
+                  position: animation.drive(slideTween),
+                  child: child,
+                ),
               );
             },
             transitionDuration: const Duration(milliseconds: 300),
@@ -356,25 +365,75 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Prayer Times',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    color: Color(0xFF2E7D32),
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Prayer Times',
+                    style: TextStyle(
+                      color: Color(0xFF2E7D32),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.location_on, color: Colors.white),
-            onPressed: _showLocationPicker,
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.location_on_outlined,
+                  color: Color(0xFF2E7D32),
+                  size: 20,
+                ),
+              ),
+              onPressed: _showLocationPicker,
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadPrayerTimes,
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.refresh_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 20,
+                ),
+              ),
+              onPressed: _loadPrayerTimes,
+            ),
           ),
         ],
       ),

@@ -31,7 +31,10 @@ class _HomepageState extends State<Homepage> {
           ).chain(CurveTween(curve: Curves.easeInOut));
           return FadeTransition(
             opacity: animation,
-            child: SlideTransition(position: animation.drive(slideTween), child: child),
+            child: SlideTransition(
+              position: animation.drive(slideTween),
+              child: child,
+            ),
           );
         },
         transitionDuration: const Duration(milliseconds: 300),
@@ -61,7 +64,8 @@ class _HomepageState extends State<Homepage> {
 
   void _updateCurrentTime() {
     final now = DateTime.now();
-    final timeString = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final timeString =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     if (mounted) {
       setState(() {
         _currentTime = timeString;
@@ -74,10 +78,10 @@ class _HomepageState extends State<Homepage> {
       Position? position = await PrayerTimesService.getCurrentLocation();
       if (position != null) {
         final prayerData = await PrayerTimesService.getPrayerTimesForMalaysia(
-          position.latitude, 
-          position.longitude
+          position.latitude,
+          position.longitude,
         );
-        
+
         if (prayerData != null && prayerData['code'] == 200) {
           _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
           _updateNextPrayer();
@@ -95,11 +99,12 @@ class _HomepageState extends State<Homepage> {
 
   void _updateNextPrayer() {
     if (_prayerTimes.isEmpty) return;
-    
+
     final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
     if (nextPrayer != null && mounted) {
       setState(() {
-        _nextPrayerText = 'Next Prayer: ${nextPrayer['name']} - ${nextPrayer['time']}';
+        _nextPrayerText =
+            'Next Prayer: ${nextPrayer['name']} - ${nextPrayer['time']}';
       });
     }
   }
@@ -111,12 +116,10 @@ class _HomepageState extends State<Homepage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5F7F6),
         elevation: 0,
+        automaticallyImplyLeading: false, // Add this line
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/waqaf_felda_logo.png',
-              height: 30,
-            ),
+            Image.asset('assets/images/waqaf_felda_logo.png', height: 30),
             const SizedBox(width: 10),
           ],
         ),
@@ -174,7 +177,11 @@ class _HomepageState extends State<Homepage> {
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, color: Colors.white, size: 20),
+                      const Icon(
+                        Icons.access_time,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -204,9 +211,9 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 25),
-            
+
             // Quick Actions Section
             const Text(
               'Quick Actions',
@@ -217,7 +224,7 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             const SizedBox(height: 15),
-            
+
             Row(
               children: [
                 Expanded(
@@ -242,9 +249,9 @@ class _HomepageState extends State<Homepage> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Row(
               children: [
                 Expanded(
@@ -274,9 +281,9 @@ class _HomepageState extends State<Homepage> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 25),
-            
+
             // Waqaf Section
             const Text(
               'Waqaf Contributions',
@@ -287,7 +294,7 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             const SizedBox(height: 15),
-            
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -308,8 +315,11 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.volunteer_activism, 
-                        color: Color(0xFFF36F21), size: 24),
+                      const Icon(
+                        Icons.volunteer_activism,
+                        color: Color(0xFFF36F21),
+                        size: 24,
+                      ),
                       const SizedBox(width: 10),
                       const Text(
                         'Make a Difference',
@@ -355,9 +365,9 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 25),
-            
+
             // Daily Verse Section
             Container(
               width: double.infinity,
@@ -375,8 +385,11 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.auto_stories, 
-                        color: Color(0xFF2E7D32), size: 24),
+                      const Icon(
+                        Icons.auto_stories,
+                        color: Color(0xFF2E7D32),
+                        size: 24,
+                      ),
                       const SizedBox(width: 10),
                       const Text(
                         'Verse of the Day',
@@ -412,7 +425,7 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
           ],
         ),
@@ -423,7 +436,7 @@ class _HomepageState extends State<Homepage> {
           setState(() {
             _currentIndex = index;
           });
-          
+
           // Navigation logic for different tabs
           switch (index) {
             case 0:
@@ -450,7 +463,7 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
-  
+
   Widget _buildQuickActionCard(String title, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../widgets/google_maps_location_picker.dart';
 import '../navbar.dart'; // Import the BottomNavBar
 import '../homepage/homepage.dart'; // Import the Homepage
+import '../quran/quranpage.dart'; // Import the QuranPage
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
@@ -326,14 +327,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       case 1: // Prayer Times (current page)
         break;
       case 2: // Quran
-        // Navigator.pushReplacement(
-        //   context,
-        //   PageRouteBuilder(
-        //     pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
-        //     transitionDuration: Duration.zero,
-        //     reverseTransitionDuration: Duration.zero,
-        //   ),
-        // );
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const QuranPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
         break;
     }
 

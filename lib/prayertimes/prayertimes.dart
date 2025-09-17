@@ -420,44 +420,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            child: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.refresh_rounded,
-                  color: Color(0xFF2E7D32),
-                  size: 20,
-                ),
-              ),
-              onPressed: _loadPrayerTimes,
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(right: 16, left: 4),
-            child: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  color: Color(0xFF2E7D32),
-                  size: 20,
-                ),
-              ),
-              onPressed: _showLocationPicker,
-            ),
-          ),
-        ],
       ),
       body:
           isLoading

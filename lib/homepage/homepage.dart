@@ -103,19 +103,31 @@ class _HomepageState extends State<Homepage> {
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const PrayerTimesPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const QuranPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const SettingsPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
     }
@@ -244,8 +256,10 @@ class _HomepageState extends State<Homepage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const PrayerTimesPage(),
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
                         ),
                       );
                     },
@@ -285,8 +299,10 @@ class _HomepageState extends State<Homepage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const QuranPage(),
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
                         ),
                       );
                     },

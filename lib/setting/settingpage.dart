@@ -84,21 +84,31 @@ class _SettingsPageState extends State<SettingsPage> {
             case 0:
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const Homepage()),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const Homepage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
               );
               break;
             case 1:
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const PrayerTimesPage(),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
                 ),
               );
               break;
             case 2:
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const QuranPage()),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
               );
               break;
             case 3:

@@ -347,7 +347,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Homepage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const Homepage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 1:
@@ -355,13 +359,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const QuranPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const SettingsPage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
     }

@@ -161,7 +161,7 @@ class _KiblatPageState extends State<KiblatPage> {
   }
 
   Widget _buildCompass(double? qiblaAngleDeg) {
-    final size = 260.0;
+    final size = 300.0;
     return Container(
       width: size,
       height: size,
@@ -170,41 +170,170 @@ class _KiblatPageState extends State<KiblatPage> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: size - 16,
-            height: size - 16,
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.25), width: 4),
-              shape: BoxShape.circle,
-            ),
+      child: CustomPaint(
+        painter: CompassPainter(qiblaAngleDeg: qiblaAngleDeg),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.navigation,
+                size: 56,
+                color: qiblaAngleDeg == null ? Colors.grey : const Color(0xFFF36F21),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                qiblaAngleDeg == null ? '--°' : '${qiblaAngleDeg.toStringAsFixed(0)}°',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2E7D32),
+                ),
+              ),
+            ],
           ),
-          const Positioned(
-            top: 14,
-            child: Text('N', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-          ),
-          Transform.rotate(
-            angle: (qiblaAngleDeg ?? 0) * math.pi / 180.0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.navigation, size: 64, color: qiblaAngleDeg == null ? Colors.grey : const Color(0xFFF36F21)),
-                const SizedBox(height: 8),
-                Text(qiblaAngleDeg == null ? '--°' : '${qiblaAngleDeg.toStringAsFixed(0)}°',
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2E7D32))),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+
 }
+
+class CompassPainter extends CustomPainter {
+  final double? qiblaAngleDeg; // rotation relative to top (12 o’clock)
+  CompassPainter({required this.qiblaAngleDeg});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 10;
+
+    // Outer soft gradient ring
+    final outerPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [Color(0xFFEFF5F1), Colors.white],
+        radius: 0.9,
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, outerPaint);
+
+    // Outer border
+    final borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..color = const Color(0xFF2E7D32).withOpacity(0.25);
+    canvas.drawCircle(center, radius, borderPaint);
+
+    // Tick marks every 10°, thicker every 30°
+    final tickPaint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF2E7D32).withOpacity(0.45);
+    final innerTickR = radius - 12;
+    final outerTickR = radius - 2;
+    final innerThickR = radius - 18;
+    final textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    for (int d = 0; d < 360; d += 10) {
+      final rad = (d - 90) * math.pi / 180; // rotate so 0° is at top
+      final isThick = d % 30 == 0;
+      final p1 = Offset(
+        center.dx + (isThick ? innerThickR : innerTickR) * math.cos(rad),
+        center.dy + (isThick ? innerThickR : innerTickR) * math.sin(rad),
+      );
+      final p2 = Offset(
+        center.dx + outerTickR * math.cos(rad),
+        center.dy + outerTickR * math.sin(rad),
+      );
+      tickPaint.strokeWidth = isThick ? 2.6 : 1.2;
+      canvas.drawLine(p1, p2, tickPaint);
+
+      // Cardinal labels at 0/90/180/270
+      if (d % 90 == 0) {
+        final label = d == 0
+            ? 'N'
+            : d == 90
+                ? 'E'
+                : d == 180
+                    ? 'S'
+                    : 'W';
+        final labelOffset = Offset(
+          center.dx + (innerThickR - 16) * math.cos(rad),
+          center.dy + (innerThickR - 16) * math.sin(rad),
+        );
+        textPainter.text = TextSpan(
+          text: label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey,
+          ),
+        );
+        textPainter.layout();
+        canvas.save();
+        canvas.translate(labelOffset.dx - textPainter.width / 2,
+            labelOffset.dy - textPainter.height / 2);
+        textPainter.paint(canvas, Offset.zero);
+        canvas.restore();
+      }
+    }
+
+    // Qibla arrow (drawn on the face for context)
+    if (qiblaAngleDeg != null) {
+      final angle = (qiblaAngleDeg! - 90) * math.pi / 180; // align with painter
+      final arrowLength = radius - 34;
+      final arrowHead = Offset(
+        center.dx + arrowLength * math.cos(angle),
+        center.dy + arrowLength * math.sin(angle),
+      );
+
+      final arrowPaint = Paint()
+        ..color = const Color(0xFFF36F21)
+        ..style = PaintingStyle.fill;
+
+      final shaftPaint = Paint()
+        ..color = const Color(0xFFF36F21).withOpacity(0.7)
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round;
+
+      // Shaft
+      final shaftTail = Offset(
+        center.dx + (arrowLength - 40) * math.cos(angle),
+        center.dy + (arrowLength - 40) * math.sin(angle),
+      );
+      canvas.drawLine(shaftTail, arrowHead, shaftPaint);
+
+      // Arrow head triangle
+      final left = Offset(
+        arrowHead.dx + 10 * math.cos(angle + math.pi * 0.75),
+        arrowHead.dy + 10 * math.sin(angle + math.pi * 0.75),
+      );
+      final right = Offset(
+        arrowHead.dx + 10 * math.cos(angle - math.pi * 0.75),
+        arrowHead.dy + 10 * math.sin(angle - math.pi * 0.75),
+      );
+      final path = Path()
+        ..moveTo(arrowHead.dx, arrowHead.dy)
+        ..lineTo(left.dx, left.dy)
+        ..lineTo(right.dx, right.dy)
+        ..close();
+      canvas.drawPath(path, arrowPaint);
+    }
+
+    // Center hub
+    final hub = Paint()..color = const Color(0xFF2E7D32).withOpacity(0.2);
+    canvas.drawCircle(center, 6, hub);
+  }
+
+  @override
+  bool shouldRepaint(covariant CompassPainter oldDelegate) {
+    return oldDelegate.qiblaAngleDeg != qiblaAngleDeg;
+  }
+}
+

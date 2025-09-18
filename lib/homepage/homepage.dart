@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import '../zikircounter/zikircounter.dart';
 import '../quran/quranpage.dart';
 import '../setting/settingpage.dart';
+import '../kiblat/kiblat.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -274,9 +275,12 @@ class _HomepageState extends State<Homepage> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Qibla Direction feature coming soon'),
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const KiblatPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
                         ),
                       );
                     },

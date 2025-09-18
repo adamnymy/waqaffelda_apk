@@ -1,7 +1,10 @@
  import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class KiblatPage extends StatefulWidget {
@@ -17,6 +20,9 @@ class _KiblatPageState extends State<KiblatPage> {
   Position? _position;
   String? _error;
   bool _loadingLocation = true;
+  bool _locked = false; // lock/hold current direction
+  bool _wasAligned = false; // for one-shot haptic/sound
+  double? _heldQAngle; // stored qibla angle when locked
 
   static const double _kaabaLat = 21.4225; // Masjid al-Haram
   static const double _kaabaLon = 39.8262;
@@ -25,10 +31,46 @@ class _KiblatPageState extends State<KiblatPage> {
   void initState() {
     super.initState();
     _init();
+    // Guard: Only subscribe to compass on mobile platforms
+    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
+      setState(() {
+        _error = 'Compass not supported on this platform.';
+      });
+      return;
+    }
+
     _compassSub = FlutterCompass.events?.listen((event) {
       if (!mounted) return;
+      // If locked, ignore live heading updates
+      if (_locked) return;
+      final newHeading = event.heading; // may be null on some devices
+      if (newHeading == null) return;
+
+      // Compute qibla angle to check alignment for feedback
+      final bearing = _bearingToKaabaDegrees();
+      if (bearing != null) {
+        final qAngle = (bearing - newHeading + 360) % 360;
+        final off = qAngle.abs();
+        final delta = off <= 180 ? off : (360 - off);
+        final isAligned = delta <= 5;
+        if (isAligned && !_wasAligned) {
+          // Haptic + sound once when entering aligned zone
+          try {
+            HapticFeedback.mediumImpact();
+          } catch (_) {}
+          try {
+            HapticFeedback.lightImpact();
+          } catch (_) {}
+          try {
+            HapticFeedback.vibrate();
+          } catch (_) {}
+          SystemSound.play(SystemSoundType.click);
+        }
+        _wasAligned = isAligned;
+      }
+
       setState(() {
-        _heading = event.heading; // may be null on some devices
+        _heading = newHeading;
       });
     }, onError: (e) {
       if (!mounted) return;
@@ -63,6 +105,32 @@ class _KiblatPageState extends State<KiblatPage> {
         permission == LocationPermission.denied) {
       throw 'Location permission denied.';
     }
+  }
+
+  void _showCalibrateDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Calibrate Compass'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('If the arrow seems inaccurate:'),
+            SizedBox(height: 8),
+            Text('• Move your phone in a figure-8 motion for 10–15 seconds.'),
+            Text('• Keep away from magnets/metal (laptops, speakers, cables).'),
+            Text('• Ensure Location and sensors are enabled.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   double? _bearingToKaabaDegrees() {
@@ -114,9 +182,41 @@ class _KiblatPageState extends State<KiblatPage> {
             const SizedBox(height: 8),
             _buildStatusRow(bearingToKaaba, heading),
             const SizedBox(height: 24),
+            // Lock/Calibrate controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _locked ? const Color(0xFF2E7D32) : Colors.white,
+                    foregroundColor: _locked ? Colors.white : const Color(0xFF2E7D32),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _locked = !_locked;
+                      if (_locked) {
+                        // store current qibla angle to hold
+                        _heldQAngle = qiblaAngleDeg;
+                      } else {
+                        _heldQAngle = null;
+                      }
+                    });
+                  },
+                  icon: Icon(_locked ? Icons.lock : Icons.lock_open),
+                  label: Text(_locked ? 'Locked' : 'Lock'),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: _showCalibrateDialog,
+                  icon: const Icon(Icons.tune, color: Color(0xFF2E7D32)),
+                  label: const Text('Calibrate Compass', style: TextStyle(color: Color(0xFF2E7D32))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: Center(
-                child: _buildCompass(qiblaAngleDeg),
+                child: _buildCompass(_locked ? _heldQAngle : qiblaAngleDeg),
               ),
             ),
             const SizedBox(height: 16),
@@ -134,7 +234,7 @@ class _KiblatPageState extends State<KiblatPage> {
                   ),
                   if (qiblaAngleDeg != null)
                     Builder(builder: (context) {
-                      final off = qiblaAngleDeg!.abs();
+                      final off = qiblaAngleDeg.abs();
                       final aligned = off <= 5 || (360 - off) <= 5;
                       return Chip(
                         backgroundColor: aligned

@@ -1,4 +1,4 @@
- import 'dart:async';
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -39,43 +39,46 @@ class _KiblatPageState extends State<KiblatPage> {
       return;
     }
 
-    _compassSub = FlutterCompass.events?.listen((event) {
-      if (!mounted) return;
-      // If locked, ignore live heading updates
-      if (_locked) return;
-      final newHeading = event.heading; // may be null on some devices
-      if (newHeading == null) return;
+    _compassSub = FlutterCompass.events?.listen(
+      (event) {
+        if (!mounted) return;
+        // If locked, ignore live heading updates
+        if (_locked) return;
+        final newHeading = event.heading; // may be null on some devices
+        if (newHeading == null) return;
 
-      // Compute qibla angle to check alignment for feedback
-      final bearing = _bearingToKaabaDegrees();
-      if (bearing != null) {
-        final qAngle = (bearing - newHeading + 360) % 360;
-        final off = qAngle.abs();
-        final delta = off <= 180 ? off : (360 - off);
-        final isAligned = delta <= 5;
-        if (isAligned && !_wasAligned) {
-          // Haptic + sound once when entering aligned zone
-          try {
-            HapticFeedback.mediumImpact();
-          } catch (_) {}
-          try {
-            HapticFeedback.lightImpact();
-          } catch (_) {}
-          try {
-            HapticFeedback.vibrate();
-          } catch (_) {}
-          SystemSound.play(SystemSoundType.click);
+        // Compute qibla angle to check alignment for feedback
+        final bearing = _bearingToKaabaDegrees();
+        if (bearing != null) {
+          final qAngle = (bearing - newHeading + 360) % 360;
+          final off = qAngle.abs();
+          final delta = off <= 180 ? off : (360 - off);
+          final isAligned = delta <= 5;
+          if (isAligned && !_wasAligned) {
+            // Haptic + sound once when entering aligned zone
+            try {
+              HapticFeedback.mediumImpact();
+            } catch (_) {}
+            try {
+              HapticFeedback.lightImpact();
+            } catch (_) {}
+            try {
+              HapticFeedback.vibrate();
+            } catch (_) {}
+            SystemSound.play(SystemSoundType.click);
+          }
+          _wasAligned = isAligned;
         }
-        _wasAligned = isAligned;
-      }
 
-      setState(() {
-        _heading = newHeading;
-      });
-    }, onError: (e) {
-      if (!mounted) return;
-      setState(() => _error = 'Compass error: $e');
-    });
+        setState(() {
+          _heading = newHeading;
+        });
+      },
+      onError: (e) {
+        if (!mounted) return;
+        setState(() => _error = 'Compass error: $e');
+      },
+    );
   }
 
   Future<void> _init() async {
@@ -110,26 +113,31 @@ class _KiblatPageState extends State<KiblatPage> {
   void _showCalibrateDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Calibrate Compass'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('If the arrow seems inaccurate:'),
-            SizedBox(height: 8),
-            Text('• Move your phone in a figure-8 motion for 10–15 seconds.'),
-            Text('• Keep away from magnets/metal (laptops, speakers, cables).'),
-            Text('• Ensure Location and sensors are enabled.'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Calibrate Compass'),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('If the arrow seems inaccurate:'),
+                SizedBox(height: 8),
+                Text(
+                  '• Move your phone in a figure-8 motion for 10–15 seconds.',
+                ),
+                Text(
+                  '• Keep away from magnets/metal (laptops, speakers, cables).',
+                ),
+                Text('• Ensure Location and sensors are enabled.'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -143,7 +151,8 @@ class _KiblatPageState extends State<KiblatPage> {
 
     final dLon = lon2 - lon1;
     final y = math.sin(dLon) * math.cos(lat2);
-    final x = math.cos(lat1) * math.sin(lat2) -
+    final x =
+        math.cos(lat1) * math.sin(lat2) -
         math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
     final theta = math.atan2(y, x);
     final bearing = (_radToDeg(theta) + 360) % 360; // degrees from north
@@ -163,9 +172,10 @@ class _KiblatPageState extends State<KiblatPage> {
   Widget build(BuildContext context) {
     final bearingToKaaba = _bearingToKaabaDegrees();
     final heading = _heading;
-    final qiblaAngleDeg = (bearingToKaaba != null && heading != null)
-        ? (bearingToKaaba - heading + 360) % 360
-        : null;
+    final qiblaAngleDeg =
+        (bearingToKaaba != null && heading != null)
+            ? (bearingToKaaba - heading + 360) % 360
+            : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -188,8 +198,10 @@ class _KiblatPageState extends State<KiblatPage> {
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _locked ? const Color(0xFF2E7D32) : Colors.white,
-                    foregroundColor: _locked ? Colors.white : const Color(0xFF2E7D32),
+                    backgroundColor:
+                        _locked ? const Color(0xFF2E7D32) : Colors.white,
+                    foregroundColor:
+                        _locked ? Colors.white : const Color(0xFF2E7D32),
                   ),
                   onPressed: () {
                     setState(() {
@@ -209,7 +221,10 @@ class _KiblatPageState extends State<KiblatPage> {
                 OutlinedButton.icon(
                   onPressed: _showCalibrateDialog,
                   icon: const Icon(Icons.tune, color: Color(0xFF2E7D32)),
-                  label: const Text('Calibrate Compass', style: TextStyle(color: Color(0xFF2E7D32))),
+                  label: const Text(
+                    'Calibrate Compass',
+                    style: TextStyle(color: Color(0xFF2E7D32)),
+                  ),
                 ),
               ],
             ),
@@ -229,28 +244,39 @@ class _KiblatPageState extends State<KiblatPage> {
                 children: [
                   Chip(
                     backgroundColor: const Color(0xFF2E7D32).withOpacity(0.08),
-                    label: Text('Qibla ${bearingToKaaba.toStringAsFixed(0)}°',
-                        style: const TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.w600)),
+                    label: Text(
+                      'Qibla ${bearingToKaaba.toStringAsFixed(0)}°',
+                      style: const TextStyle(
+                        color: Color(0xFF2E7D32),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   if (qiblaAngleDeg != null)
-                    Builder(builder: (context) {
-                      final off = qiblaAngleDeg.abs();
-                      final aligned = off <= 5 || (360 - off) <= 5;
-                      return Chip(
-                        backgroundColor: aligned
-                            ? const Color(0xFF4CAF50).withOpacity(0.15)
-                            : const Color(0xFFF36F21).withOpacity(0.12),
-                        label: Text(
-                          aligned
-                              ? 'Aligned for Salah'
-                              : 'Off by ${off <= 180 ? off.toStringAsFixed(0) : (360 - off).toStringAsFixed(0)}°',
-                          style: TextStyle(
-                            color: aligned ? const Color(0xFF2E7D32) : const Color(0xFFF36F21),
-                            fontWeight: FontWeight.w700,
+                    Builder(
+                      builder: (context) {
+                        final off = qiblaAngleDeg.abs();
+                        final aligned = off <= 5 || (360 - off) <= 5;
+                        return Chip(
+                          backgroundColor:
+                              aligned
+                                  ? const Color(0xFF4CAF50).withOpacity(0.15)
+                                  : const Color(0xFFF36F21).withOpacity(0.12),
+                          label: Text(
+                            aligned
+                                ? 'Aligned for Salah'
+                                : 'Off by ${off <= 180 ? off.toStringAsFixed(0) : (360 - off).toStringAsFixed(0)}°',
+                            style: TextStyle(
+                              color:
+                                  aligned
+                                      ? const Color(0xFF2E7D32)
+                                      : const Color(0xFFF36F21),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      },
+                    ),
                 ],
               ),
             ],
@@ -274,9 +300,13 @@ class _KiblatPageState extends State<KiblatPage> {
       return const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
           SizedBox(width: 8),
-          Text('Getting location...')
+          Text('Getting location...'),
         ],
       );
     }
@@ -322,11 +352,16 @@ class _KiblatPageState extends State<KiblatPage> {
               Icon(
                 Icons.navigation,
                 size: 56,
-                color: qiblaAngleDeg == null ? Colors.grey : const Color(0xFFF36F21),
+                color:
+                    qiblaAngleDeg == null
+                        ? Colors.grey
+                        : const Color(0xFFF36F21),
               ),
               const SizedBox(height: 8),
               Text(
-                qiblaAngleDeg == null ? '--°' : '${qiblaAngleDeg.toStringAsFixed(0)}°',
+                qiblaAngleDeg == null
+                    ? '--°'
+                    : '${qiblaAngleDeg.toStringAsFixed(0)}°',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF2E7D32),
@@ -338,7 +373,6 @@ class _KiblatPageState extends State<KiblatPage> {
       ),
     );
   }
-
 }
 
 class CompassPainter extends CustomPainter {
@@ -357,26 +391,30 @@ class CompassPainter extends CustomPainter {
     }();
 
     // Outer soft gradient ring
-    final outerPaint = Paint()
-      ..shader = const RadialGradient(
-        colors: [Color(0xFFEFF5F1), Colors.white],
-        radius: 0.9,
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    final outerPaint =
+        Paint()
+          ..shader = const RadialGradient(
+            colors: [Color(0xFFEFF5F1), Colors.white],
+            radius: 0.9,
+          ).createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, outerPaint);
 
     // Outer border
-    final borderPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..color = isAligned
-          ? const Color(0xFF4CAF50).withOpacity(0.6)
-          : const Color(0xFF2E7D32).withOpacity(0.25);
+    final borderPaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..color =
+              isAligned
+                  ? const Color(0xFF4CAF50).withOpacity(0.6)
+                  : const Color(0xFF2E7D32).withOpacity(0.25);
     canvas.drawCircle(center, radius, borderPaint);
 
     // Tick marks every 10°, thicker every 30°
-    final tickPaint = Paint()
-      ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFF2E7D32).withOpacity(0.45);
+    final tickPaint =
+        Paint()
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0xFF2E7D32).withOpacity(0.45);
     final innerTickR = radius - 12;
     final outerTickR = radius - 2;
     final innerThickR = radius - 18;
@@ -401,13 +439,14 @@ class CompassPainter extends CustomPainter {
 
       // Cardinal labels at 0/90/180/270
       if (d % 90 == 0) {
-        final label = d == 0
-            ? 'N'
-            : d == 90
+        final label =
+            d == 0
+                ? 'N'
+                : d == 90
                 ? 'E'
                 : d == 180
-                    ? 'S'
-                    : 'W';
+                ? 'S'
+                : 'W';
         final labelOffset = Offset(
           center.dx + (innerThickR - 16) * math.cos(rad),
           center.dy + (innerThickR - 16) * math.sin(rad),
@@ -422,8 +461,10 @@ class CompassPainter extends CustomPainter {
         );
         textPainter.layout();
         canvas.save();
-        canvas.translate(labelOffset.dx - textPainter.width / 2,
-            labelOffset.dy - textPainter.height / 2);
+        canvas.translate(
+          labelOffset.dx - textPainter.width / 2,
+          labelOffset.dy - textPainter.height / 2,
+        );
         textPainter.paint(canvas, Offset.zero);
         canvas.restore();
       }
@@ -439,10 +480,11 @@ class CompassPainter extends CustomPainter {
       center.dx + (radius - 24) * math.cos(topAngle),
       center.dy + (radius - 24) * math.sin(topAngle),
     );
-    final targetPaint = Paint()
-      ..color = const Color(0xFF4CAF50)
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
+    final targetPaint =
+        Paint()
+          ..color = const Color(0xFF4CAF50)
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round;
     canvas.drawLine(targetInner, targetOuter, targetPaint);
 
     // Qibla arrow (drawn on the face for context)
@@ -454,14 +496,16 @@ class CompassPainter extends CustomPainter {
         center.dy + arrowLength * math.sin(angle),
       );
 
-      final arrowPaint = Paint()
-        ..color = const Color(0xFFF36F21)
-        ..style = PaintingStyle.fill;
+      final arrowPaint =
+          Paint()
+            ..color = const Color(0xFFF36F21)
+            ..style = PaintingStyle.fill;
 
-      final shaftPaint = Paint()
-        ..color = const Color(0xFFF36F21).withOpacity(0.7)
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.round;
+      final shaftPaint =
+          Paint()
+            ..color = const Color(0xFFF36F21).withOpacity(0.7)
+            ..strokeWidth = 4
+            ..strokeCap = StrokeCap.round;
 
       // Shaft
       final shaftTail = Offset(
@@ -479,11 +523,12 @@ class CompassPainter extends CustomPainter {
         arrowHead.dx + 10 * math.cos(angle - math.pi * 0.75),
         arrowHead.dy + 10 * math.sin(angle - math.pi * 0.75),
       );
-      final path = Path()
-        ..moveTo(arrowHead.dx, arrowHead.dy)
-        ..lineTo(left.dx, left.dy)
-        ..lineTo(right.dx, right.dy)
-        ..close();
+      final path =
+          Path()
+            ..moveTo(arrowHead.dx, arrowHead.dy)
+            ..lineTo(left.dx, left.dy)
+            ..lineTo(right.dx, right.dy)
+            ..close();
       canvas.drawPath(path, arrowPaint);
 
       // 'QIBLA' label near arrow head for clarity
@@ -514,7 +559,10 @@ class CompassPainter extends CustomPainter {
       );
       final bgPaint = Paint()..color = Colors.white.withOpacity(0.9);
       canvas.drawRRect(bgRect, bgPaint);
-      tp.paint(canvas, Offset(labelOffset.dx - tp.width / 2, labelOffset.dy - tp.height / 2));
+      tp.paint(
+        canvas,
+        Offset(labelOffset.dx - tp.width / 2, labelOffset.dy - tp.height / 2),
+      );
     }
 
     // Center hub
@@ -527,4 +575,3 @@ class CompassPainter extends CustomPainter {
     return oldDelegate.qiblaAngleDeg != qiblaAngleDeg;
   }
 }
-

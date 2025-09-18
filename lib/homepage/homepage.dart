@@ -5,7 +5,8 @@ import '../prayertimes/prayertimes.dart';
 import '../services/prayer_times_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../zikircounter/zikircounter.dart';
-import '../quran/quranpage.dart'; // Import the Quran page
+import '../quran/quranpage.dart';
+import '../setting/settingpage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -20,28 +21,6 @@ class _HomepageState extends State<Homepage> {
   String _currentTime = '';
   Timer? _timer;
   List<Map<String, dynamic>> _prayerTimes = [];
-
-  void _navigateWithTransition(Widget page) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => page,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final slideTween = Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeInOut));
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: animation.drive(slideTween),
-              child: child,
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
-  }
 
   @override
   void initState() {
@@ -110,6 +89,38 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  void _onTabTapped(int index) {
+    if (index == _currentIndex) return;
+
+    setState(() {
+      _currentIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        // Already on Homepage
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PrayerTimesPage()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const QuranPage()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsPage()),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,7 +128,7 @@ class _HomepageState extends State<Homepage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5F7F6),
         elevation: 0,
-        automaticallyImplyLeading: false, // Add this line
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             Image.asset('assets/images/waqaf_felda_logo.png', height: 30),
@@ -143,7 +154,7 @@ class _HomepageState extends State<Homepage> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft,
+                  begin: Alignment.topLeft, 
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(15),
@@ -233,12 +244,8 @@ class _HomepageState extends State<Homepage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const PrayerTimesPage(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
+                        MaterialPageRoute(
+                          builder: (context) => const PrayerTimesPage(),
                         ),
                       );
                     },
@@ -251,10 +258,19 @@ class _HomepageState extends State<Homepage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildQuickActionCard(
-                    'Qibla Direction',
-                    Icons.explore,
-                    const Color(0xFFF36F21),
+                  child: GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Qibla Direction feature coming soon'),
+                        ),
+                      );
+                    },
+                    child: _buildQuickActionCard(
+                      'Qibla Direction',
+                      Icons.explore,
+                      const Color(0xFFF36F21),
+                    ),
                   ),
                 ),
               ],
@@ -269,12 +285,8 @@ class _HomepageState extends State<Homepage> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const QuranPage(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
+                        MaterialPageRoute(
+                          builder: (context) => const QuranPage(),
                         ),
                       );
                     },
@@ -456,47 +468,7 @@ class _HomepageState extends State<Homepage> {
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          if (index == _currentIndex)
-            return; // Don't navigate if already on the page
-
-          setState(() {
-            _currentIndex = index;
-          });
-
-          // Navigation logic for different tabs
-          switch (index) {
-            case 0:
-              // Home - already on homepage, no navigation needed
-              break;
-            case 1:
-              // Prayer - navigate to prayer times page
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder:
-                      (context, animation, secondaryAnimation) =>
-                          const PrayerTimesPage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              );
-              break;
-            case 2:
-              // Quran - navigate to Quran page
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder:
-                      (context, animation, secondaryAnimation) =>
-                          const QuranPage(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              );
-              break;
-          }
-        },
+        onTap: _onTabTapped,
       ),
     );
   }

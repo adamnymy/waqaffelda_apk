@@ -3,9 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import '../services/prayer_times_service.dart';
 import 'package:intl/intl.dart';
 import '../widgets/google_maps_location_picker.dart';
-import '../navbar.dart'; // Import the BottomNavBar
-import '../homepage/homepage.dart'; // Import the Homepage
-import '../quran/quranpage.dart'; // Import the QuranPage
+import '../navbar.dart';
+import '../homepage/homepage.dart';
+import '../quran/quranpage.dart';
+import '../setting/settingpage.dart';
 import 'package:hijri/hijri_calendar.dart';
 
 class PrayerTimesPage extends StatefulWidget {
@@ -24,14 +25,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   String currentDate = '';
   Map<String, String>? nextPrayer;
 
-  // Location selection variables
   String? selectedLocationName;
   double? selectedLatitude;
   double? selectedLongitude;
   String? selectedCity;
   Map<String, dynamic>? selectedCoordinates;
 
-  // Popular Malaysian cities
   final List<Map<String, dynamic>> malaysianCities = [
     {'name': 'Kuala Lumpur', 'lat': 3.139, 'lng': 101.6869},
     {'name': 'Johor Bahru', 'lat': 1.4927, 'lng': 103.7414},
@@ -50,7 +49,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     {'name': 'Use Current Location', 'lat': null, 'lng': null},
   ];
 
-  int _currentIndex = 1; // Set initial index to 1 for PrayerTimesPage
+  int _currentIndex = 1;
 
   @override
   void initState() {
@@ -59,15 +58,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     _setCurrentDate();
   }
 
-  void _setCurrentDate() {
-    // Gregorian date
-    currentDate = DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now());
-
-    // Set static Hijri date for September 17, 2025
-    hijriDate = "24 Rabiulawal 1447"; // Following e-solat.gov.my format
+  @override
+  void dispose() {
+    super.dispose();
   }
 
-  // Update the month names according to e-solat.gov.my
+  void _setCurrentDate() {
+    currentDate = DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now());
+    hijriDate = "24 Rabiulawal 1447";
+  }
+
   String _getHijriMonthName(int month) {
     switch (month) {
       case 1:
@@ -108,20 +108,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     try {
       Map<String, dynamic>? apiData;
 
-      // Check if user has selected a specific location
       if (selectedLatitude != null && selectedLongitude != null) {
-        // Use user-selected location
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
           selectedLatitude!,
           selectedLongitude!,
         );
         locationName = selectedLocationName ?? 'Selected Location';
       } else {
-        // Try to get current location first
         Position? position = await PrayerTimesService.getCurrentLocation();
 
         if (position != null) {
-          // Use current GPS location
           apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
             position.latitude,
             position.longitude,
@@ -131,10 +127,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             position.longitude,
           );
         } else {
-          // Fallback to Kuala Lumpur with Malaysia-specific method
           apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-            3.139, // Kuala Lumpur latitude
-            101.6869, // Kuala Lumpur longitude
+            3.139,
+            101.6869,
           );
           locationName = 'Kuala Lumpur, Malaysia';
         }
@@ -143,32 +138,36 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       if (apiData != null) {
         final parsedTimes = PrayerTimesService.parsePrayerTimes(apiData);
         nextPrayer = PrayerTimesService.getNextPrayer(parsedTimes);
-
-        setState(() {
-          prayerTimes =
-              parsedTimes
-                  .map(
-                    (prayer) => {
-                      ...prayer,
-                      'icon': _getIconFromString(prayer['icon']),
-                      'color': Color(prayer['color']),
-                    },
-                  )
-                  .toList();
-          isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            prayerTimes = parsedTimes
+                .map(
+                  (prayer) => {
+                    ...prayer,
+                    'icon': _getIconFromString(prayer['icon']),
+                    'color': Color(prayer['color']),
+                  },
+                )
+                .toList();
+            isLoading = false;
+          });
+        }
       } else {
+        if (mounted) {
+          setState(() {
+            errorMessage =
+                'Failed to load prayer times. Please check your internet connection.';
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
-          errorMessage =
-              'Failed to load prayer times. Please check your internet connection.';
+          errorMessage = 'Error loading prayer times: $e';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Error loading prayer times: $e';
-        isLoading = false;
-      });
     }
   }
 
@@ -177,133 +176,124 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.7,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2E7D32),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2E7D32),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Select Location',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Select Location',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-
-                // Location list
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      // Google Maps picker option
-                      ListTile(
-                        leading: const Icon(
-                          Icons.map,
-                          color: Color(0xFF2E7D32),
-                        ),
-                        title: const Text(
-                          'Pick from Map',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          'Choose any location using Google Maps',
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _openGoogleMapsPicker();
-                        },
-                      ),
-                      const Divider(),
-
-                      // Current location option
-                      ListTile(
-                        leading: const Icon(
-                          Icons.my_location,
-                          color: Color(0xFF2E7D32),
-                        ),
-                        title: const Text(
-                          'Use Current Location',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          'Get prayer times for your current location',
-                        ),
-                        onTap: () {
-                          setState(() {
-                            selectedCity = null;
-                            selectedCoordinates = null;
-                          });
-                          Navigator.pop(context);
-                          _loadPrayerTimes();
-                        },
-                      ),
-                      const Divider(),
-
-                      // Malaysian cities
-                      ...malaysianCities
-                          .map(
-                            (city) => ListTile(
-                              leading: const Icon(
-                                Icons.location_city,
-                                color: Color(0xFF2E7D32),
-                              ),
-                              title: Text(
-                                city['name'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              subtitle: Text('${city['lat']}, ${city['lng']}'),
-                              onTap: () {
-                                setState(() {
-                                  selectedCity = city['name'];
-                                  selectedCoordinates = {
-                                    'lat': city['lat'],
-                                    'lng': city['lng'],
-                                  };
-                                });
-                                Navigator.pop(context);
-                                _loadPrayerTimes();
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.map,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    title: const Text(
+                      'Pick from Map',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Choose any location using Google Maps',
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openGoogleMapsPicker();
+                    },
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.my_location,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    title: const Text(
+                      'Use Current Location',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Get prayer times for your current location',
+                    ),
+                    onTap: () {
+                      setState(() {
+                        selectedCity = null;
+                        selectedCoordinates = null;
+                      });
+                      Navigator.pop(context);
+                      _loadPrayerTimes();
+                    },
+                  ),
+                  const Divider(),
+                  ...malaysianCities
+                      .map(
+                        (city) => ListTile(
+                          leading: const Icon(
+                            Icons.location_city,
+                            color: Color(0xFF2E7D32),
+                          ),
+                          title: Text(
+                            city['name'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text('${city['lat']}, ${city['lng']}'),
+                          onTap: () {
+                            setState(() {
+                              selectedCity = city['name'];
+                              selectedCoordinates = {
+                                'lat': city['lat'],
+                                'lng': city['lng'],
+                              };
+                            });
+                            Navigator.pop(context);
+                            _loadPrayerTimes();
+                          },
+                        ),
+                      )
+                      .toList(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -314,18 +304,17 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => OpenStreetMapLocationPicker(
-              initialLatitude: initialLat,
-              initialLongitude: initialLng,
-              onLocationSelected: (lat, lng, address) {
-                setState(() {
-                  selectedCity = address;
-                  selectedCoordinates = {'lat': lat, 'lng': lng};
-                });
-                _loadPrayerTimes();
-              },
-            ),
+        builder: (context) => OpenStreetMapLocationPicker(
+          initialLatitude: initialLat,
+          initialLongitude: initialLng,
+          onLocationSelected: (lat, lng, address) {
+            setState(() {
+              selectedCity = address;
+              selectedCoordinates = {'lat': lat, 'lng': lng};
+            });
+            _loadPrayerTimes();
+          },
+        ),
       ),
     );
   }
@@ -350,36 +339,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
 
-    switch (index) {
-      case 0: // Home
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const Homepage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        break;
-      case 1: // Prayer Times (current page)
-        break;
-      case 2: // Quran
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const QuranPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        break;
-    }
-
     setState(() {
       _currentIndex = index;
     });
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Homepage()),
+        );
+        break;
+      case 1:
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const QuranPage()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsPage()),
+        );
+        break;
+    }
   }
 
   @override
@@ -421,102 +406,99 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ],
         ),
       ),
-      body:
-          isLoading
-              ? const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
-                ),
-              )
-              : errorMessage.isNotEmpty
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+              ),
+            )
+          : errorMessage.isNotEmpty
               ? _buildErrorWidget()
               : CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildHeaderCard(),
-                          const SizedBox(height: 24),
-                        ],
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeaderCard(),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Prayer Times',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Prayer Times',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2E7D32),
+                              ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF2E7D32,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.location_on_outlined,
-                                    color: Color(0xFF2E7D32),
-                                    size: 24,
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2E7D32)
+                                        .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  onPressed: _showLocationPicker,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF2E7D32,
-                                  ).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.refresh_rounded,
-                                    color: Color(0xFF2E7D32),
-                                    size: 24,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.location_on_outlined,
+                                      color: Color(0xFF2E7D32),
+                                      size: 24,
+                                    ),
+                                    onPressed: _showLocationPicker,
                                   ),
-                                  onPressed: _loadPrayerTimes,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2E7D32)
+                                        .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.refresh_rounded,
+                                      color: Color(0xFF2E7D32),
+                                      size: 24,
+                                    ),
+                                    onPressed: _loadPrayerTimes,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.all(16.0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        if (index >= prayerTimes.length) return null;
-                        return _buildPrayerTimeCard(prayerTimes[index]);
-                      }, childCount: prayerTimes.length),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
+                    SliverPadding(
                       padding: const EdgeInsets.all(16.0),
-                      child: _buildQiblaCard(),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          if (index >= prayerTimes.length) return null;
+                          return _buildPrayerTimeCard(prayerTimes[index]);
+                        }, childCount: prayerTimes.length),
+                      ),
                     ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                ],
-              ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: _buildQiblaCard(),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  ],
+                ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
@@ -546,7 +528,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Location name
           Text(
             locationName,
             style: const TextStyle(
@@ -556,7 +537,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ),
           const SizedBox(height: 4),
-          // Gregorian Date
           Text(
             currentDate,
             style: TextStyle(
@@ -565,7 +545,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ),
           const SizedBox(height: 2),
-          // Hijri Date
           Text(
             hijriDate,
             style: TextStyle(
@@ -575,7 +554,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ),
           const SizedBox(height: 20),
-          // Next prayer info
           if (nextPrayer != null && nextPrayer!['time'] != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

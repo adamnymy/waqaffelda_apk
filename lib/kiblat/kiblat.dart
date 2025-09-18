@@ -120,10 +120,47 @@ class _KiblatPageState extends State<KiblatPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Align the top of your phone with the arrow to face the Qibla.',
+            // Status chips for quick clarity
+            if (bearingToKaaba != null) ...[
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(
+                    backgroundColor: const Color(0xFF2E7D32).withOpacity(0.08),
+                    label: Text('Qibla ${bearingToKaaba.toStringAsFixed(0)}°',
+                        style: const TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.w600)),
+                  ),
+                  if (qiblaAngleDeg != null)
+                    Builder(builder: (context) {
+                      final off = qiblaAngleDeg!.abs();
+                      final aligned = off <= 5 || (360 - off) <= 5;
+                      return Chip(
+                        backgroundColor: aligned
+                            ? const Color(0xFF4CAF50).withOpacity(0.15)
+                            : const Color(0xFFF36F21).withOpacity(0.12),
+                        label: Text(
+                          aligned
+                              ? 'Aligned for Salah'
+                              : 'Off by ${off <= 180 ? off.toStringAsFixed(0) : (360 - off).toStringAsFixed(0)}°',
+                          style: TextStyle(
+                            color: aligned ? const Color(0xFF2E7D32) : const Color(0xFFF36F21),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              qiblaAngleDeg == null
+                  ? 'Align the top of your phone with the arrow to face the Qibla.'
+                  : 'Turn your device until the arrow points straight up (12 o’clock).',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 12),
           ],
@@ -212,6 +249,12 @@ class CompassPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 10;
+    final bool isAligned = () {
+      if (qiblaAngleDeg == null) return false;
+      final off = qiblaAngleDeg!.abs();
+      final delta = off <= 180 ? off : (360 - off);
+      return delta <= 5; // within 5 degrees
+    }();
 
     // Outer soft gradient ring
     final outerPaint = Paint()
@@ -225,7 +268,9 @@ class CompassPainter extends CustomPainter {
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
-      ..color = const Color(0xFF2E7D32).withOpacity(0.25);
+      ..color = isAligned
+          ? const Color(0xFF4CAF50).withOpacity(0.6)
+          : const Color(0xFF2E7D32).withOpacity(0.25);
     canvas.drawCircle(center, radius, borderPaint);
 
     // Tick marks every 10°, thicker every 30°
@@ -284,6 +329,22 @@ class CompassPainter extends CustomPainter {
       }
     }
 
+    // Top target marker (12 o'clock) to indicate where to align the arrow
+    final topAngle = (-90) * math.pi / 180;
+    final targetOuter = Offset(
+      center.dx + (radius - 2) * math.cos(topAngle),
+      center.dy + (radius - 2) * math.sin(topAngle),
+    );
+    final targetInner = Offset(
+      center.dx + (radius - 24) * math.cos(topAngle),
+      center.dy + (radius - 24) * math.sin(topAngle),
+    );
+    final targetPaint = Paint()
+      ..color = const Color(0xFF4CAF50)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(targetInner, targetOuter, targetPaint);
+
     // Qibla arrow (drawn on the face for context)
     if (qiblaAngleDeg != null) {
       final angle = (qiblaAngleDeg! - 90) * math.pi / 180; // align with painter
@@ -324,6 +385,36 @@ class CompassPainter extends CustomPainter {
         ..lineTo(right.dx, right.dy)
         ..close();
       canvas.drawPath(path, arrowPaint);
+
+      // 'QIBLA' label near arrow head for clarity
+      final labelOffset = Offset(
+        arrowHead.dx + 12 * math.cos(angle),
+        arrowHead.dy + 12 * math.sin(angle),
+      );
+      final tp = TextPainter(
+        text: const TextSpan(
+          text: 'QIBLA',
+          style: TextStyle(
+            color: Color(0xFFF36F21),
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      final bgRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: labelOffset,
+          width: tp.width + 12,
+          height: tp.height + 6,
+        ),
+        const Radius.circular(8),
+      );
+      final bgPaint = Paint()..color = Colors.white.withOpacity(0.9);
+      canvas.drawRRect(bgRect, bgPaint);
+      tp.paint(canvas, Offset(labelOffset.dx - tp.width / 2, labelOffset.dy - tp.height / 2));
     }
 
     // Center hub

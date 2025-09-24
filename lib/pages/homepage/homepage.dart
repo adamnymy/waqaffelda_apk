@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../navbar.dart';
+import '../../navbar.dart';
 import '../prayertimes/prayertimes.dart';
-import '../services/prayer_times_service.dart';
+import '../../services/prayer_times_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../zikircounter/zikircounter.dart';
 import '../quran/quranpage.dart';

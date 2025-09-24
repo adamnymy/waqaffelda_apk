@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../services/prayer_times_service.dart';
+import '../../services/prayer_times_service.dart';
 import 'package:intl/intl.dart';
-import '../widgets/google_maps_location_picker.dart';
-import '../navbar.dart';
+import '../../widgets/google_maps_location_picker.dart';
+import '../../navbar.dart';
 import '../homepage/homepage.dart';
 import '../quran/quranpage.dart';
 import '../setting/settingpage.dart';

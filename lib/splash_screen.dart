@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'homepage/homepage.dart'; // Import homepage instead of login page
+import 'pages/homepage/homepage.dart'; // Import homepage instead of login page
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);

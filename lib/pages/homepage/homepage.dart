@@ -5,8 +5,11 @@ import '../prayertimes/prayertimes.dart';
 import '../../services/prayer_times_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../zikircounter/zikircounter.dart';
+import '../program/programpage.dart';
+import '../waqaf/waqafpage.dart';
+import '../inbox/inboxpage.dart';
+import '../akaun/akaunpage.dart';
 import '../quran/quranpage.dart';
-import '../setting/settingpage.dart';
 import '../kiblat/kiblat.dart';
 
 class Homepage extends StatefulWidget {
@@ -105,7 +108,8 @@ class _HomepageState extends State<Homepage> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const ProgramPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
@@ -115,7 +119,8 @@ class _HomepageState extends State<Homepage> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const WaqafPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
@@ -125,7 +130,19 @@ class _HomepageState extends State<Homepage> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(),
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const InboxPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        break;
+      case 4:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const AkaunPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
@@ -137,9 +154,9 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F6),
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F7F6),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
@@ -167,7 +184,7 @@ class _HomepageState extends State<Homepage> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft, 
+                  begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(15),
@@ -258,7 +275,9 @@ class _HomepageState extends State<Homepage> {
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const PrayerTimesPage(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -278,7 +297,9 @@ class _HomepageState extends State<Homepage> {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const KiblatPage(),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const KiblatPage(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -304,7 +325,9 @@ class _HomepageState extends State<Homepage> {
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const QuranPage(),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const QuranPage(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),

@@ -113,8 +113,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         final lat = selectedCoordinates!['lat'] as double?;
         final lng = selectedCoordinates!['lng'] as double?;
         if (lat != null && lng != null) {
-          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(lat, lng);
-          locationName = selectedCity ?? selectedLocationName ?? 'Lokasi Terpilih';
+          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+            lat,
+            lng,
+          );
+          locationName =
+              selectedCity ?? selectedLocationName ?? 'Lokasi Terpilih';
         }
       } else if (selectedLatitude != null && selectedLongitude != null) {
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
@@ -148,28 +152,29 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         nextPrayer = PrayerTimesService.getNextPrayer(parsedTimes);
         if (mounted) {
           setState(() {
-            prayerTimes = parsedTimes.map((prayer) {
-              // defensive parsing for color field; allow int or hex string
-              Color parsedColor = Colors.black;
-              try {
-                final colorVal = prayer['color'];
-                if (colorVal is int) {
-                  parsedColor = Color(colorVal);
-                } else if (colorVal is String) {
-                  // try to parse hex like "0xFF123456" or "#123456"
-                  final cleaned = colorVal.replaceAll('#', '');
-                  parsedColor = Color(int.parse(cleaned, radix: 16));
-                }
-              } catch (_) {
-                parsedColor = Colors.black;
-              }
+            prayerTimes =
+                parsedTimes.map((prayer) {
+                  // defensive parsing for color field; allow int or hex string
+                  Color parsedColor = Colors.black;
+                  try {
+                    final colorVal = prayer['color'];
+                    if (colorVal is int) {
+                      parsedColor = Color(colorVal);
+                    } else if (colorVal is String) {
+                      // try to parse hex like "0xFF123456" or "#123456"
+                      final cleaned = colorVal.replaceAll('#', '');
+                      parsedColor = Color(int.parse(cleaned, radix: 16));
+                    }
+                  } catch (_) {
+                    parsedColor = Colors.black;
+                  }
 
-              return {
-                ...prayer,
-                'icon': _getIconFromString(prayer['icon']),
-                'color': parsedColor,
-              };
-            }).toList();
+                  return {
+                    ...prayer,
+                    'icon': _getIconFromString(prayer['icon']),
+                    'color': parsedColor,
+                  };
+                }).toList();
             isLoading = false;
           });
         }

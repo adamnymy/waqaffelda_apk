@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../navbar.dart';
 import '../homepage/homepage.dart';
 import '../program/programpage.dart';
@@ -88,7 +89,14 @@ class _InboxPageState extends State<InboxPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.mail_rounded, size: 80, color: Colors.grey[400]),
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(Colors.grey[400]!, BlendMode.srcIn),
+              child: SvgPicture.asset(
+                'assets/images/inbox.svg',
+                height: 120,
+                width: 120,
+              ),
+            ),
             const SizedBox(height: 20),
             Text(
               'Inbox',

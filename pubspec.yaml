@@ -47,6 +47,7 @@ dependencies:
   geocoding: ^2.1.1
   hijri: ^3.0.0
   flutter_compass: ^0.8.0
+  flutter_svg: ^1.1.6
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +75,7 @@ flutter:
   assets:
     - assets\images\waqaf_felda_logo.png
     - assets\images\masjid-bg.webp
+    - assets\images\inbox.svg
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

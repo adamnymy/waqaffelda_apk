@@ -383,23 +383,22 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               )
               : errorMessage.isNotEmpty
               ? _buildErrorWidget()
-              : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildHeaderCard(),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              : Column(
+                children: [
+                  _buildHeaderCard(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children:
                             prayerTimes
                                 .map((prayer) => _buildPrayerTimeCard(prayer))
                                 .toList(),
                       ),
                     ),
-                    const SizedBox(height: 80),
-                  ],
-                ),
+                  ),
+                ],
               ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
@@ -411,7 +410,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      height: 350,
+      height: 280,
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/masjid-bg.webp'),
@@ -419,7 +418,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+        padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -437,32 +436,35 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               hijriDate,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               currentDate,
-              style: const TextStyle(color: Colors.black, fontSize: 14),
+              style: const TextStyle(color: Colors.black, fontSize: 12),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               locationName,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             if (nextPrayer != null && nextPrayer!['time'] != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Color(0xFFDEDEDE),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,28 +472,28 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     Text(
                       'Waktu solat seterusnya',
                       style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
+                        color: Color(0xFF757575),
+                        fontSize: 11,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           nextPrayer!['name'] ?? 'Unknown',
                           style: const TextStyle(
-                            color: Colors.black, // Changed text color to black
-                            fontSize: 32,
+                            color: Color(0xFFF36F21),
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           nextPrayer!['time'] ?? '--:--',
                           style: const TextStyle(
-                            color: Colors.black, // Changed text color to black
-                            fontSize: 32,
+                            color: Color(0xFFF36F21),
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -513,7 +515,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         !prayer['isPassed'];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
         color: isNextPrayer ? const Color(0xFFF36F21) : Colors.white,
@@ -532,7 +533,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             child: Text(
               prayer['name'],
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: isNextPrayer ? Colors.white : Colors.black87,
               ),
@@ -546,13 +547,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 isNextPrayer
                     ? Colors.white
                     : (prayer['isPassed'] ? Colors.grey : Colors.black54),
-            size: 22,
+            size: 24,
           ),
           const SizedBox(width: 16),
           Text(
             prayer['time'],
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: isNextPrayer ? Colors.white : Colors.black87,
             ),

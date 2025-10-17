@@ -4,11 +4,11 @@ import 'package:geolocator/geolocator.dart';
 
 class PrayerTimesService {
   static const String _baseUrl = 'https://waktu-solat-api.herokuapp.com/api/v1';
-  
+
   // Get prayer times using JAKIM official data
   static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
-    double latitude, 
-    double longitude
+    double latitude,
+    double longitude,
   ) async {
     try {
       // Get the closest Malaysian zone for coordinates
@@ -19,14 +19,16 @@ class PrayerTimesService {
       return null;
     }
   }
-  
+
   // Get prayer times by Malaysian zone (JAKIM official data)
-  static Future<Map<String, dynamic>?> getPrayerTimesByZone(String zoneName) async {
+  static Future<Map<String, dynamic>?> getPrayerTimesByZone(
+    String zoneName,
+  ) async {
     try {
       final url = '$_baseUrl/prayer_times.json?zon=$zoneName';
-      
+
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return _formatJakimResponse(data);
@@ -49,38 +51,38 @@ class PrayerTimesService {
       'kuala lumpur': {'lat': 3.1390, 'lng': 101.6869},
       'sepang': {'lat': 3.0738, 'lng': 101.5183},
       'shah alam': {'lat': 3.0738, 'lng': 101.5183},
-      
+
       // Johor
       'johor bahru': {'lat': 1.4927, 'lng': 103.7414},
       'kluang': {'lat': 2.0581, 'lng': 102.5689},
-      
+
       // Penang
       'pulau pinang': {'lat': 5.4164, 'lng': 100.3327},
-      
+
       // Perak
       'ipoh': {'lat': 4.5975, 'lng': 101.0901},
-      
+
       // Kedah
       'alor setar': {'lat': 6.1184, 'lng': 100.3685},
-      
+
       // Kelantan
       'kota bharu': {'lat': 6.1254, 'lng': 102.2386},
-      
+
       // Terengganu
       'kuala terengganu': {'lat': 5.3302, 'lng': 103.1408},
-      
+
       // Pahang
       'kuantan': {'lat': 3.8077, 'lng': 103.3260},
-      
+
       // Negeri Sembilan
       'seremban': {'lat': 2.7297, 'lng': 101.9381},
-      
+
       // Melaka
       'melaka': {'lat': 2.1896, 'lng': 102.2501},
-      
+
       // Sabah
       'kota kinabalu': {'lat': 5.9804, 'lng': 116.0735},
-      
+
       // Sarawak
       'kuching': {'lat': 1.5533, 'lng': 110.3592},
     };
@@ -90,8 +92,10 @@ class PrayerTimesService {
 
     zones.forEach((zoneName, zoneData) {
       double distance = _calculateDistance(
-        latitude, longitude,
-        zoneData['lat'] as double, zoneData['lng'] as double
+        latitude,
+        longitude,
+        zoneData['lat'] as double,
+        zoneData['lng'] as double,
       );
       if (distance < minDistance) {
         minDistance = distance;
@@ -103,7 +107,12 @@ class PrayerTimesService {
   }
 
   // Calculate distance between two coordinates
-  static double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+  static double _calculateDistance(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     return Geolocator.distanceBetween(lat1, lng1, lat2, lng2);
   }
 
@@ -125,7 +134,8 @@ class PrayerTimesService {
           Map<String, dynamic>? todayEntry;
           for (final entry in entries) {
             if (entry is Map<String, dynamic>) {
-              final dynamic dateVal = entry['date'] ?? entry['tarikh'] ?? entry['hari'];
+              final dynamic dateVal =
+                  entry['date'] ?? entry['tarikh'] ?? entry['hari'];
               if (dateVal is String) {
                 final String d = dateVal.trim().toLowerCase();
                 if (d.contains(yyyyMmDd) || d.contains(ddMmYyyy)) {
@@ -138,18 +148,22 @@ class PrayerTimesService {
 
           // Fallback to the first entry if today's not explicitly found
           final Map<String, dynamic>? prayerData =
-              todayEntry ?? (entries.isNotEmpty && entries.first is Map<String, dynamic>
+              todayEntry ??
+              (entries.isNotEmpty && entries.first is Map<String, dynamic>
                   ? entries.first as Map<String, dynamic>
                   : null);
 
           if (prayerData != null && prayerData['waktu_solat'] != null) {
-            final List<dynamic> waktuSolat = prayerData['waktu_solat'] as List<dynamic>;
+            final List<dynamic> waktuSolat =
+                prayerData['waktu_solat'] as List<dynamic>;
             final timings = <String, String>{};
 
             for (final item in waktuSolat) {
               if (item is Map<String, dynamic>) {
-                final String name = (item['name'] ?? item['nama'] ?? '').toString();
-                final String time = (item['time'] ?? item['masa'] ?? '').toString();
+                final String name =
+                    (item['name'] ?? item['nama'] ?? '').toString();
+                final String time =
+                    (item['time'] ?? item['masa'] ?? '').toString();
                 switch (name.toLowerCase()) {
                   case 'subuh':
                     timings['Fajr'] = time;
@@ -188,10 +202,7 @@ class PrayerTimesService {
                     'latitude': 0.0,
                     'longitude': 0.0,
                     'timezone': 'Asia/Kuala_Lumpur',
-                    'method': {
-                      'id': 11,
-                      'name': 'JAKIM Malaysia',
-                    },
+                    'method': {'id': 11, 'name': 'JAKIM Malaysia'},
                   },
                 },
               };
@@ -207,12 +218,12 @@ class PrayerTimesService {
 
   // Get prayer times by coordinates (uses JAKIM zone mapping)
   static Future<Map<String, dynamic>?> getPrayerTimesByCoordinates(
-    double latitude, 
-    double longitude
+    double latitude,
+    double longitude,
   ) async {
     return await getPrayerTimesForMalaysia(latitude, longitude);
   }
-  
+
   // Get prayer times by city (using JAKIM zone mapping)
   static Future<Map<String, dynamic>?> getPrayerTimesByCity(String city) async {
     try {
@@ -232,12 +243,12 @@ class PrayerTimesService {
         'Kota Kinabalu': {'lat': 5.9804, 'lng': 116.0735},
         'Kuching': {'lat': 1.5533, 'lng': 110.3592},
       };
-      
+
       final coords = cityCoordinates[city];
       if (coords != null) {
         return await getPrayerTimesForMalaysia(coords['lat']!, coords['lng']!);
       }
-      
+
       // Fallback to KL if city not found
       return await getPrayerTimesForMalaysia(3.1390, 101.6869);
     } catch (e) {
@@ -245,7 +256,7 @@ class PrayerTimesService {
       return null;
     }
   }
-  
+
   // Get current location
   static Future<Position?> getCurrentLocation() async {
     try {
@@ -261,7 +272,7 @@ class PrayerTimesService {
           return null;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         return null;
       }
@@ -272,11 +283,13 @@ class PrayerTimesService {
       return null;
     }
   }
-  
+
   // Parse prayer times from API response
-  static List<Map<String, dynamic>> parsePrayerTimes(Map<String, dynamic> apiData) {
+  static List<Map<String, dynamic>> parsePrayerTimes(
+    Map<String, dynamic> apiData,
+  ) {
     final timings = apiData['data']['timings'];
-    
+
     return [
       {
         'name': 'Fajr',
@@ -285,6 +298,14 @@ class PrayerTimesService {
         'icon': 'wb_twilight',
         'color': 0xFF4A90E2,
         'isPassed': _isPrayerPassed(timings['Fajr']),
+      },
+      {
+        'name': 'Syuruk',
+        'arabic': 'الشروق',
+        'time': _formatTime(timings['Sunrise'] ?? '06:00'),
+        'icon': 'wb_sunny',
+        'color': 0xFFFFA726,
+        'isPassed': _isPrayerPassed(timings['Sunrise'] ?? '06:00'),
       },
       {
         'name': 'Dhuhr',
@@ -320,14 +341,14 @@ class PrayerTimesService {
       },
     ];
   }
-  
+
   // Format time from 24-hour to 12-hour format
   static String _formatTime(String time24) {
     try {
       final parts = time24.split(':');
       final hour = int.parse(parts[0]);
       final minute = parts[1];
-      
+
       if (hour == 0) {
         return '12:$minute AM';
       } else if (hour < 12) {
@@ -341,7 +362,7 @@ class PrayerTimesService {
       return time24;
     }
   }
-  
+
   // Check if prayer time has passed
   static bool _isPrayerPassed(String prayerTime) {
     try {
@@ -349,33 +370,41 @@ class PrayerTimesService {
       final parts = prayerTime.split(':');
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
-      
-      final prayerDateTime = DateTime(now.year, now.month, now.day, hour, minute);
+
+      final prayerDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
       return now.isAfter(prayerDateTime);
     } catch (e) {
       return false;
     }
   }
-  
+
   // Get next prayer info
-  static Map<String, String>? getNextPrayer(List<Map<String, dynamic>> prayers) {
+  static Map<String, String>? getNextPrayer(
+    List<Map<String, dynamic>> prayers,
+  ) {
     for (var prayer in prayers) {
+      // Skip Syuruk as it's not a prayer time
+      if (prayer['name'] == 'Syuruk') continue;
+
       if (!prayer['isPassed']) {
-        return {
-          'name': prayer['name'],
-          'time': prayer['time'],
-        };
+        return {'name': prayer['name'], 'time': prayer['time']};
       }
     }
     // If all prayers have passed, next prayer is Fajr of tomorrow
-    return {
-      'name': 'Fajr',
-      'time': 'Tomorrow',
-    };
+    return {'name': 'Fajr', 'time': 'Tomorrow'};
   }
-  
+
   // Get location name from coordinates (reverse geocoding)
-  static Future<String> getLocationName(double latitude, double longitude) async {
+  static Future<String> getLocationName(
+    double latitude,
+    double longitude,
+  ) async {
     try {
       // Using a simple approach - you can enhance this with a proper geocoding service
       return 'Current Location';

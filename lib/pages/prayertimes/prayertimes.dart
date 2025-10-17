@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../services/prayer_times_service.dart';
-import 'package:intl/intl.dart';
 import '../../widgets/google_maps_location_picker.dart';
 import '../../navbar.dart';
 import '../homepage/homepage.dart';
@@ -20,7 +19,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   List<Map<String, dynamic>> prayerTimes = [];
   bool isLoading = true;
   String errorMessage = '';
-  String locationName = 'Loading...';
+  String locationName = 'Memuatkan...';
   String currentDate = '';
   Map<String, String>? nextPrayer;
 
@@ -33,7 +32,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   final List<Map<String, dynamic>> malaysianCities = [
     {'name': 'Kuala Lumpur', 'lat': 3.139, 'lng': 101.6869},
     {'name': 'Johor Bahru', 'lat': 1.4927, 'lng': 103.7414},
-    {'name': 'Penang', 'lat': 5.4164, 'lng': 100.3327},
+    {'name': 'Pulau Pinang', 'lat': 5.4164, 'lng': 100.3327},
     {'name': 'Kota Kinabalu', 'lat': 5.9804, 'lng': 116.0735},
     {'name': 'Kuching', 'lat': 1.5533, 'lng': 110.3592},
     {'name': 'Shah Alam', 'lat': 3.0733, 'lng': 101.5185},
@@ -45,7 +44,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     {'name': 'Kajang', 'lat': 2.9929, 'lng': 101.7904},
     {'name': 'Ampang', 'lat': 3.1478, 'lng': 101.7596},
     {'name': 'Subang Jaya', 'lat': 3.1478, 'lng': 101.5867},
-    {'name': 'Use Current Location', 'lat': null, 'lng': null},
+    {'name': 'Gunakan Lokasi Semasa', 'lat': null, 'lng': null},
   ];
 
   int _currentIndex = 1;
@@ -63,7 +62,39 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   void _setCurrentDate() {
-    currentDate = DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now());
+    final now = DateTime.now();
+
+    // Malay day names
+    const malayDays = [
+      'Isnin',
+      'Selasa',
+      'Rabu',
+      'Khamis',
+      'Jumaat',
+      'Sabtu',
+      'Ahad',
+    ];
+
+    // Malay month names
+    const malayMonths = [
+      'Januari',
+      'Februari',
+      'Mac',
+      'April',
+      'Mei',
+      'Jun',
+      'Julai',
+      'Ogos',
+      'September',
+      'Oktober',
+      'November',
+      'Disember',
+    ];
+
+    final dayName = malayDays[now.weekday - 1];
+    final monthName = malayMonths[now.month - 1];
+
+    currentDate = '$dayName, ${now.day} $monthName ${now.year}';
     hijriDate = "24 Rabiulawal 1447";
   }
 
@@ -81,7 +112,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           selectedLatitude!,
           selectedLongitude!,
         );
-        locationName = selectedLocationName ?? 'Selected Location';
+        locationName = selectedLocationName ?? 'Lokasi Terpilih';
       } else {
         Position? position = await PrayerTimesService.getCurrentLocation();
 
@@ -125,7 +156,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         if (mounted) {
           setState(() {
             errorMessage =
-                'Failed to load prayer times. Please check your internet connection.';
+                'Gagal memuatkan waktu solat. Sila semak sambungan internet anda.';
             isLoading = false;
           });
         }
@@ -133,7 +164,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          errorMessage = 'Error loading prayer times: $e';
+          errorMessage = 'Ralat memuatkan waktu solat: $e';
           isLoading = false;
         });
       }
@@ -171,7 +202,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       ),
                       const SizedBox(width: 12),
                       const Text(
-                        'Select Location',
+                        'Pilih Lokasi',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -196,11 +227,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           color: Color(0xFF2E7D32),
                         ),
                         title: const Text(
-                          'Pick from Map',
+                          'Pilih dari Peta',
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'Choose any location using Google Maps',
+                          'Pilih mana-mana lokasi menggunakan Google Maps',
                         ),
                         onTap: () {
                           Navigator.pop(context);
@@ -214,11 +245,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           color: Color(0xFF2E7D32),
                         ),
                         title: const Text(
-                          'Use Current Location',
+                          'Gunakan Lokasi Semasa',
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: const Text(
-                          'Get prayer times for your current location',
+                          'Dapatkan waktu solat untuk lokasi semasa anda',
                         ),
                         onTap: () {
                           setState(() {
@@ -482,7 +513,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          nextPrayer!['name'] ?? 'Unknown',
+                          nextPrayer!['name'] ?? 'Tidak diketahui',
                           style: const TextStyle(
                             color: Color(0xFFF36F21),
                             fontSize: 24,
@@ -585,7 +616,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ElevatedButton.icon(
               onPressed: _loadPrayerTimes,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: const Text('Cuba Lagi'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF36F21),
                 foregroundColor: Colors.white,

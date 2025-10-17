@@ -292,7 +292,7 @@ class PrayerTimesService {
 
     return [
       {
-        'name': 'Fajr',
+        'name': 'Subuh',
         'arabic': 'الفجر',
         'time': _formatTime(timings['Fajr']),
         'icon': 'wb_twilight',
@@ -308,7 +308,7 @@ class PrayerTimesService {
         'isPassed': _isPrayerPassed(timings['Sunrise'] ?? '06:00'),
       },
       {
-        'name': 'Dhuhr',
+        'name': 'Zohor',
         'arabic': 'الظهر',
         'time': _formatTime(timings['Dhuhr']),
         'icon': 'wb_sunny',
@@ -316,7 +316,7 @@ class PrayerTimesService {
         'isPassed': _isPrayerPassed(timings['Dhuhr']),
       },
       {
-        'name': 'Asr',
+        'name': 'Asar',
         'arabic': 'العصر',
         'time': _formatTime(timings['Asr']),
         'icon': 'wb_cloudy',
@@ -332,7 +332,7 @@ class PrayerTimesService {
         'isPassed': _isPrayerPassed(timings['Maghrib']),
       },
       {
-        'name': 'Isha',
+        'name': 'Isyak',
         'arabic': 'العشاء',
         'time': _formatTime(timings['Isha']),
         'icon': 'brightness_2',
@@ -396,8 +396,8 @@ class PrayerTimesService {
         return {'name': prayer['name'], 'time': prayer['time']};
       }
     }
-    // If all prayers have passed, next prayer is Fajr of tomorrow
-    return {'name': 'Fajr', 'time': 'Tomorrow'};
+    // If all prayers have passed, next prayer is Subuh of tomorrow
+    return {'name': 'Subuh', 'time': 'Esok'};
   }
 
   // Get location name from coordinates (reverse geocoding)

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// flutter_svg removed; using PNG mailbox image instead
 import '../../navbar.dart';
 import '../homepage/homepage.dart';
 import '../program/programpage.dart';
@@ -91,10 +91,11 @@ class _InboxPageState extends State<InboxPage> {
           children: [
             ColorFiltered(
               colorFilter: ColorFilter.mode(Colors.grey[400]!, BlendMode.srcIn),
-              child: SvgPicture.asset(
-                'assets/images/inbox.svg',
+              child: Image.asset(
+                'assets/images/mailbox.png',
                 height: 120,
                 width: 120,
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 20),

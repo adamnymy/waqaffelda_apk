@@ -334,22 +334,21 @@ class _HomepageState extends State<Homepage> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // Quick Actions Grid
+              // Quick Actions Grid - Compact Design
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: GridView.count(
-                  crossAxisCount: 2,
+                  crossAxisCount: 4,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.0,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.85,
                   children: [
-                    _buildModernQuickAction(
+                    _buildCompactQuickAction(
                       'Waktu Solat',
-                      'Jadual 5 waktu',
                       Icons.access_time_filled_rounded,
                       const Color(0xFF4CAF50),
                       () {
@@ -365,9 +364,8 @@ class _HomepageState extends State<Homepage> {
                         );
                       },
                     ),
-                    _buildModernQuickAction(
+                    _buildCompactQuickAction(
                       'Arah Kiblat',
-                      'Cari kiblat',
                       Icons.explore_rounded,
                       const Color(0xFFF36F21),
                       () {
@@ -383,9 +381,8 @@ class _HomepageState extends State<Homepage> {
                         );
                       },
                     ),
-                    _buildModernQuickAction(
+                    _buildCompactQuickAction(
                       'Al-Quran',
-                      'Baca Al-Quran',
                       Icons.menu_book_rounded,
                       const Color(0xFF673AB7),
                       () {
@@ -401,9 +398,8 @@ class _HomepageState extends State<Homepage> {
                         );
                       },
                     ),
-                    _buildModernQuickAction(
+                    _buildCompactQuickAction(
                       'Tasbih',
-                      'Kira zikir',
                       Icons.all_inclusive_rounded,
                       const Color(0xFF795548),
                       () {
@@ -419,7 +415,7 @@ class _HomepageState extends State<Homepage> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // Wakaf CTA
               Padding(
@@ -611,9 +607,8 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildModernQuickAction(
+  Widget _buildCompactQuickAction(
     String title,
-    String subtitle,
     IconData icon,
     Color color,
     VoidCallback onTap,
@@ -623,11 +618,11 @@ class _HomepageState extends State<Homepage> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -636,29 +631,31 @@ class _HomepageState extends State<Homepage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.2), width: 1),
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.15), color.withOpacity(0.08)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 36),
+              child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2E7D32),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

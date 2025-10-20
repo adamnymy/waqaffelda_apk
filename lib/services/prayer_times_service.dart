@@ -15,12 +15,16 @@ class PrayerTimesService {
       // Get the closest Malaysian zone for coordinates
       String zoneCode = _getZoneFromCoordinates(latitude, longitude);
       final result = await getPrayerTimesByZone(zoneCode);
-      
+
       // Add the location name based on the zone
-      if (result != null && result['data'] != null && result['data']['meta'] != null) {
-        result['data']['meta']['locationName'] = _getLocationNameFromZone(zoneCode);
+      if (result != null &&
+          result['data'] != null &&
+          result['data']['meta'] != null) {
+        result['data']['meta']['locationName'] = _getLocationNameFromZone(
+          zoneCode,
+        );
       }
-      
+
       return result;
     } catch (e) {
       print('Error fetching prayer times: $e');
@@ -134,10 +138,11 @@ class PrayerTimesService {
       'kuching': 'Kuching',
     };
 
-    return zoneDisplayNames[zoneCode.toLowerCase()] ?? 
-           zoneCode.split(' ').map((word) => 
-             word[0].toUpperCase() + word.substring(1)
-           ).join(' ');
+    return zoneDisplayNames[zoneCode.toLowerCase()] ??
+        zoneCode
+            .split(' ')
+            .map((word) => word[0].toUpperCase() + word.substring(1))
+            .join(' ');
   }
 
   // Calculate distance between two coordinates
@@ -224,7 +229,7 @@ class PrayerTimesService {
 
             // Extract location name from the API response
             String locationName = 'Lokasi Semasa';
-            
+
             // Try to get location from various possible fields in the API response
             if (prayerData['lokasi'] != null) {
               locationName = prayerData['lokasi'].toString();
@@ -465,7 +470,8 @@ class PrayerTimesService {
           apiData['data'] != null &&
           apiData['data']['meta'] != null &&
           apiData['data']['meta']['locationName'] != null) {
-        final locationFromApi = apiData['data']['meta']['locationName'].toString();
+        final locationFromApi =
+            apiData['data']['meta']['locationName'].toString();
         if (locationFromApi.isNotEmpty && locationFromApi != 'Lokasi Semasa') {
           print('Location from JAKIM API: $locationFromApi');
           return locationFromApi;

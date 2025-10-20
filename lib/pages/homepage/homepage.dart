@@ -108,25 +108,45 @@ class _HomepageState extends State<Homepage> {
       case 1:
         Navigator.pushReplacement(
           context,
-          SmoothPageRoute(page: const ProgramPage()),
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const ProgramPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          SmoothPageRoute(page: const WaqafPage()),
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const WaqafPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          SmoothPageRoute(page: const InboxPage()),
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const InboxPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
       case 4:
         Navigator.pushReplacement(
           context,
-          SmoothPageRoute(page: const AkaunPage()),
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const AkaunPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
     }
@@ -398,7 +418,13 @@ class _HomepageState extends State<Homepage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          SmoothPageRoute(page: const WaqafPage()),
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const WaqafPage(),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
                         );
                       },
                       borderRadius: BorderRadius.circular(20),

@@ -126,10 +126,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Future<void> _loadPrayerTimes() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = '';
-    });
+    // Only show loading spinner on first load
+    if (prayerTimes.isEmpty) {
+      setState(() {
+        isLoading = true;
+        errorMessage = '';
+      });
+    }
 
     try {
       Map<String, dynamic>? apiData;

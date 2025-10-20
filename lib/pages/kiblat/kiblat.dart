@@ -81,6 +81,11 @@ class _KiblatPageState extends State<KiblatPage> {
   }
 
   Future<void> _init() async {
+    // Only show loading on first visit
+    if (_position == null) {
+      if (mounted) setState(() => _loadingLocation = true);
+    }
+
     try {
       await _ensureLocationPermission();
       _position = await Geolocator.getCurrentPosition(

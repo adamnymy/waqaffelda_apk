@@ -396,18 +396,19 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     String translation,
     Color bgColor,
   ) {
+    bool isSelected = _currentZikir == arabic;
     return GestureDetector(
       onTap: () => _selectZikir(arabic, translation),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: bgColor,
+          color: isSelected ? Colors.green : const Color(0xFFFFF4E6),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: bgColor == Colors.green ? Colors.white : Colors.black,
+            color: isSelected ? Colors.white : Colors.black,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),

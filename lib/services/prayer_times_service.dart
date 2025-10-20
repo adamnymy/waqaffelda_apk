@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class PrayerTimesService {
   static const String _baseUrl = 'https://waktu-solat-api.herokuapp.com/api/v1';
@@ -13,7 +14,14 @@ class PrayerTimesService {
     try {
       // Get the closest Malaysian zone for coordinates
       String zoneCode = _getZoneFromCoordinates(latitude, longitude);
-      return await getPrayerTimesByZone(zoneCode);
+      final result = await getPrayerTimesByZone(zoneCode);
+      
+      // Add the location name based on the zone
+      if (result != null && result['data'] != null && result['data']['meta'] != null) {
+        result['data']['meta']['locationName'] = _getLocationNameFromZone(zoneCode);
+      }
+      
+      return result;
     } catch (e) {
       print('Error fetching prayer times: $e');
       return null;
@@ -106,6 +114,32 @@ class PrayerTimesService {
     return closestZone;
   }
 
+  // Get display name from zone code
+  static String _getLocationNameFromZone(String zoneCode) {
+    final zoneDisplayNames = {
+      'kuala lumpur': 'Kuala Lumpur',
+      'sepang': 'Sepang',
+      'shah alam': 'Shah Alam',
+      'johor bahru': 'Johor Bahru',
+      'kluang': 'Kluang',
+      'pulau pinang': 'Pulau Pinang',
+      'ipoh': 'Ipoh',
+      'alor setar': 'Alor Setar',
+      'kota bharu': 'Kota Bharu',
+      'kuala terengganu': 'Kuala Terengganu',
+      'kuantan': 'Kuantan',
+      'seremban': 'Seremban',
+      'melaka': 'Melaka',
+      'kota kinabalu': 'Kota Kinabalu',
+      'kuching': 'Kuching',
+    };
+
+    return zoneDisplayNames[zoneCode.toLowerCase()] ?? 
+           zoneCode.split(' ').map((word) => 
+             word[0].toUpperCase() + word.substring(1)
+           ).join(' ');
+  }
+
   // Calculate distance between two coordinates
   static double _calculateDistance(
     double lat1,
@@ -188,6 +222,24 @@ class PrayerTimesService {
               }
             }
 
+            // Extract location name from the API response
+            String locationName = 'Lokasi Semasa';
+            
+            // Try to get location from various possible fields in the API response
+            if (prayerData['lokasi'] != null) {
+              locationName = prayerData['lokasi'].toString();
+            } else if (prayerData['location'] != null) {
+              locationName = prayerData['location'].toString();
+            } else if (prayerData['daerah'] != null) {
+              locationName = prayerData['daerah'].toString();
+            } else if (prayerData['zone'] != null) {
+              locationName = prayerData['zone'].toString();
+            } else if (data['location'] != null) {
+              locationName = data['location'].toString();
+            } else if (data['lokasi'] != null) {
+              locationName = data['lokasi'].toString();
+            }
+
             if (timings.isNotEmpty) {
               return {
                 'code': 200,
@@ -203,6 +255,7 @@ class PrayerTimesService {
                     'longitude': 0.0,
                     'timezone': 'Asia/Kuala_Lumpur',
                     'method': {'id': 11, 'name': 'JAKIM Malaysia'},
+                    'locationName': locationName, // Add location name from API
                   },
                 },
               };
@@ -406,10 +459,44 @@ class PrayerTimesService {
     double longitude,
   ) async {
     try {
-      // Using a simple approach - you can enhance this with a proper geocoding service
-      return 'Current Location';
+      // First, try to get location from JAKIM API
+      final apiData = await getPrayerTimesForMalaysia(latitude, longitude);
+      if (apiData != null &&
+          apiData['data'] != null &&
+          apiData['data']['meta'] != null &&
+          apiData['data']['meta']['locationName'] != null) {
+        final locationFromApi = apiData['data']['meta']['locationName'].toString();
+        if (locationFromApi.isNotEmpty && locationFromApi != 'Lokasi Semasa') {
+          print('Location from JAKIM API: $locationFromApi');
+          return locationFromApi;
+        }
+      }
+
+      // Fallback to reverse geocoding if API doesn't provide location
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      ).timeout(const Duration(seconds: 5), onTimeout: () => []);
+
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+
+        // Use the same approach as Kiblat page - simple null-coalescing
+        final locationName =
+            place.locality ??
+            place.subAdministrativeArea ??
+            place.administrativeArea ??
+            place.country ??
+            'Lokasi Semasa';
+
+        print('Location from geocoding: $locationName');
+        return locationName;
+      }
+
+      return 'Lokasi Semasa';
     } catch (e) {
-      return 'Unknown Location';
+      print('Error getting location name: $e');
+      return 'Lokasi Semasa';
     }
   }
 }

@@ -112,16 +112,27 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             lat,
             lng,
           );
-          locationName =
-              selectedCity ?? selectedLocationName ?? 'Lokasi Terpilih';
+          // Get real location name from coordinates (either from city selection or map picker)
+          if (selectedCity != null && selectedCity != 'Gunakan Lokasi Semasa') {
+            // Use city name directly if selected from the list
+            locationName = selectedCity!;
+          } else {
+            // Get location name from coordinates if selected from map
+            locationName = await PrayerTimesService.getLocationName(lat, lng);
+          }
         }
       } else if (selectedLatitude != null && selectedLongitude != null) {
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
           selectedLatitude!,
           selectedLongitude!,
         );
-        locationName = selectedLocationName ?? 'Lokasi Terpilih';
+        // Get real location name for selected coordinates
+        locationName = await PrayerTimesService.getLocationName(
+          selectedLatitude!,
+          selectedLongitude!,
+        );
       } else {
+        // Use current location
         Position? position = await PrayerTimesService.getCurrentLocation();
 
         if (position != null) {
@@ -129,16 +140,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             position.latitude,
             position.longitude,
           );
+          // Get real location name from current position
           locationName = await PrayerTimesService.getLocationName(
             position.latitude,
             position.longitude,
           );
         } else {
+          // Fallback to Kuala Lumpur if location permission denied
           apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
             3.139,
             101.6869,
           );
-          locationName = 'Kuala Lumpur, Malaysia';
+          locationName = await PrayerTimesService.getLocationName(
+            3.139,
+            101.6869,
+          );
         }
       }
 
@@ -276,6 +292,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           setState(() {
                             selectedCity = null;
                             selectedCoordinates = null;
+                            selectedLatitude = null;
+                            selectedLongitude = null;
+                            selectedLocationName = null;
                           });
                           Navigator.pop(context);
                           _loadPrayerTimes();
@@ -402,15 +421,18 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 children: [
                   _buildHeaderCard(),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children:
-                            prayerTimes
-                                .map((prayer) => _buildPrayerTimeCard(prayer))
-                                .toList(),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 16.0,
                       ),
+                      itemCount: prayerTimes.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildPrayerTimeCard(prayerTimes[index]),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -525,51 +547,175 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         nextPrayer!['name'] == prayer['name'] &&
         !prayer['isPassed'];
 
+    final bool isPassed = prayer['isPassed'] ?? false;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: isNextPrayer ? const Color(0xFFF36F21) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient:
+            isNextPrayer
+                ? LinearGradient(
+                  colors: [const Color(0xFFF36F21), const Color(0xFFFF8C42)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+                : null,
+        color: isNextPrayer ? null : Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color:
+                isNextPrayer
+                    ? const Color(0xFFF36F21).withOpacity(0.3)
+                    : Colors.black.withOpacity(0.06),
+            blurRadius: isNextPrayer ? 16 : 12,
+            offset: Offset(0, isNextPrayer ? 6 : 3),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              prayer['name'],
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: isNextPrayer ? Colors.white : Colors.black87,
-              ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            // Optional: Add functionality like setting alarm
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                // Icon Container
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        isNextPrayer
+                            ? Colors.white.withOpacity(0.2)
+                            : isPassed
+                            ? Colors.grey[100]
+                            : const Color(0xFFF36F21).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    prayer['icon'] ?? Icons.access_time,
+                    color:
+                        isNextPrayer
+                            ? Colors.white
+                            : isPassed
+                            ? Colors.grey[400]
+                            : const Color(0xFFF36F21),
+                    size: 28,
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Prayer Name
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        prayer['name'] ?? '',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color:
+                              isNextPrayer
+                                  ? Colors.white
+                                  : isPassed
+                                  ? Colors.grey[600]
+                                  : Colors.black87,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      if (isNextPrayer) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Seterusnya',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                // Notification Icon
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color:
+                        isNextPrayer
+                            ? Colors.white.withOpacity(0.2)
+                            : isPassed
+                            ? Colors.grey[100]
+                            : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    isPassed
+                        ? Icons.notifications_off_outlined
+                        : Icons.notifications_outlined,
+                    color:
+                        isNextPrayer
+                            ? Colors.white
+                            : isPassed
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                    size: 20,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Time
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        isNextPrayer
+                            ? Colors.white.withOpacity(0.2)
+                            : isPassed
+                            ? Colors.grey[50]
+                            : const Color(0xFFFFF4E6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    prayer['time'] ?? '--:--',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color:
+                          isNextPrayer
+                              ? Colors.white
+                              : isPassed
+                              ? Colors.grey[600]
+                              : const Color(0xFFF36F21),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Icon(
-            prayer['isPassed']
-                ? Icons.notifications_off_outlined
-                : Icons.notifications_outlined,
-            color:
-                isNextPrayer
-                    ? Colors.white
-                    : (prayer['isPassed'] ? Colors.grey : Colors.black54),
-            size: 24,
-          ),
-          const SizedBox(width: 16),
-          Text(
-            prayer['time'],
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isNextPrayer ? Colors.white : Colors.black87,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

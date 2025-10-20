@@ -17,10 +17,12 @@ class OpenStreetMapLocationPicker extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _OpenStreetMapLocationPickerState createState() => _OpenStreetMapLocationPickerState();
+  _OpenStreetMapLocationPickerState createState() =>
+      _OpenStreetMapLocationPickerState();
 }
 
-class _OpenStreetMapLocationPickerState extends State<OpenStreetMapLocationPicker> {
+class _OpenStreetMapLocationPickerState
+    extends State<OpenStreetMapLocationPicker> {
   MapController mapController = MapController();
   LatLng? selectedLocation;
   String selectedAddress = 'Loading...';
@@ -34,7 +36,10 @@ class _OpenStreetMapLocationPickerState extends State<OpenStreetMapLocationPicke
 
   void _initializeLocation() async {
     if (widget.initialLatitude != null && widget.initialLongitude != null) {
-      selectedLocation = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+      selectedLocation = LatLng(
+        widget.initialLatitude!,
+        widget.initialLongitude!,
+      );
       _getAddressFromCoordinates(selectedLocation!);
     } else {
       // Try to get current location
@@ -65,13 +70,15 @@ class _OpenStreetMapLocationPickerState extends State<OpenStreetMapLocationPicke
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
         setState(() {
-          selectedAddress = '${place.locality}, ${place.administrativeArea}, ${place.country}';
+          selectedAddress =
+              '${place.locality}, ${place.administrativeArea}, ${place.country}';
           isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        selectedAddress = 'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}';
+        selectedAddress =
+            'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}';
         isLoading = false;
       });
     }
@@ -99,9 +106,9 @@ class _OpenStreetMapLocationPickerState extends State<OpenStreetMapLocationPicke
     try {
       Position position = await Geolocator.getCurrentPosition();
       LatLng currentLocation = LatLng(position.latitude, position.longitude);
-      
+
       mapController.move(currentLocation, 15.0);
-      
+
       setState(() {
         selectedLocation = currentLocation;
       });
@@ -116,126 +123,337 @@ class _OpenStreetMapLocationPickerState extends State<OpenStreetMapLocationPicke
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
-        title: const Text(
-          'Select Location',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location, color: Colors.white),
-            onPressed: _goToCurrentLocation,
-          ),
-        ],
-      ),
-      body: Column(
+      backgroundColor: Colors.white,
+      body: Stack(
         children: [
-          // Address display
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: const Color(0xFFF5F7F6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Selected Location:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32),
-                  ),
+          // Map
+          selectedLocation != null
+              ? FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  center: selectedLocation!,
+                  zoom: 15.0,
+                  onTap: _onMapTapped,
                 ),
-                const SizedBox(height: 4),
-                isLoading
-                    ? const Row(
-                        children: [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.waqaffelda_apk',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: selectedLocation!,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF36F21),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFF36F21,
+                                    ).withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            Container(
+                              width: 2,
+                              height: 20,
+                              color: const Color(0xFFF36F21),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+              : const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF36F21)),
+                ),
+              ),
+
+          // Top gradient overlay for better readability
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 180,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+
+          // Custom AppBar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Back button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                          SizedBox(width: 8),
-                          Text('Getting address...'),
                         ],
-                      )
-                    : Text(
-                        selectedAddress,
-                        style: const TextStyle(
-                          fontSize: 16,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Color(0xFF2E7D32),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    // Title
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'Pilih Lokasi',
+                        style: TextStyle(
+                          color: Color(0xFF2E7D32),
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                if (selectedLocation != null)
-                  Text(
-                    'Lat: ${selectedLocation!.latitude.toStringAsFixed(6)}, Lng: ${selectedLocation!.longitude.toStringAsFixed(6)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
                     ),
-                  ),
-              ],
+                    // Current location button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF36F21),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF36F21).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.my_location,
+                          color: Colors.white,
+                        ),
+                        onPressed: _goToCurrentLocation,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          
-          // Map
-          Expanded(
-            child: selectedLocation != null
-                ? FlutterMap(
-                    mapController: mapController,
-                    options: MapOptions(
-                      center: selectedLocation!,
-                      zoom: 15.0,
-                      onTap: _onMapTapped,
-                    ),
+
+          // Address card at bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.waqaffelda_apk',
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
                       ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: selectedLocation!,
+
+                      // Location icon and label
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF36F21).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: const Icon(
-                              Icons.location_pin,
-                              color: Colors.red,
-                              size: 40,
+                              Icons.location_on,
+                              color: Color(0xFFF36F21),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Lokasi Dipilih',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF757575),
                             ),
                           ),
                         ],
                       ),
+
+                      const SizedBox(height: 12),
+
+                      // Address
+                      isLoading
+                          ? Row(
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFFF36F21),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'Mendapatkan alamat...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF757575),
+                                ),
+                              ),
+                            ],
+                          )
+                          : Text(
+                            selectedAddress,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                              height: 1.4,
+                            ),
+                          ),
+
+                      const SizedBox(height: 8),
+
+                      // Coordinates
+                      if (selectedLocation != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${selectedLocation!.latitude.toStringAsFixed(6)}, ${selectedLocation!.longitude.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 24),
+
+                      // Confirm button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed:
+                              selectedLocation != null
+                                  ? _onConfirmLocation
+                                  : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF36F21),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                            shadowColor: const Color(
+                              0xFFF36F21,
+                            ).withOpacity(0.3),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle_outline, size: 24),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Sahkan Lokasi',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
-                  )
-                : const Center(
-                    child: CircularProgressIndicator(),
                   ),
-          ),
-          
-          // Confirm button
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: selectedLocation != null ? _onConfirmLocation : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Confirm Location',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),

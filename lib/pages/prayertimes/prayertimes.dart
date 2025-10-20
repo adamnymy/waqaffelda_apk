@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
 import '../../widgets/google_maps_location_picker.dart';
 import '../homepage/homepage.dart';
@@ -90,7 +91,27 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final monthName = malayMonths[now.month - 1];
 
     currentDate = '$dayName, ${now.day} $monthName ${now.year}';
-    hijriDate = "24 Rabiulawal 1447";
+
+    // Custom Hijri month names
+    const customHijriMonths = [
+      'Muharram',
+      'Safar',
+      "Rabi'ulawal",
+      "Rabi'ulakhir",
+      'Jamadilawwal',
+      'Jamadilakhir',
+      'Rejab',
+      'Sha’ban',
+      'Ramadan',
+      'Shawwal',
+      'Zulkaedah',
+      'Zulhijjah',
+    ];
+
+    // Calculate Hijri date using the hijri package
+    final hijriCalendar = HijriCalendar.now();
+    final hijriMonthName = customHijriMonths[hijriCalendar.hMonth - 1];
+    hijriDate = '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
   }
 
   Future<void> _loadPrayerTimes() async {
@@ -215,126 +236,390 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.7,
+            height: MediaQuery.of(context).size.height * 0.75,
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               children: [
+                // Header with gradient
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2E7D32),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20),
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFF36F21),
+                        const Color(0xFFFF8C42),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 24,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF36F21).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Pilih Lokasi',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pilih Lokasi',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Dapatkan waktu solat yang tepat',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
+
+                // Quick actions section
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ListTile(
-                        leading: const Icon(
-                          Icons.map,
-                          color: Color(0xFF2E7D32),
+                      const Text(
+                        'Akses Pantas',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.3,
                         ),
-                        title: const Text(
-                          'Pilih dari Peta',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          'Pilih mana-mana lokasi menggunakan Google Maps',
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _openGoogleMapsPicker();
-                        },
                       ),
-                      const Divider(),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.my_location,
-                          color: Color(0xFF2E7D32),
-                        ),
-                        title: const Text(
-                          'Gunakan Lokasi Semasa',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          'Dapatkan waktu solat untuk lokasi semasa anda',
-                        ),
-                        onTap: () {
-                          setState(() {
-                            selectedCity = null;
-                            selectedCoordinates = null;
-                            selectedLatitude = null;
-                            selectedLongitude = null;
-                            selectedLocationName = null;
-                          });
-                          Navigator.pop(context);
-                          _loadPrayerTimes();
-                        },
-                      ),
-                      const Divider(),
-                      ...malaysianCities
-                          .map(
-                            (city) => ListTile(
-                              leading: const Icon(
-                                Icons.location_city,
-                                color: Color(0xFF2E7D32),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              icon: Icons.my_location_rounded,
+                              title: 'Lokasi Semasa',
+                              subtitle: 'Gunakan GPS',
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              title: Text(
-                                city['name'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              subtitle: Text('${city['lat']}, ${city['lng']}'),
                               onTap: () {
                                 setState(() {
-                                  selectedCity = city['name'];
-                                  selectedCoordinates = {
-                                    'lat': city['lat'],
-                                    'lng': city['lng'],
-                                  };
+                                  selectedCity = null;
+                                  selectedCoordinates = null;
+                                  selectedLatitude = null;
+                                  selectedLongitude = null;
+                                  selectedLocationName = null;
                                 });
                                 Navigator.pop(context);
                                 _loadPrayerTimes();
                               },
                             ),
-                          )
-                          .toList(),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              icon: Icons.map_rounded,
+                              title: 'Pilih dari Peta',
+                              subtitle: 'Mana-mana lokasi',
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _openGoogleMapsPicker();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Cities list section
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+                        child: Text(
+                          'Bandar Popular',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 0,
+                          ),
+                          itemCount:
+                              malaysianCities.length -
+                              1, // Exclude "Gunakan Lokasi Semasa"
+                          itemBuilder: (context, index) {
+                            final city = malaysianCities[index];
+                            final isSelected = selectedCity == city['name'];
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(16),
+                                  onTap: () {
+                                    setState(() {
+                                      selectedCity = city['name'];
+                                      selectedCoordinates = {
+                                        'lat': city['lat'],
+                                        'lng': city['lng'],
+                                      };
+                                    });
+                                    Navigator.pop(context);
+                                    _loadPrayerTimes();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? const Color(
+                                                0xFFF36F21,
+                                              ).withOpacity(0.1)
+                                              : Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color:
+                                            isSelected
+                                                ? const Color(0xFFF36F21)
+                                                : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                isSelected
+                                                    ? const Color(0xFFF36F21)
+                                                    : Colors.grey[200],
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.location_city_rounded,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : Colors.grey[600],
+                                            size: 22,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                city['name'],
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w700,
+                                                  color:
+                                                      isSelected
+                                                          ? const Color(
+                                                            0xFFF36F21,
+                                                          )
+                                                          : Colors.black87,
+                                                  letterSpacing: 0.2,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                '${city['lat']}, ${city['lng']}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (isSelected)
+                                          Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF36F21),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: const Icon(
+                                              Icons.check_rounded,
+                                              color: Colors.white,
+                                              size: 18,
+                                            ),
+                                          )
+                                        else
+                                          Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: Colors.grey[400],
+                                            size: 16,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: gradient.colors.first.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 26),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -443,7 +728,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      height: 280,
+      height: 265, // height of pic
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/masjidnegara.jpg'),
@@ -504,11 +789,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   children: [
                     Text(
                       'Waktu solat seterusnya',
-                      style: TextStyle(
-                        color: Color(0xFF757575),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w400),
                     ),
                     const SizedBox(height: 6),
                     Row(

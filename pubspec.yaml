@@ -48,6 +48,7 @@ dependencies:
   hijri: ^3.0.0
   flutter_compass: ^0.8.0
   flutter_svg: ^1.1.6
+  adhan_dart: ^1.1.2
 
 dev_dependencies:
   flutter_test:

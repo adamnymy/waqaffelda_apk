@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../homepage/homepage.dart';
+import '../../utils/page_transitions.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
@@ -967,7 +968,7 @@ class _QuranPageState extends State<QuranPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const Homepage()),
+              SmoothPageRoute(page: const Homepage()),
               (route) => false,
             );
           },

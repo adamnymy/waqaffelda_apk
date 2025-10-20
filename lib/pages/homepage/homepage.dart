@@ -11,6 +11,7 @@ import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
 import '../quran/quranpage.dart';
 import '../kiblat/kiblat.dart';
+import '../../utils/page_transitions.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -107,45 +108,25 @@ class _HomepageState extends State<Homepage> {
       case 1:
         Navigator.pushReplacement(
           context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const ProgramPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
+          SmoothPageRoute(page: const ProgramPage()),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const WaqafPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
+          SmoothPageRoute(page: const WaqafPage()),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const InboxPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
+          SmoothPageRoute(page: const InboxPage()),
         );
         break;
       case 4:
         Navigator.pushReplacement(
           context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const AkaunPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
+          SmoothPageRoute(page: const AkaunPage()),
         );
         break;
     }
@@ -208,13 +189,7 @@ class _HomepageState extends State<Homepage> {
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      PageRouteBuilder(
-                        pageBuilder:
-                            (context, animation, secondaryAnimation) =>
-                                const PrayerTimesPage(),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero,
-                      ),
+                      SmoothPageRoute(page: const PrayerTimesPage()),
                     );
                   },
                   child: Container(
@@ -354,13 +329,7 @@ class _HomepageState extends State<Homepage> {
                       () {
                         Navigator.pushReplacement(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const PrayerTimesPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
+                          SmoothPageRoute(page: const PrayerTimesPage()),
                         );
                       },
                     ),
@@ -371,13 +340,7 @@ class _HomepageState extends State<Homepage> {
                       () {
                         Navigator.push(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const KiblatPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
+                          SmoothPageRoute(page: const KiblatPage()),
                         );
                       },
                     ),
@@ -388,13 +351,7 @@ class _HomepageState extends State<Homepage> {
                       () {
                         Navigator.pushReplacement(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const QuranPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
+                          SmoothPageRoute(page: const QuranPage()),
                         );
                       },
                     ),
@@ -405,9 +362,7 @@ class _HomepageState extends State<Homepage> {
                       () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const ZikirCounterPage(),
-                          ),
+                          SmoothPageRoute(page: const ZikirCounterPage()),
                         );
                       },
                     ),
@@ -443,13 +398,7 @@ class _HomepageState extends State<Homepage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const WaqafPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
+                          SmoothPageRoute(page: const WaqafPage()),
                         );
                       },
                       borderRadius: BorderRadius.circular(20),

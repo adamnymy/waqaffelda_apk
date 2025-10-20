@@ -4,6 +4,7 @@ import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
 import '../../widgets/google_maps_location_picker.dart';
 import '../homepage/homepage.dart';
+import '../../utils/page_transitions.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
@@ -686,7 +687,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const Homepage()),
+              SmoothPageRoute(page: const Homepage()),
               (route) => false, // Remove all previous routes
             );
           },

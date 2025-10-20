@@ -917,13 +917,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     prayer['name'] ?? '',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.bold,
                       color:
                           isNextPrayer
                               ? Colors.white
                               : isPassed
-                              ? Colors.grey[600]
-                              : Colors.black87,
+                              ? Colors.grey[500]
+                              : const Color(0xFFF36F21),
                       letterSpacing: 0.2,
                     ),
                   ),
@@ -931,117 +931,24 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     const SizedBox(height: 3),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'Seterusnya',
+                      child: Text(
+                        'Next Prayer',
                         style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                           color: Colors.white,
-                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
                   ],
                 ],
-              ),
-            ),
-
-            // Notification Icon Button
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              decoration: BoxDecoration(
-                color:
-                    isNextPrayer
-                        ? Colors.white.withOpacity(0.2)
-                        : isPassed
-                        ? Colors.grey[100]
-                        : (notificationStatus[prayer['name']] ?? true)
-                        ? const Color(0xFFF36F21).withOpacity(0.15)
-                        : Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color:
-                      isNextPrayer
-                          ? Colors.white.withOpacity(0.3)
-                          : (notificationStatus[prayer['name']] ?? true) &&
-                              !isPassed
-                          ? const Color(0xFFF36F21).withOpacity(0.3)
-                          : Colors.transparent,
-                  width: 1,
-                ),
-              ),
-              child: IconButton(
-                onPressed:
-                    isPassed
-                        ? null
-                        : () {
-                          setState(() {
-                            final prayerName = prayer['name'] as String?;
-                            if (prayerName != null &&
-                                notificationStatus.containsKey(prayerName)) {
-                              notificationStatus[prayerName] =
-                                  !notificationStatus[prayerName]!;
-
-                              // Show feedback snackbar
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Row(
-                                    children: [
-                                      Icon(
-                                        notificationStatus[prayerName]!
-                                            ? Icons.notifications_active
-                                            : Icons.notifications_off,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          notificationStatus[prayerName]!
-                                              ? 'Notifikasi $prayerName dihidupkan'
-                                              : 'Notifikasi $prayerName dimatikan',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  duration: const Duration(milliseconds: 1500),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor:
-                                      notificationStatus[prayerName]!
-                                          ? const Color(0xFF4CAF50)
-                                          : Colors.grey[700],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            }
-                          });
-                        },
-                icon: Icon(
-                  (notificationStatus[prayer['name']] ?? true)
-                      ? Icons.notifications
-                      : Icons.notifications_off,
-                  color:
-                      isNextPrayer
-                          ? Colors.white
-                          : isPassed
-                          ? Colors.grey[400]
-                          : (notificationStatus[prayer['name']] ?? true)
-                          ? const Color(0xFFF36F21)
-                          : Colors.grey[500],
-                  size: 18,
-                ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                splashRadius: 20,
               ),
             ),
 
@@ -1068,7 +975,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       isNextPrayer
                           ? Colors.white
                           : isPassed
-                          ? Colors.grey[600]
+                          ? Colors.grey[500]
                           : const Color(0xFFF36F21),
                   letterSpacing: 0.3,
                 ),

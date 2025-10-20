@@ -455,7 +455,12 @@ class PrayerTimesService {
       }
     }
     // If all prayers have passed, next prayer is Subuh of tomorrow
-    return {'name': 'Subuh', 'time': 'Esok'};
+    // Return the actual Subuh time instead of 'Esok'
+    final subuhPrayer = prayers.firstWhere(
+      (prayer) => prayer['name'] == 'Subuh',
+      orElse: () => {'name': 'Subuh', 'time': '--:--'},
+    );
+    return {'name': 'Subuh', 'time': subuhPrayer['time']};
   }
 
   // Get location name from coordinates (reverse geocoding)

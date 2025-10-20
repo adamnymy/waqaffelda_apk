@@ -21,6 +21,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   String currentDate = '';
   Map<String, String>? nextPrayer;
 
+  // Track notification status for each prayer
+  Map<String, bool> notificationStatus = {
+    'Subuh': true,
+    'Syuruk': true,
+    'Zohor': true,
+    'Asar': true,
+    'Maghrib': true,
+    'Isyak': true,
+  };
+
   String? selectedLocationName;
   double? selectedLatitude;
   double? selectedLongitude;
@@ -709,12 +719,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16.0,
-                        vertical: 16.0,
+                        vertical: 12.0,
                       ),
                       itemCount: prayerTimes.length,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
+                          padding: const EdgeInsets.only(bottom: 8.0),
                           child: _buildPrayerTimeCard(prayerTimes[index]),
                         );
                       },
@@ -728,7 +738,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      height: 265, // height of pic
+      height: 285, // Increased height to prevent overflow
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/masjidnegara.jpg'),
@@ -736,7 +746,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+        padding: const EdgeInsets.fromLTRB(24, 60, 24, 16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -761,24 +771,35 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             const SizedBox(height: 6),
             Text(
               currentDate,
-              style: const TextStyle(color: Colors.black, fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              locationName,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 16, // Increased font size
+                fontWeight: FontWeight.bold, // Made it bold for emphasis
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.location_on, color: Colors.black, size: 18),
+                const SizedBox(width: 4),
+                Text(
+                  locationName,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
             if (nextPrayer != null && nextPrayer!['time'] != null)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
-                  vertical: 14,
+                  vertical: 12,
                 ),
                 decoration: BoxDecoration(
                   color: Color(0xFFDEDEDE),
@@ -841,161 +862,215 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 )
                 : null,
         color: isNextPrayer ? null : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color:
                 isNextPrayer
                     ? const Color(0xFFF36F21).withOpacity(0.3)
                     : Colors.black.withOpacity(0.06),
-            blurRadius: isNextPrayer ? 16 : 12,
-            offset: Offset(0, isNextPrayer ? 6 : 3),
+            blurRadius: isNextPrayer ? 12 : 8,
+            offset: Offset(0, isNextPrayer ? 4 : 2),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            // Optional: Add functionality like setting alarm
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              children: [
-                // Icon Container
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        isNextPrayer
-                            ? Colors.white.withOpacity(0.2)
-                            : isPassed
-                            ? Colors.grey[100]
-                            : const Color(0xFFF36F21).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    prayer['icon'] ?? Icons.access_time,
-                    color:
-                        isNextPrayer
-                            ? Colors.white
-                            : isPassed
-                            ? Colors.grey[400]
-                            : const Color(0xFFF36F21),
-                    size: 28,
-                  ),
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+        child: Row(
+          children: [
+            // Icon Container
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color:
+                    isNextPrayer
+                        ? Colors.white.withOpacity(0.2)
+                        : isPassed
+                        ? Colors.grey[100]
+                        : const Color(0xFFF36F21).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                prayer['icon'] ?? Icons.access_time,
+                color:
+                    isNextPrayer
+                        ? Colors.white
+                        : isPassed
+                        ? Colors.grey[400]
+                        : const Color(0xFFF36F21),
+                size: 22,
+              ),
+            ),
 
-                const SizedBox(width: 16),
+            const SizedBox(width: 12),
 
-                // Prayer Name
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        prayer['name'] ?? '',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              isNextPrayer
-                                  ? Colors.white
-                                  : isPassed
-                                  ? Colors.grey[600]
-                                  : Colors.black87,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      if (isNextPrayer) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Seterusnya',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                // Notification Icon
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color:
-                        isNextPrayer
-                            ? Colors.white.withOpacity(0.2)
-                            : isPassed
-                            ? Colors.grey[100]
-                            : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    isPassed
-                        ? Icons.notifications_off_outlined
-                        : Icons.notifications_outlined,
-                    color:
-                        isNextPrayer
-                            ? Colors.white
-                            : isPassed
-                            ? Colors.grey[400]
-                            : Colors.grey[600],
-                    size: 20,
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // Time
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        isNextPrayer
-                            ? Colors.white.withOpacity(0.2)
-                            : isPassed
-                            ? Colors.grey[50]
-                            : const Color(0xFFFFF4E6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    prayer['time'] ?? '--:--',
+            // Prayer Name
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    prayer['name'] ?? '',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                       color:
                           isNextPrayer
                               ? Colors.white
                               : isPassed
                               ? Colors.grey[600]
-                              : const Color(0xFFF36F21),
-                      letterSpacing: 0.5,
+                              : Colors.black87,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                ),
-              ],
+                  if (isNextPrayer) ...[
+                    const SizedBox(height: 3),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Seterusnya',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
+
+            // Notification Icon Button
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                color:
+                    isNextPrayer
+                        ? Colors.white.withOpacity(0.2)
+                        : isPassed
+                        ? Colors.grey[100]
+                        : (notificationStatus[prayer['name']] ?? true)
+                        ? const Color(0xFFF36F21).withOpacity(0.15)
+                        : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      isNextPrayer
+                          ? Colors.white.withOpacity(0.3)
+                          : (notificationStatus[prayer['name']] ?? true) &&
+                              !isPassed
+                          ? const Color(0xFFF36F21).withOpacity(0.3)
+                          : Colors.transparent,
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                onPressed:
+                    isPassed
+                        ? null
+                        : () {
+                          setState(() {
+                            final prayerName = prayer['name'] as String?;
+                            if (prayerName != null &&
+                                notificationStatus.containsKey(prayerName)) {
+                              notificationStatus[prayerName] =
+                                  !notificationStatus[prayerName]!;
+
+                              // Show feedback snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      Icon(
+                                        notificationStatus[prayerName]!
+                                            ? Icons.notifications_active
+                                            : Icons.notifications_off,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          notificationStatus[prayerName]!
+                                              ? 'Notifikasi $prayerName dihidupkan'
+                                              : 'Notifikasi $prayerName dimatikan',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  duration: const Duration(milliseconds: 1500),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor:
+                                      notificationStatus[prayerName]!
+                                          ? const Color(0xFF4CAF50)
+                                          : Colors.grey[700],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            }
+                          });
+                        },
+                icon: Icon(
+                  (notificationStatus[prayer['name']] ?? true)
+                      ? Icons.notifications
+                      : Icons.notifications_off,
+                  color:
+                      isNextPrayer
+                          ? Colors.white
+                          : isPassed
+                          ? Colors.grey[400]
+                          : (notificationStatus[prayer['name']] ?? true)
+                          ? const Color(0xFFF36F21)
+                          : Colors.grey[500],
+                  size: 18,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                splashRadius: 20,
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // Time
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color:
+                    isNextPrayer
+                        ? Colors.white.withOpacity(0.2)
+                        : isPassed
+                        ? Colors.grey[50]
+                        : const Color(0xFFFFF4E6),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                prayer['time'] ?? '--:--',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color:
+                      isNextPrayer
+                          ? Colors.white
+                          : isPassed
+                          ? Colors.grey[600]
+                          : const Color(0xFFF36F21),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

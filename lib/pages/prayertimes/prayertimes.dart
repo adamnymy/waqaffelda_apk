@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../services/prayer_times_service.dart';
 import '../../widgets/google_maps_location_picker.dart';
-import '../../navbar.dart';
 import '../homepage/homepage.dart';
-import '../quran/quranpage.dart';
-import '../setting/settingpage.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
@@ -46,8 +43,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     {'name': 'Subang Jaya', 'lat': 3.1478, 'lng': 101.5867},
     {'name': 'Gunakan Lokasi Semasa', 'lat': null, 'lng': null},
   ];
-
-  int _currentIndex = 1;
 
   @override
   void initState() {
@@ -364,53 +359,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     }
   }
 
-  void _onTabTapped(int index) {
-    if (index == _currentIndex) return;
-
-    setState(() {
-      _currentIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const Homepage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        break;
-      case 1:
-        break;
-      case 2:
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const QuranPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        break;
-      case 3:
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) =>
-                    const SettingsPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -419,13 +367,23 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const Homepage()),
+              (route) => false, // Remove all previous routes
+            );
+          },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.location_on_outlined, color: Colors.white),
+            icon: const Icon(Icons.location_on_outlined, color: Colors.black),
             onPressed: _showLocationPicker,
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.black),
             onPressed: _loadPrayerTimes,
           ),
         ],
@@ -457,10 +415,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   ),
                 ],
               ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-      ),
     );
   }
 

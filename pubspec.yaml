@@ -75,6 +75,7 @@ flutter:
   assets:
     - assets\images\waqaf_felda_logo.png
     - assets\images\masjidnegara.jpg
+    - assets\icons\inbox\inbox.svg
 
 
     

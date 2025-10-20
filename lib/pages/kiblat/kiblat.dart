@@ -6,6 +6,7 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({Key? key}) : super(key: key);
@@ -20,9 +21,9 @@ class _KiblatPageState extends State<KiblatPage> {
   Position? _position;
   String? _error;
   bool _loadingLocation = true;
-  bool _locked = false; // lock/hold current direction
   bool _wasAligned = false; // for one-shot haptic/sound
-  double? _heldQAngle; // stored qibla angle when locked
+  String _locationName = 'Getting location...';
+  double? _distanceToKaaba; // in km
 
   static const double _kaabaLat = 21.4225; // Masjid al-Haram
   static const double _kaabaLon = 39.8262;
@@ -42,8 +43,6 @@ class _KiblatPageState extends State<KiblatPage> {
     _compassSub = FlutterCompass.events?.listen(
       (event) {
         if (!mounted) return;
-        // If locked, ignore live heading updates
-        if (_locked) return;
         final newHeading = event.heading; // may be null on some devices
         if (newHeading == null) return;
 
@@ -87,11 +86,57 @@ class _KiblatPageState extends State<KiblatPage> {
       _position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
       );
+
+      // Get location name
+      if (_position != null) {
+        _distanceToKaaba = _calculateDistance(
+          _position!.latitude,
+          _position!.longitude,
+          _kaabaLat,
+          _kaabaLon,
+        );
+
+        try {
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            _position!.latitude,
+            _position!.longitude,
+          );
+          if (placemarks.isNotEmpty) {
+            final place = placemarks.first;
+            _locationName =
+                place.locality ??
+                place.subAdministrativeArea ??
+                place.administrativeArea ??
+                'Unknown Location';
+          }
+        } catch (e) {
+          _locationName = 'Location Found';
+        }
+      }
     } catch (e) {
       _error = 'Location unavailable: $e';
     } finally {
       if (mounted) setState(() => _loadingLocation = false);
     }
+  }
+
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const double earthRadius = 6371; // km
+    final dLat = _degToRad(lat2 - lat1);
+    final dLon = _degToRad(lon2 - lon1);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_degToRad(lat1)) *
+            math.cos(_degToRad(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return earthRadius * c;
   }
 
   Future<void> _ensureLocationPermission() async {
@@ -108,37 +153,6 @@ class _KiblatPageState extends State<KiblatPage> {
         permission == LocationPermission.denied) {
       throw 'Location permission denied.';
     }
-  }
-
-  void _showCalibrateDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Calibrate Compass'),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('If the arrow seems inaccurate:'),
-                SizedBox(height: 8),
-                Text(
-                  '• Move your phone in a figure-8 motion for 10–15 seconds.',
-                ),
-                Text(
-                  '• Keep away from magnets/metal (laptops, speakers, cables).',
-                ),
-                Text('• Ensure Location and sensors are enabled.'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-    );
   }
 
   double? _bearingToKaabaDegrees() {
@@ -177,200 +191,447 @@ class _KiblatPageState extends State<KiblatPage> {
             ? (bearingToKaaba - heading + 360) % 360
             : null;
 
+    // Check if aligned (within 5 degrees)
+    final isAligned =
+        qiblaAngleDeg != null &&
+        ((qiblaAngleDeg.abs() <= 5) || ((360 - qiblaAngleDeg.abs()) <= 5));
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Qibla Direction'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-      ),
-      backgroundColor: const Color(0xFFF5F7F6),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 8),
-            _buildStatusRow(bearingToKaaba, heading),
-            const SizedBox(height: 24),
-            // Lock/Calibrate controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _locked ? const Color(0xFF2E7D32) : Colors.white,
-                    foregroundColor:
-                        _locked ? Colors.white : const Color(0xFF2E7D32),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _locked = !_locked;
-                      if (_locked) {
-                        // store current qibla angle to hold
-                        _heldQAngle = qiblaAngleDeg;
-                      } else {
-                        _heldQAngle = null;
-                      }
-                    });
-                  },
-                  icon: Icon(_locked ? Icons.lock : Icons.lock_open),
-                  label: Text(_locked ? 'Locked' : 'Lock'),
+      backgroundColor: const Color(0xFFF8FAF9),
+      body:
+          _loadingLocation
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(color: Colors.teal),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Mendapatkan lokasi...',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: _showCalibrateDialog,
-                  icon: const Icon(Icons.tune, color: Color(0xFF2E7D32)),
-                  label: const Text(
-                    'Calibrate Compass',
-                    style: TextStyle(color: Color(0xFF2E7D32)),
+              )
+              : _error != null
+              ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.location_off,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Lokasi Tidak Tersedia',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _error!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _loadingLocation = true;
+                            _error = null;
+                          });
+                          _init();
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Cuba Lagi'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Center(
-                child: _buildCompass(_locked ? _heldQAngle : qiblaAngleDeg),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Status chips for quick clarity
-            if (bearingToKaaba != null) ...[
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
+              )
+              : Column(
                 children: [
-                  Chip(
-                    backgroundColor: const Color(0xFF2E7D32).withOpacity(0.08),
-                    label: Text(
-                      'Qibla ${bearingToKaaba.toStringAsFixed(0)}°',
-                      style: const TextStyle(
-                        color: Color(0xFF2E7D32),
-                        fontWeight: FontWeight.w600,
+                  // Simple App Bar
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.only(
+                      top: 40,
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.black87,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Arah Kiblat',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48), // Balance the back button
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          // Location Card with Gradient
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.orange[50]!,
+                                  const Color(0xFFFFF4E6),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange[100],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.location_on,
+                                    color: Colors.orange[700],
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Lokasi Semasa',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _locationName,
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange[800],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Status Badge
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isAligned
+                                      ? Colors.green[50]
+                                      : Colors.blue[50],
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color:
+                                    isAligned
+                                        ? Colors.green[300]!
+                                        : Colors.blue[300]!,
+                                width: 2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isAligned
+                                      ? Icons.check_circle
+                                      : Icons.explore,
+                                  color:
+                                      isAligned
+                                          ? Colors.green[700]
+                                          : Colors.blue[700],
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isAligned
+                                      ? 'Tepat ke Kiblat ✓'
+                                      : 'Teruskan Memusingkan',
+                                  style: TextStyle(
+                                    color:
+                                        isAligned
+                                            ? Colors.green[700]
+                                            : Colors.blue[700],
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Compass with Glow Effect
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      isAligned
+                                          ? Colors.green.withOpacity(0.3)
+                                          : Colors.teal.withOpacity(0.2),
+                                  blurRadius: 30,
+                                  spreadRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: _buildCompass(qiblaAngleDeg),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Angle Display with Card
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.compass_calibration,
+                                  color: Colors.teal[600],
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  qiblaAngleDeg == null
+                                      ? '--°'
+                                      : '${qiblaAngleDeg.toStringAsFixed(0)}°',
+                                  style: TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Distance Card
+                          if (_distanceToKaaba != null)
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.teal[50],
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.teal[200]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.route,
+                                    color: Colors.teal[700],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Jarak ke Kaabah: ',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.teal[700],
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_distanceToKaaba!.toStringAsFixed(0)} km',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.teal[900],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          const SizedBox(height: 32),
+
+                          // Calibration Card
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.amber[50]!,
+                                  const Color(0xFFFFF4E6),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amber.withOpacity(0.1),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber[100],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.tips_and_updates,
+                                    color: Colors.amber[800],
+                                    size: 28,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Kalibrasi Kompas',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.amber[900],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Gerakkan telefon dalam bentuk 8/∞',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+                        ],
                       ),
                     ),
                   ),
-                  if (qiblaAngleDeg != null)
-                    Builder(
-                      builder: (context) {
-                        final off = qiblaAngleDeg.abs();
-                        final aligned = off <= 5 || (360 - off) <= 5;
-                        return Chip(
-                          backgroundColor:
-                              aligned
-                                  ? const Color(0xFF4CAF50).withOpacity(0.15)
-                                  : const Color(0xFFF36F21).withOpacity(0.12),
-                          label: Text(
-                            aligned
-                                ? 'Aligned for Salah'
-                                : 'Off by ${off <= 180 ? off.toStringAsFixed(0) : (360 - off).toStringAsFixed(0)}°',
-                            style: TextStyle(
-                              color:
-                                  aligned
-                                      ? const Color(0xFF2E7D32)
-                                      : const Color(0xFFF36F21),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                 ],
               ),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              qiblaAngleDeg == null
-                  ? 'Align the top of your phone with the arrow to face the Qibla.'
-                  : 'Turn your device until the arrow points straight up (12 o’clock).',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusRow(double? bearingToKaaba, double? heading) {
-    if (_loadingLocation) {
-      return const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          SizedBox(width: 8),
-          Text('Getting location...'),
-        ],
-      );
-    }
-    if (_error != null) {
-      return Text(_error!, style: const TextStyle(color: Colors.red));
-    }
-    if (bearingToKaaba == null) {
-      return const Text('Unable to compute Qibla (no location).');
-    }
-    if (heading == null) {
-      return const Text('Compass not available on this device.');
-    }
-    return Column(
-      children: [
-        Text('Qibla bearing: ${bearingToKaaba.toStringAsFixed(0)}°'),
-        Text('Heading: ${heading.toStringAsFixed(0)}°'),
-      ],
     );
   }
 
   Widget _buildCompass(double? qiblaAngleDeg) {
-    final size = 300.0;
+    final size = 280.0;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF5F9F7),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: CustomPaint(
-        painter: CompassPainter(qiblaAngleDeg: qiblaAngleDeg),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.navigation,
-                size: 56,
-                color:
-                    qiblaAngleDeg == null
-                        ? Colors.grey
-                        : const Color(0xFFF36F21),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                qiblaAngleDeg == null
-                    ? '--°'
-                    : '${qiblaAngleDeg.toStringAsFixed(0)}°',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2E7D32),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: CustomPaint(painter: CompassPainter(qiblaAngleDeg: qiblaAngleDeg)),
     );
   }
 }
@@ -382,146 +643,144 @@ class CompassPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 10;
-    final bool isAligned = () {
-      if (qiblaAngleDeg == null) return false;
-      final off = qiblaAngleDeg!.abs();
-      final delta = off <= 180 ? off : (360 - off);
-      return delta <= 5; // within 5 degrees
-    }();
+    final radius = size.width / 2 - 15;
 
-    // Outer soft gradient ring
-    final outerPaint =
-        Paint()
-          ..shader = const RadialGradient(
-            colors: [Color(0xFFEFF5F1), Colors.white],
-            radius: 0.9,
-          ).createShader(Rect.fromCircle(center: center, radius: radius));
-    canvas.drawCircle(center, radius, outerPaint);
-
-    // Outer border
+    // Outer border - green
     final borderPaint =
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..color =
-              isAligned
-                  ? const Color(0xFF4CAF50).withOpacity(0.6)
-                  : const Color(0xFF2E7D32).withOpacity(0.25);
+          ..strokeWidth = 2.5
+          ..color = Colors.green[600]!;
     canvas.drawCircle(center, radius, borderPaint);
 
-    // Tick marks every 10°, thicker every 30°
+    // Tick marks
     final tickPaint =
         Paint()
           ..strokeCap = StrokeCap.round
-          ..color = const Color(0xFF2E7D32).withOpacity(0.45);
-    final innerTickR = radius - 12;
-    final outerTickR = radius - 2;
-    final innerThickR = radius - 18;
+          ..color = Colors.grey[400]!;
+
+    for (int d = 0; d < 360; d += 30) {
+      final rad = (d - 90) * math.pi / 180;
+      final innerR = radius - 15;
+      final outerR = radius - 5;
+
+      final p1 = Offset(
+        center.dx + innerR * math.cos(rad),
+        center.dy + innerR * math.sin(rad),
+      );
+      final p2 = Offset(
+        center.dx + outerR * math.cos(rad),
+        center.dy + outerR * math.sin(rad),
+      );
+      tickPaint.strokeWidth = 2;
+      canvas.drawLine(p1, p2, tickPaint);
+    }
+
+    // Cardinal labels
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     );
 
-    for (int d = 0; d < 360; d += 10) {
-      final rad = (d - 90) * math.pi / 180; // rotate so 0° is at top
-      final isThick = d % 30 == 0;
-      final p1 = Offset(
-        center.dx + (isThick ? innerThickR : innerTickR) * math.cos(rad),
-        center.dy + (isThick ? innerThickR : innerTickR) * math.sin(rad),
+    for (int d = 0; d < 360; d += 90) {
+      final rad = (d - 90) * math.pi / 180;
+      final label =
+          d == 0
+              ? 'N'
+              : d == 90
+              ? 'E'
+              : d == 180
+              ? 'S'
+              : 'W';
+      final labelOffset = Offset(
+        center.dx + (radius - 30) * math.cos(rad),
+        center.dy + (radius - 30) * math.sin(rad),
       );
-      final p2 = Offset(
-        center.dx + outerTickR * math.cos(rad),
-        center.dy + outerTickR * math.sin(rad),
+      textPainter.text = TextSpan(
+        text: label,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey,
+        ),
       );
-      tickPaint.strokeWidth = isThick ? 2.6 : 1.2;
-      canvas.drawLine(p1, p2, tickPaint);
-
-      // Cardinal labels at 0/90/180/270
-      if (d % 90 == 0) {
-        final label =
-            d == 0
-                ? 'N'
-                : d == 90
-                ? 'E'
-                : d == 180
-                ? 'S'
-                : 'W';
-        final labelOffset = Offset(
-          center.dx + (innerThickR - 16) * math.cos(rad),
-          center.dy + (innerThickR - 16) * math.sin(rad),
-        );
-        textPainter.text = TextSpan(
-          text: label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: Colors.grey,
-          ),
-        );
-        textPainter.layout();
-        canvas.save();
-        canvas.translate(
-          labelOffset.dx - textPainter.width / 2,
-          labelOffset.dy - textPainter.height / 2,
-        );
-        textPainter.paint(canvas, Offset.zero);
-        canvas.restore();
-      }
+      textPainter.layout();
+      canvas.save();
+      canvas.translate(
+        labelOffset.dx - textPainter.width / 2,
+        labelOffset.dy - textPainter.height / 2,
+      );
+      textPainter.paint(canvas, Offset.zero);
+      canvas.restore();
     }
 
-    // Top target marker (12 o'clock) to indicate where to align the arrow
-    final topAngle = (-90) * math.pi / 180;
-    final targetOuter = Offset(
-      center.dx + (radius - 2) * math.cos(topAngle),
-      center.dy + (radius - 2) * math.sin(topAngle),
+    // QIBLA label at top
+    final qiblaLabel = TextPainter(
+      text: const TextSpan(
+        text: 'QIBLA',
+        style: TextStyle(
+          color: Colors.orange,
+          fontWeight: FontWeight.w700,
+          fontSize: 10,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
     );
-    final targetInner = Offset(
-      center.dx + (radius - 24) * math.cos(topAngle),
-      center.dy + (radius - 24) * math.sin(topAngle),
+    qiblaLabel.layout();
+    qiblaLabel.paint(
+      canvas,
+      Offset(center.dx - qiblaLabel.width / 2, center.dy - radius + 20),
     );
-    final targetPaint =
-        Paint()
-          ..color = const Color(0xFF4CAF50)
-          ..strokeWidth = 4
-          ..strokeCap = StrokeCap.round;
-    canvas.drawLine(targetInner, targetOuter, targetPaint);
 
-    // Qibla arrow (drawn on the face for context)
+    // Qibla arrow
     if (qiblaAngleDeg != null) {
-      final angle = (qiblaAngleDeg! - 90) * math.pi / 180; // align with painter
-      final arrowLength = radius - 34;
+      final angle = (qiblaAngleDeg! - 90) * math.pi / 180;
+      final arrowLength = radius - 50;
+
+      // Arrow body
+      final arrowPaint =
+          Paint()
+            ..color = Colors.orange[700]!
+            ..style = PaintingStyle.fill;
+
       final arrowHead = Offset(
         center.dx + arrowLength * math.cos(angle),
         center.dy + arrowLength * math.sin(angle),
       );
 
-      final arrowPaint =
-          Paint()
-            ..color = const Color(0xFFF36F21)
-            ..style = PaintingStyle.fill;
+      // Draw arrow shaft
+      final shaftWidth = 8.0;
+      final shaftLength = arrowLength - 20;
 
+      final shaftStart = Offset(
+        center.dx - shaftLength * 0.3 * math.cos(angle),
+        center.dy - shaftLength * 0.3 * math.sin(angle),
+      );
+
+      final shaftEnd = Offset(
+        center.dx + (arrowLength - 25) * math.cos(angle),
+        center.dy + (arrowLength - 25) * math.sin(angle),
+      );
+
+      // Draw shaft as thick line
       final shaftPaint =
           Paint()
-            ..color = const Color(0xFFF36F21).withOpacity(0.7)
-            ..strokeWidth = 4
+            ..color = Colors.orange[700]!
+            ..strokeWidth = shaftWidth
             ..strokeCap = StrokeCap.round;
 
-      // Shaft
-      final shaftTail = Offset(
-        center.dx + (arrowLength - 40) * math.cos(angle),
-        center.dy + (arrowLength - 40) * math.sin(angle),
-      );
-      canvas.drawLine(shaftTail, arrowHead, shaftPaint);
+      canvas.drawLine(shaftStart, shaftEnd, shaftPaint);
 
-      // Arrow head triangle
+      // Arrow head (triangle)
+      final headSize = 20.0;
       final left = Offset(
-        arrowHead.dx + 10 * math.cos(angle + math.pi * 0.75),
-        arrowHead.dy + 10 * math.sin(angle + math.pi * 0.75),
+        arrowHead.dx + headSize * math.cos(angle + math.pi * 0.75),
+        arrowHead.dy + headSize * math.sin(angle + math.pi * 0.75),
       );
       final right = Offset(
-        arrowHead.dx + 10 * math.cos(angle - math.pi * 0.75),
-        arrowHead.dy + 10 * math.sin(angle - math.pi * 0.75),
+        arrowHead.dx + headSize * math.cos(angle - math.pi * 0.75),
+        arrowHead.dy + headSize * math.sin(angle - math.pi * 0.75),
       );
       final path =
           Path()
@@ -530,48 +789,76 @@ class CompassPainter extends CustomPainter {
             ..lineTo(right.dx, right.dy)
             ..close();
       canvas.drawPath(path, arrowPaint);
-
-      // 'QIBLA' label near arrow head for clarity
-      final labelOffset = Offset(
-        arrowHead.dx + 12 * math.cos(angle),
-        arrowHead.dy + 12 * math.sin(angle),
-      );
-      final tp = TextPainter(
-        text: const TextSpan(
-          text: 'QIBLA',
-          style: TextStyle(
-            color: Color(0xFFF36F21),
-            fontWeight: FontWeight.w800,
-            fontSize: 12,
-          ),
-        ),
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      final bgRect = RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: labelOffset,
-          width: tp.width + 12,
-          height: tp.height + 6,
-        ),
-        const Radius.circular(8),
-      );
-      final bgPaint = Paint()..color = Colors.white.withOpacity(0.9);
-      canvas.drawRRect(bgRect, bgPaint);
-      tp.paint(
-        canvas,
-        Offset(labelOffset.dx - tp.width / 2, labelOffset.dy - tp.height / 2),
-      );
     }
 
-    // Center hub
-    final hub = Paint()..color = const Color(0xFF2E7D32).withOpacity(0.2);
-    canvas.drawCircle(center, 6, hub);
+    // Center dot
+    final centerPaint = Paint()..color = Colors.grey[300]!;
+    canvas.drawCircle(center, 5, centerPaint);
   }
 
   @override
   bool shouldRepaint(covariant CompassPainter oldDelegate) {
     return oldDelegate.qiblaAngleDeg != qiblaAngleDeg;
   }
+}
+
+class KaabaIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    // Scale factor to fit the icon
+    final scale = size.width / 40;
+
+    // Main Kaaba body (dark gray rectangle)
+    paint.color = const Color(0xFF3F3F3F);
+    canvas.drawRect(Rect.fromLTWH(2 * scale, 0, 36 * scale, 36 * scale), paint);
+
+    // Golden band
+    paint.color = const Color(0xFFF1B31C);
+    canvas.drawRect(
+      Rect.fromLTWH(2 * scale, 7 * scale, 36 * scale, 4 * scale),
+      paint,
+    );
+
+    // Door (light gray)
+    paint.color = const Color(0xFF9B9B9A);
+    canvas.drawRect(
+      Rect.fromLTWH(8 * scale, 28 * scale, 5 * scale, 8 * scale),
+      paint,
+    );
+
+    // Golden decorative elements
+    paint.color = const Color(0xFFF1B31C);
+
+    // Left circle
+    canvas.drawCircle(Offset(11 * scale, 18 * scale), 2 * scale, paint);
+
+    // Right circle
+    canvas.drawCircle(Offset(30 * scale, 18 * scale), 2 * scale, paint);
+
+    // Center diamond/star
+    final path = Path();
+    path.moveTo(20 * scale, 15 * scale);
+    path.lineTo(18 * scale, 18 * scale);
+    path.lineTo(20 * scale, 21 * scale);
+    path.lineTo(22 * scale, 18 * scale);
+    path.close();
+    canvas.drawPath(path, paint);
+
+    // Outline stroke
+    final strokePaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = Colors.white;
+
+    canvas.drawRect(
+      Rect.fromLTWH(2 * scale, 0, 36 * scale, 36 * scale),
+      strokePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

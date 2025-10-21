@@ -48,7 +48,7 @@ class _BottomNavBarState extends State<BottomNavBar>
         ).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 50.0,
       ),
-    ]).animate(_scaleController);
+    ]).animate(_scaleC~ontroller);
   }
 
   @override

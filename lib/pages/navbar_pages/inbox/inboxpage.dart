@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../navbar.dart';
-import '../homepage/homepage.dart';
-import '../program/programpage.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+// flutter_svg removed; using PNG mailbox image instead
+import '../../../navbar.dart';
+import '../../homepage/homepage.dart';
+import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
-import '../inbox/inboxpage.dart';
+import '../akaun/akaunpage.dart';
 
-class AkaunPage extends StatefulWidget {
-  const AkaunPage({Key? key}) : super(key: key);
+class InboxPage extends StatefulWidget {
+  const InboxPage({Key? key}) : super(key: key);
 
   @override
-  _AkaunPageState createState() => _AkaunPageState();
+  _InboxPageState createState() => _InboxPageState();
 }
 
-class _AkaunPageState extends State<AkaunPage> {
-  int _currentIndex = 4;
+class _InboxPageState extends State<InboxPage> {
+  int _currentIndex = 3;
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
@@ -57,17 +59,17 @@ class _AkaunPageState extends State<AkaunPage> {
         );
         break;
       case 3:
+        break;
+      case 4:
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder:
-                (context, animation, secondaryAnimation) => const InboxPage(),
+                (context, animation, secondaryAnimation) => const AkaunPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
         );
-        break;
-      case 4:
         break;
     }
   }
@@ -78,7 +80,7 @@ class _AkaunPageState extends State<AkaunPage> {
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text(
-          'Akaun',
+          'Inbox',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -88,10 +90,21 @@ class _AkaunPageState extends State<AkaunPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_rounded, size: 80, color: Colors.grey[400]),
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                const Color.fromARGB(255, 174, 179, 174),
+                BlendMode.srcIn,
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/inbox/inbox.svg',
+                height: 120,
+                width: 120,
+                fit: BoxFit.contain,
+              ),
+            ),
             const SizedBox(height: 20),
             Text(
-              'Akaun',
+              'Inbox',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

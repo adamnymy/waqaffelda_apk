@@ -426,7 +426,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                 Text(
                                   isAligned
                                       ? 'Tepat ke Kiblat ✓'
-                                      : 'Teruskan Memusingkan',
+                                      : 'Pusingkan peranti anda',
                                   style: TextStyle(
                                     color:
                                         isAligned

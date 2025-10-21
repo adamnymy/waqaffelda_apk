@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-// flutter_svg removed; using PNG mailbox image instead
-import '../../navbar.dart';
-import '../homepage/homepage.dart';
-import '../program/programpage.dart';
-import '../waqaf/waqafpage.dart';
+import '../../../navbar.dart';
+import '../../homepage/homepage.dart';
+import '../program/program_page.dart';
+import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
 
-class InboxPage extends StatefulWidget {
-  const InboxPage({Key? key}) : super(key: key);
+class WaqafPage extends StatefulWidget {
+  const WaqafPage({Key? key}) : super(key: key);
 
   @override
-  _InboxPageState createState() => _InboxPageState();
+  _WaqafPageState createState() => _WaqafPageState();
 }
 
-class _InboxPageState extends State<InboxPage> {
-  int _currentIndex = 3;
+class _WaqafPageState extends State<WaqafPage> {
+  int _currentIndex = 2;
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
@@ -48,17 +46,17 @@ class _InboxPageState extends State<InboxPage> {
         );
         break;
       case 2:
+        break;
+      case 3:
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder:
-                (context, animation, secondaryAnimation) => const WaqafPage(),
+                (context, animation, secondaryAnimation) => const InboxPage(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
         );
-        break;
-      case 3:
         break;
       case 4:
         Navigator.pushReplacement(
@@ -80,7 +78,7 @@ class _InboxPageState extends State<InboxPage> {
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text(
-          'Inbox',
+          'Waqaf Saya',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -90,21 +88,14 @@ class _InboxPageState extends State<InboxPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                const Color.fromARGB(255, 174, 179, 174),
-                BlendMode.srcIn,
-              ),
-              child: SvgPicture.asset(
-                'assets/icons/inbox/inbox.svg',
-                height: 120,
-                width: 120,
-                fit: BoxFit.contain,
-              ),
+            Icon(
+              Icons.volunteer_activism_rounded,
+              size: 80,
+              color: Colors.grey[400],
             ),
             const SizedBox(height: 20),
             Text(
-              'Inbox',
+              'Waqaf Saya',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

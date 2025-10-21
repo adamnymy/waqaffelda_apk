@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../navbar.dart';
-import '../homepage/homepage.dart';
+import '../../../navbar.dart';
+import '../../homepage/homepage.dart';
+import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
 import '../inbox/inboxpage.dart';
-import '../akaun/akaunpage.dart';
 
-class ProgramPage extends StatefulWidget {
-  const ProgramPage({Key? key}) : super(key: key);
+class AkaunPage extends StatefulWidget {
+  const AkaunPage({Key? key}) : super(key: key);
 
   @override
-  _ProgramPageState createState() => _ProgramPageState();
+  _AkaunPageState createState() => _AkaunPageState();
 }
 
-class _ProgramPageState extends State<ProgramPage> {
-  int _currentIndex = 1;
+class _AkaunPageState extends State<AkaunPage> {
+  int _currentIndex = 4;
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
@@ -35,6 +35,15 @@ class _ProgramPageState extends State<ProgramPage> {
         );
         break;
       case 1:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const ProgramPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
         break;
       case 2:
         Navigator.pushReplacement(
@@ -59,15 +68,6 @@ class _ProgramPageState extends State<ProgramPage> {
         );
         break;
       case 4:
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => const AkaunPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
         break;
     }
   }
@@ -78,7 +78,7 @@ class _ProgramPageState extends State<ProgramPage> {
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text(
-          'Program',
+          'Akaun',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -88,14 +88,10 @@ class _ProgramPageState extends State<ProgramPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_today_rounded,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.person_rounded, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 20),
             Text(
-              'Halaman Program',
+              'Akaun',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

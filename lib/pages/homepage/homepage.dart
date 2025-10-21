@@ -173,7 +173,7 @@ class _HomepageState extends State<Homepage> {
                           .start, // Adjusted alignment to remove space for the notification icon
                   children: [
                     Image.asset(
-                      'assets/images/waqaf_felda_logo.png',
+                      'assets/images/LogoWaqafer.png',
                       height: 35,
                     ),
                   ],

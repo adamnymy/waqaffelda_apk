@@ -84,8 +84,8 @@ class _SplashScreenState extends State<SplashScreen>
             return FadeTransition(
               opacity: _fadeAnimation,
               child: Image.asset(
-                'assets/images/waqaf_felda_logo.png',
-                height: 120,
+                'assets/images/LogoWaqafer.png',
+                height: 50,
               ),
             );
           },

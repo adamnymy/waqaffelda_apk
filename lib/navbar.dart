@@ -15,8 +15,8 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+    with TickerProviderStateMixin {
+  late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
   int _previousIndex = 0;
 
@@ -24,13 +24,28 @@ class _BottomNavBarState extends State<BottomNavBar>
   void initState() {
     super.initState();
     _previousIndex = widget.currentIndex;
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+
+    // Scale animation for icon bounce
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.3,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 50.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.3,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 50.0,
+      ),
+    ]).animate(_scaleController);
   }
 
   @override
@@ -38,15 +53,13 @@ class _BottomNavBarState extends State<BottomNavBar>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentIndex != widget.currentIndex) {
       _previousIndex = oldWidget.currentIndex;
-      _animationController.forward().then((_) {
-        _animationController.reverse();
-      });
+      _scaleController.forward(from: 0);
     }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
@@ -57,16 +70,16 @@ class _BottomNavBarState extends State<BottomNavBar>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: SafeArea(
-        child: Container(
-          height: 65,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -88,68 +101,121 @@ class _BottomNavBarState extends State<BottomNavBar>
         index == widget.currentIndex && _previousIndex != index;
 
     return Expanded(
-      child: GestureDetector(
-        onTap: () => widget.onTap(index),
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          decoration: BoxDecoration(
-            color:
-                isSelected
-                    ? const Color(0xFFF36F21).withOpacity(0.1)
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: shouldAnimate ? _scaleAnimation.value : 1.0,
-                    child: AnimatedContainer(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => widget.onTap(index),
+          borderRadius: BorderRadius.circular(16),
+          splashColor: const Color(0xFFF36F21).withOpacity(0.1),
+          highlightColor: const Color(0xFFF36F21).withOpacity(0.05),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icon Container with Animation
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Active Background Circle
+                    AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.all(5),
+                      curve: Curves.easeInOutCubic,
+                      width: isSelected ? 46 : 0,
+                      height: isSelected ? 46 : 0,
                       decoration: BoxDecoration(
-                        color:
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors:
+                              isSelected
+                                  ? [
+                                    const Color(0xFFF36F21),
+                                    const Color(0xFFFF8C42),
+                                  ]
+                                  : [Colors.transparent, Colors.transparent],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow:
                             isSelected
-                                ? const Color(0xFFF36F21)
-                                : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        icon,
-                        size: isSelected ? 22 : 20,
-                        color: isSelected ? Colors.white : Colors.grey[600],
+                                ? [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFF36F21,
+                                    ).withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                                : [],
                       ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 2),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                style: TextStyle(
-                  fontSize: isSelected ? 9 : 8.5,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color:
-                      isSelected ? const Color(0xFFF36F21) : Colors.grey[600],
-                  height: 1.1,
+                    // Icon with Scale Animation
+                    AnimatedBuilder(
+                      animation: _scaleController,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: shouldAnimate ? _scaleAnimation.value : 1.0,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOutCubic,
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              icon,
+                              size: isSelected ? 24 : 22,
+                              color:
+                                  isSelected ? Colors.white : Colors.grey[500],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 3),
+                // Label with Fade and Scale
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  style: TextStyle(
+                    fontSize: isSelected ? 10 : 9.5,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color:
+                        isSelected ? const Color(0xFFF36F21) : Colors.grey[600],
+                    height: 1.1,
+                    letterSpacing: isSelected ? 0.2 : 0,
+                  ),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: isSelected ? 1.0 : 0.7,
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                // Active Indicator Dot
+                const SizedBox(height: 1),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  width: isSelected ? 4 : 0,
+                  height: isSelected ? 4 : 0,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFF36F21),
+                        const Color(0xFFFF8C42),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

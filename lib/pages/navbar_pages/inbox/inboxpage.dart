@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// flutter_svg removed; using PNG mailbox image instead
+
 import '../../../navbar.dart';
 import '../../homepage/homepage.dart';
 import '../program/program_page.dart';

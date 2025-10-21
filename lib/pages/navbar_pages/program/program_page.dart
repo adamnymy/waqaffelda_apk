@@ -114,72 +114,17 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text(
+          'Program',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: CustomScrollView(
         slivers: [
-          // Custom App Bar with gradient
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            backgroundColor: const Color(0xFFF36F21),
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Aktiviti Waqaf FELDA',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [const Color(0xFFF36F21), const Color(0xFFFF8C42)],
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Decorative circles
-                    Positioned(
-                      top: -50,
-                      right: -50,
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -30,
-                      left: -30,
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
-                        ),
-                      ),
-                    ),
-                    // Icon
-                    Center(
-                      child: Icon(
-                        Icons.event_note_rounded,
-                        size: 80,
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
           // Header Section
           SliverToBoxAdapter(
             child: Padding(

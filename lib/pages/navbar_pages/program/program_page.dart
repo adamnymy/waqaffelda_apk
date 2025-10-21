@@ -14,6 +14,7 @@ class ProgramPage extends StatefulWidget {
 
 class _ProgramPageState extends State<ProgramPage> {
   int _currentIndex = 1;
+  final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> programs = [
     {
       'title': 'KEMPEN',
@@ -111,6 +112,12 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -124,6 +131,7 @@ class _ProgramPageState extends State<ProgramPage> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           // Header Section
           SliverToBoxAdapter(
@@ -256,6 +264,7 @@ class _ProgramPageState extends State<ProgramPage> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        scrollController: _scrollController,
       ),
     );
   }

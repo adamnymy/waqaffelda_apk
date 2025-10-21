@@ -22,6 +22,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
+  final ScrollController _scrollController = ScrollController();
   String _nextPrayerText = 'Loading...';
   String _currentTime = '';
   Timer? _timer;
@@ -37,6 +38,7 @@ class _HomepageState extends State<Homepage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -158,6 +160,7 @@ class _HomepageState extends State<Homepage> {
       backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -578,6 +581,7 @@ class _HomepageState extends State<Homepage> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        scrollController: _scrollController,
       ),
     );
   }

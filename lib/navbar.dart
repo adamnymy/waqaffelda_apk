@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final ScrollController? scrollController;
 
   const BottomNavBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    this.scrollController,
   }) : super(key: key);
 
   @override

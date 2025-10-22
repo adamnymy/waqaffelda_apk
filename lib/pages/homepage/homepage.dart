@@ -164,10 +164,7 @@ class _HomepageState extends State<Homepage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Step 2: New Header
-              _buildHeader(),
-
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Step 3: Main Carousel
               _buildMainCarousel(),
@@ -184,8 +181,8 @@ class _HomepageState extends State<Homepage> {
 
               const SizedBox(height: 24),
 
-              // Step 6: Second Banner
-              _buildSecondaryBanner(),
+              // Step 6: Ayat Hari Ini
+              _buildAyatHariIni(),
 
               const SizedBox(height: 24),
             ],
@@ -200,199 +197,72 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  // Placeholder widgets for the new structure
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildMainCarousel() {
+    return SizedBox(
+      height: 200,
+      child: PageView(
         children: [
-          // Logo
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Image.asset(
-              'assets/images/LogoWaqafer.png',
-              height: 24,
-              width: 24,
-            ),
+          _buildCarouselCard(
+            'INFAK SUBUH',
+            'KEUTAMAAN SEDEKAH SUBUH :',
+            'MENDAPAT DOA MALAIKAT',
+            '"Tidak ada satu hari pun bagi seorang hamba, kecuali datang dua malaikat yang salah satu dari mereka berdoa, \'Ya Allah berilah ganti yang lebih baik bagi orang yang bersedekah.\'"',
+            'Mafhum Hadis',
+            'assets/images/infak_subuh.jpeg',
           ),
-          // Search Bar
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Sedekah Subuh',
-                  border: InputBorder.none,
-                  icon: Icon(Icons.search, color: Colors.teal), // Changed color
-                ),
-              ),
-            ),
-          ),
-          // Action Icons
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.qr_code_scanner,
-                  color: Colors.teal,
-                ), // Changed color
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.favorite_border,
-                  color: Colors.teal,
-                ), // Changed color
-                onPressed: () {},
-              ),
-            ],
+          _buildCarouselCard(
+            'WAQAF AL-QURAN',
+            'Berserta terjemahan,',
+            'tajwid, dan panduan',
+            'berhenti serta memulakan bacaan.',
+            'IMBAS UNTUK WAKAF QURAN',
+            'assets/images/waqaf_quran.jpeg',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMainCarousel() {
-    return ClipPath(
-      clipper: WaveClipper(),
-      child: Container(
-        height: 220,
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.teal, Color(0xFFFBC02D)], // Teal to Golden Yellow
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+  Widget _buildCarouselCard(
+    String mainTitle,
+    String subtitle1,
+    String subtitle2,
+    String description,
+    String footer,
+    String imagePath,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
-        child: Stack(
-          children: [
-            // PageView for multiple banners
-            PageView(
-              children: [
-                _buildCarouselItem(
-                  'Wujudkan Masjid\nBersih & Sejahtera',
-                  'Cahaya Iman Bermula dari\nMasjid yang Bersinar',
-                  'assets/images/masjidnegara.jpg', // Using available image
-                ),
-                // Add more items here if needed
-              ],
-            ),
-            // Dots indicator
-            Positioned(
-              bottom: 15,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildCarouselItem(String title, String subtitle, String imagePath) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 0, 40),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text(
-                    'Wujudkan Disini',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.teal.withOpacity(0.3),
+              child: const Center(
+                child: Icon(
                   Icons.image_not_supported,
                   color: Colors.white,
                   size: 50,
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -582,50 +452,45 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildSecondaryBanner() {
+  Widget _buildAyatHariIni() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Colors.teal, Color(0xFFFBC02D)], // Teal to Golden Yellow
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Santri Berdaya,\nIndonesia Berjaya',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Mari terus dukung perjuangan mereka menjaga Al-Qur\'an',
-                  style: TextStyle(color: Colors.white, fontSize: 14),
-                ),
-              ],
+          const Text(
+            'Ayat Hari Ini',
+            style: TextStyle(
+              color: Colors.teal,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.teal,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+          const SizedBox(height: 12),
+          const Text(
+            '"Dan dirikanlah solat, tunaikanlah zakat, dan ruku\'lah beserta orang-orang yang ruku\'."',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
             ),
-            child: const Text('YUK MULIAKAN MERAKA'),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '(Surah Al-Baqarah, Ayat 43)',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
         ],
       ),

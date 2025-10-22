@@ -102,6 +102,7 @@ class _BottomNavBarState extends State<BottomNavBar>
     final isSelected = widget.currentIndex == index;
     final shouldAnimate =
         index == widget.currentIndex && _previousIndex != index;
+    final theme = Theme.of(context);
 
     return Expanded(
       child: Material(
@@ -109,8 +110,8 @@ class _BottomNavBarState extends State<BottomNavBar>
         child: InkWell(
           onTap: () => widget.onTap(index),
           borderRadius: BorderRadius.circular(16),
-          splashColor: const Color(0xFFF36F21).withOpacity(0.1),
-          highlightColor: const Color(0xFFF36F21).withOpacity(0.05),
+          splashColor: theme.primaryColor.withOpacity(0.1),
+          highlightColor: theme.primaryColor.withOpacity(0.05),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
@@ -134,8 +135,8 @@ class _BottomNavBarState extends State<BottomNavBar>
                           colors:
                               isSelected
                                   ? [
-                                    const Color(0xFFF36F21),
-                                    const Color(0xFFFF8C42),
+                                    theme.primaryColor,
+                                    theme.colorScheme.secondary,
                                   ]
                                   : [Colors.transparent, Colors.transparent],
                         ),
@@ -144,9 +145,7 @@ class _BottomNavBarState extends State<BottomNavBar>
                             isSelected
                                 ? [
                                   BoxShadow(
-                                    color: const Color(
-                                      0xFFF36F21,
-                                    ).withOpacity(0.3),
+                                    color: theme.primaryColor.withOpacity(0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -168,7 +167,9 @@ class _BottomNavBarState extends State<BottomNavBar>
                               icon,
                               size: isSelected ? 24 : 22,
                               color:
-                                  isSelected ? Colors.white : Colors.grey[500],
+                                  isSelected
+                                      ? theme.colorScheme.onPrimary
+                                      : Colors.grey[500],
                             ),
                           ),
                         );
@@ -184,8 +185,7 @@ class _BottomNavBarState extends State<BottomNavBar>
                   style: TextStyle(
                     fontSize: isSelected ? 10 : 9.5,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color:
-                        isSelected ? const Color(0xFFF36F21) : Colors.grey[600],
+                    color: isSelected ? theme.primaryColor : Colors.grey[600],
                     height: 1.1,
                     letterSpacing: isSelected ? 0.2 : 0,
                   ),
@@ -209,10 +209,7 @@ class _BottomNavBarState extends State<BottomNavBar>
                   height: isSelected ? 4 : 0,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFF36F21),
-                        const Color(0xFFFF8C42),
-                      ],
+                      colors: [theme.primaryColor, theme.colorScheme.secondary],
                     ),
                     shape: BoxShape.circle,
                   ),

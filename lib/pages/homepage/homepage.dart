@@ -360,61 +360,63 @@ class _HomepageState extends State<Homepage> {
         crossAxisSpacing: 12,
         children: [
           _buildMenuItem(
-            'Tabungan Qurban',
-            Icons.savings_outlined,
-            Colors.teal, // Changed color
-            () {},
-          ),
-          _buildMenuItem(
-            'Sedekah Rutin',
-            Icons.autorenew,
-            const Color(0xFFFBC02D), // Changed color
-            () {},
-          ),
-          _buildMenuItem(
-            'Zakat',
-            Icons.account_balance_wallet_outlined,
-            Colors.teal, // Changed color
-            () {},
-          ),
-          _buildMenuItem(
-            'Al Qur\'an',
-            Icons.menu_book_outlined,
-            const Color(0xFFFBC02D), // Changed color
-            () {
-              Navigator.pushReplacement(
-                context,
-                SmoothPageRoute(page: const QuranPage()),
-              );
-            },
-          ),
-          _buildMenuItem(
-            'Hadits',
-            Icons.book_outlined,
-            Colors.teal, // Changed color
-            () {},
-          ),
-          _buildMenuItem(
-            'Waktu Sholat',
+            'Waktu Solat',
             Icons.access_time_outlined,
-            const Color(0xFFFBC02D), // Changed color
+            Colors.teal,
             () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 SmoothPageRoute(page: const PrayerTimesPage()),
               );
             },
           ),
           _buildMenuItem(
-            'Dzikir',
+            'Arah Kiblat',
+            Icons.explore_outlined,
+            const Color(0xFFFBC02D),
+            () {
+              Navigator.push(
+                context,
+                SmoothPageRoute(page: const KiblatPage()),
+              );
+            },
+          ),
+          _buildMenuItem(
+            'Al Qur\'an',
+            Icons.menu_book_outlined,
+            Colors.teal,
+            () {
+              Navigator.push(context, SmoothPageRoute(page: const QuranPage()));
+            },
+          ),
+          _buildMenuItem(
+            'Zikir Counter',
             Icons.wb_sunny_outlined,
-            Colors.teal, // Changed color
+            const Color(0xFFFBC02D),
+            () {
+              Navigator.push(
+                context,
+                SmoothPageRoute(page: const ZikirCounterPage()),
+              );
+            },
+          ),
+          _buildMenuItem('Hadith 40', Icons.book_outlined, Colors.teal, () {}),
+          _buildMenuItem(
+            'Doa',
+            Icons.volunteer_activism_outlined,
+            const Color(0xFFFBC02D),
+            () {},
+          ),
+          _buildMenuItem(
+            'Kegemaran',
+            Icons.favorite_outline,
+            Colors.teal,
             () {},
           ),
           _buildMenuItem(
             'Lainnya',
             Icons.apps_outlined,
-            const Color(0xFFFBC02D), // Changed color
+            const Color(0xFFFBC02D),
             () {},
           ),
         ],

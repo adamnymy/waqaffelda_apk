@@ -41,7 +41,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), //adjust heigth
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

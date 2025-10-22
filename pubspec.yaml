@@ -77,7 +77,9 @@ flutter:
     - assets\images\LogoWaqafer.png
     - assets\images\masjidnegara.jpg
     - assets\icons\inbox\inbox.svg
-    - assets\images\waqaf_quran.jpeg
+    - assets\images\waqaf_quran.png
+    - assets\images\infak_spa.png
+    - assets\images\kempen_potong_lima.png
     - assets\images\infak_subuh.jpeg
 
 

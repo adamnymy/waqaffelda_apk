@@ -199,7 +199,7 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildMainCarousel() {
     return SizedBox(
-      height: 200,
+      height: 238,
       child: PageView(
         children: [
           _buildCarouselCard(
@@ -390,9 +390,9 @@ class _HomepageState extends State<Homepage> {
             },
           ),
           _buildMenuItem(
-            'Zikir Counter',
-            Icons.wb_sunny_outlined,
-            const Color(0xFFFBC02D),
+            'Tasbih',
+            Icons.cable_outlined, // Changed icon
+            const Color(0xFF4CAF50), // Changed color to green
             () {
               Navigator.push(
                 context,

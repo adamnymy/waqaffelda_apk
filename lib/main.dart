@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Waqaf FELDA',
+      title: 'Waqafer',
       debugShowCheckedModeBanner: false, //remove debug banner
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

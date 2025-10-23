@@ -12,6 +12,7 @@ import '../navbar_pages/akaun/akaunpage.dart';
 import '../quran/quranpage.dart';
 import '../kiblat/kiblat.dart';
 import '../../utils/page_transitions.dart';
+import 'searchpage/search_page.dart'; // Corrected import path for SearchPage
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -239,46 +240,34 @@ class _HomepageState extends State<Homepage> {
           SizedBox(width: screenWidth * 0.03),
           // Search Bar
           Expanded(
-            child: Container(
-              height: screenHeight * 0.055,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(screenWidth * 0.03),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.2),
-                  width: 1,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchPage()),
+                );
+              },
+              child: Container(
+                height: screenHeight * 0.05,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(screenWidth * 0.02),
                 ),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Cari program, wakaf...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: screenWidth * 0.035,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.grey[400],
-                    size: screenWidth * 0.055,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.03,
-                    vertical: screenHeight * 0.015,
-                  ),
-                ),
-                style: TextStyle(fontSize: screenWidth * 0.035),
-                onSubmitted: (value) {
-                  // Handle search
-                  if (value.isNotEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Mencari: $value'),
-                        duration: const Duration(seconds: 2),
+                child: Row(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(Icons.search, color: Colors.grey),
+                    ),
+                    Text(
+                      'Search...',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: screenWidth * 0.04,
                       ),
-                    );
-                  }
-                },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

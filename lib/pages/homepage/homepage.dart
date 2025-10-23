@@ -26,6 +26,14 @@ class _HomepageState extends State<Homepage> {
   int _carouselIndex = 0;
   final PageController _pageController = PageController();
   final ScrollController _scrollController = ScrollController();
+  // Carousel images moved to class-level so timers can access length
+  final List<String> _carouselImages = [
+    'assets/images/infak_subuh.jpeg',
+    'assets/images/waqaf_quran.png',
+    'assets/images/infak_spa.png',
+    'assets/images/kempen_potong_lima.png',
+  ];
+  Timer? _carouselTimer; // Auto-scroll timer for the carousel
   String _nextPrayerText = 'Loading...';
   String _currentTime = '';
   Timer? _timer;
@@ -36,14 +44,39 @@ class _HomepageState extends State<Homepage> {
     super.initState();
     _loadPrayerTimes();
     _startTimer();
+    _startCarouselTimer();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _carouselTimer?.cancel();
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _startCarouselTimer() {
+    // Cancel existing timer if any
+    _carouselTimer?.cancel();
+    // Auto-advance every 4 seconds
+    _carouselTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      if (_pageController.hasClients && _carouselImages.isNotEmpty) {
+        final nextPage = (_carouselIndex + 1) % _carouselImages.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  void _resetCarouselTimer() {
+    // Reset the auto-scroll timer when user interacts
+    _carouselTimer?.cancel();
+    _startCarouselTimer();
   }
 
   void _startTimer() {
@@ -161,7 +194,6 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white, // Changed to white
@@ -314,12 +346,8 @@ class _HomepageState extends State<Homepage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final List<String> carouselImages = [
-      'assets/images/infak_subuh.jpeg',
-      'assets/images/waqaf_quran.png',
-      'assets/images/infak_spa.png',
-      'assets/images/kempen_potong_lima.png',
-    ];
+    // Use class-level _carouselImages so timers and other methods can access
+    final List<String> carouselImages = _carouselImages;
 
     return Column(
       children: [
@@ -331,6 +359,8 @@ class _HomepageState extends State<Homepage> {
               setState(() {
                 _carouselIndex = index;
               });
+              // reset timer when user swipes manually
+              _resetCarouselTimer();
             },
             itemCount: carouselImages.length,
             itemBuilder: (context, index) {
@@ -339,25 +369,33 @@ class _HomepageState extends State<Homepage> {
           ),
         ),
         SizedBox(height: screenHeight * 0.015),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            carouselImages.length,
-            (index) => Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-              width:
-                  _carouselIndex == index
-                      ? screenWidth * 0.06
-                      : screenWidth * 0.02,
-              height: screenHeight * 0.01,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color:
-                    _carouselIndex == index
-                        ? Colors.teal
-                        : Colors.grey.withOpacity(0.3),
-              ),
-            ),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(carouselImages.length, (index) {
+              // fixed pixel sizes avoid tiny overflow on small widths
+              const double activeWidth = 18.0;
+              const double inactiveWidth = 6.0;
+              const double dotHeight = 6.0;
+              const double horizontalGap = 6.0;
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: horizontalGap / 2,
+                ),
+                width: _carouselIndex == index ? activeWidth : inactiveWidth,
+                height: dotHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color:
+                      _carouselIndex == index
+                          ? const Color(0xFFFBC02D)
+                          : Colors.grey.withOpacity(0.3),
+                ),
+              );
+            }),
           ),
         ),
       ],

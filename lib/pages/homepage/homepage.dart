@@ -35,8 +35,10 @@ class _HomepageState extends State<Homepage> {
   ];
   Timer? _carouselTimer; // Auto-scroll timer for the carousel
   String _nextPrayerText = 'Loading...';
-  String _currentTime = '';
   Timer? _timer;
+  Timer? _countdownTimer;
+  Duration _countdown = Duration.zero;
+  Duration? _totalCountdown;
   List<Map<String, dynamic>> _prayerTimes = [];
 
   @override
@@ -51,6 +53,7 @@ class _HomepageState extends State<Homepage> {
   void dispose() {
     _timer?.cancel();
     _carouselTimer?.cancel();
+    _countdownTimer?.cancel();
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -80,21 +83,10 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _startTimer() {
+    // Keep a periodic tick to refresh next-prayer calculation (every second)
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateCurrentTime();
       _updateNextPrayer();
     });
-  }
-
-  void _updateCurrentTime() {
-    final now = DateTime.now();
-    final timeString =
-        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    if (mounted) {
-      setState(() {
-        _currentTime = timeString;
-      });
-    }
   }
 
   Future<void> _loadPrayerTimes() async {
@@ -126,11 +118,66 @@ class _HomepageState extends State<Homepage> {
 
     final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
     if (nextPrayer != null && mounted) {
+      // Expect nextPrayer contains 'name' and 'time' (HH:mm)
+      final name = nextPrayer['name'] ?? '';
+      final timeStr = nextPrayer['time'] ?? '';
+
       setState(() {
-        _nextPrayerText =
-            'Next Prayer: ${nextPrayer['name']} - ${nextPrayer['time']}';
+        _nextPrayerText = 'Solat Seterusnya: $name - $timeStr';
       });
+
+      // Parse time and start countdown
+      try {
+        final parts = timeStr.split(':');
+        if (parts.length >= 2) {
+          final int hour = int.parse(parts[0]);
+          final int minute = int.parse(parts[1]);
+          DateTime now = DateTime.now();
+          DateTime target = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            hour,
+            minute,
+          );
+          if (target.isBefore(now)) {
+            target = target.add(const Duration(days: 1));
+          }
+
+          // initialize countdown and total duration for progress
+          _countdownTimer?.cancel();
+          _countdown = target.difference(now);
+          _totalCountdown = _countdown;
+
+          _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            if (!mounted) return;
+            final remaining = target.difference(DateTime.now());
+            if (remaining.inSeconds <= 0) {
+              timer.cancel();
+              // refresh prayer times for next prayer
+              _loadPrayerTimes();
+              return;
+            }
+            setState(() {
+              _countdown = remaining;
+            });
+          });
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
     }
+  }
+
+  String _formatDuration(Duration d) {
+    final hours = d.inHours.remainder(24).toString().padLeft(2, '0');
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (d.inHours >= 24) {
+      final days = d.inDays;
+      return '${days}d ${hours}:${minutes}:${seconds}';
+    }
+    return '$hours:$minutes:$seconds';
   }
 
   void _onTabTapped(int index) {
@@ -215,13 +262,18 @@ class _HomepageState extends State<Homepage> {
 
               SizedBox(height: screenHeight * 0.03),
 
-              // Step 4: Wallet and Prayer Times
-              _buildWalletAndPrayerInfo(context),
-
-              SizedBox(height: screenHeight * 0.035),
-
-              // Step 5: Icon Menu
+              // Step 4: Icon Menu
               _buildIconMenu(context),
+
+              SizedBox(height: screenHeight * 0.03),
+
+              // Step 5: Compact Prayer Time Card (moved below menu)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.05,
+                ),
+                child: _buildCompactPrayerCard(context),
+              ),
 
               SizedBox(height: screenHeight * 0.03),
 
@@ -344,7 +396,7 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildMainCarousel(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    // screenWidth not needed here
 
     // Use class-level _carouselImages so timers and other methods can access
     final List<String> carouselImages = _carouselImages;
@@ -441,166 +493,165 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildWalletAndPrayerInfo(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+  // Compact prayer card (localized, countdown-enabled)
+  Widget _buildCompactPrayerCard(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    // Parse next prayer details
-    String nextPrayerName = 'Loading...';
+    // Parse current _nextPrayerText which we set to 'Solat Seterusnya: Name - HH:mm'
+    String nextPrayerName = '';
     String nextPrayerTime = '';
-
     if (_nextPrayerText.contains(':') &&
         _nextPrayerText != 'Loading...' &&
         _nextPrayerText != 'Prayer times unavailable') {
-      final parts = _nextPrayerText
-          .replaceAll('Next Prayer: ', '')
-          .split(' - ');
+      final cleaned = _nextPrayerText.replaceAll('Solat Seterusnya: ', '');
+      final parts = cleaned.split(' - ');
       if (parts.length == 2) {
-        nextPrayerName = parts[0];
-        nextPrayerTime = parts[1];
+        nextPrayerName = parts[0].trim();
+        nextPrayerTime = parts[1].trim();
       }
     }
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      padding: EdgeInsets.all(screenWidth * 0.05),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.05,
+        vertical: screenHeight * 0.03,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.teal.shade400, Colors.teal.shade600],
+          colors: [Colors.teal.shade600, Colors.teal.shade400],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(screenWidth * 0.05),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(screenWidth * 0.025),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.03),
-                ),
-                child: Icon(
-                  Icons.access_time_rounded,
-                  color: Colors.white,
-                  size: screenWidth * 0.06,
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.03),
-              Flexible(
-                child: Text(
-                  'Waktu Solat Akan Datang',
-                  style: TextStyle(
+          SizedBox(
+            width: 68,
+            height: 68,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Progress ring
+                if (_totalCountdown != null && _totalCountdown!.inSeconds > 0)
+                  CircularProgressIndicator(
+                    value:
+                        (_totalCountdown!.inSeconds - _countdown.inSeconds) /
+                        _totalCountdown!.inSeconds,
+                    strokeWidth: 4,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.white.withOpacity(0.9),
+                    ),
+                    backgroundColor: Colors.white24,
+                  ),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(
+                    Icons.access_time,
                     color: Colors.white,
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+                    size: 30,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          SizedBox(height: screenHeight * 0.025),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  nextPrayerName.isNotEmpty
+                      ? nextPrayerName
+                      : 'Solat Seterusnya',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.98),
+                    fontSize: screenWidth * 0.044,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      nextPrayerName,
+                      nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: screenWidth * 0.07,
                         fontWeight: FontWeight.bold,
-                        height: 1.2,
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.005),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.03,
-                        vertical: screenHeight * 0.008,
+                    const SizedBox(width: 12),
+                    // Prominent countdown label
+                    if (_countdown.inSeconds > 0)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Baki Masa',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: screenWidth * 0.028,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white24,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _formatDuration(_countdown),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.035,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(screenWidth * 0.05),
-                      ),
-                      child: Text(
-                        _currentTime.isEmpty ? 'Loading...' : _currentTime,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: screenWidth * 0.03,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Waktu',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: screenWidth * 0.03,
-                    ),
-                  ),
-                  Text(
-                    nextPrayerTime.isEmpty ? '--:--' : nextPrayerTime,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: screenWidth * 0.08,
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: screenHeight * 0.02),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.03,
-              vertical: screenHeight * 0.01,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(screenWidth * 0.025),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: Colors.white70,
-                  size: screenWidth * 0.035,
-                ),
-                SizedBox(width: screenWidth * 0.02),
-                Text(
-                  '30 Rabiul Akhir 1447 H',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: screenWidth * 0.032,
-                  ),
-                ),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Simple arrow icon button (no background)
+          IconButton(
+            tooltip: 'Lihat Waktu Solat',
+            onPressed: () {
+              Navigator.push(
+                context,
+                SmoothPageRoute(page: const PrayerTimesPage()),
+              );
+            },
+            icon: const Icon(
+              Icons.arrow_forward_ios,
+              color: Color(0xFFFBC02D),
+              size: 20,
             ),
           ),
         ],

@@ -260,10 +260,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFF36F21),
-                        const Color(0xFFFF8C42),
-                      ],
+                      colors: [Colors.teal, Colors.teal.shade300],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -272,7 +269,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF36F21).withOpacity(0.3),
+                        color: Colors.teal.withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -451,15 +448,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                     decoration: BoxDecoration(
                                       color:
                                           isSelected
-                                              ? const Color(
-                                                0xFFF36F21,
-                                              ).withOpacity(0.1)
+                                              ? Colors.teal.withOpacity(0.1)
                                               : Colors.grey[50],
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
                                         color:
                                             isSelected
-                                                ? const Color(0xFFF36F21)
+                                                ? Colors.teal
                                                 : Colors.transparent,
                                         width: 2,
                                       ),
@@ -471,7 +466,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                           decoration: BoxDecoration(
                                             color:
                                                 isSelected
-                                                    ? const Color(0xFFF36F21)
+                                                    ? Colors.teal
                                                     : Colors.grey[200],
                                             borderRadius: BorderRadius.circular(
                                               12,
@@ -499,9 +494,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                                   fontWeight: FontWeight.w700,
                                                   color:
                                                       isSelected
-                                                          ? const Color(
-                                                            0xFFF36F21,
-                                                          )
+                                                          ? Colors.teal
                                                           : Colors.black87,
                                                   letterSpacing: 0.2,
                                                 ),
@@ -522,7 +515,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                           Container(
                                             padding: const EdgeInsets.all(6),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFF36F21),
+                                              color: Colors.teal,
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                             ),
@@ -669,7 +662,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           isLoading
               ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF36F21)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
                 ),
               )
               : errorMessage.isNotEmpty
@@ -781,7 +774,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         Text(
                           nextPrayer!['name'] ?? 'Tidak diketahui',
                           style: const TextStyle(
-                            color: Color(0xFFF36F21),
+                            color: Colors.teal,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -789,7 +782,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         Text(
                           nextPrayer!['time'] ?? '--:--',
                           style: const TextStyle(
-                            color: Color(0xFFF36F21),
+                            color: Colors.teal,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -818,7 +811,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         gradient:
             isNextPrayer
                 ? LinearGradient(
-                  colors: [const Color(0xFFF36F21), const Color(0xFFFF8C42)],
+                  colors: [Colors.teal, Colors.teal.shade300],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -829,7 +822,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           BoxShadow(
             color:
                 isNextPrayer
-                    ? const Color(0xFFF36F21).withOpacity(0.3)
+                    ? Colors.teal.withOpacity(0.3)
                     : Colors.black.withOpacity(0.06),
             blurRadius: isNextPrayer ? 12 : 8,
             offset: Offset(0, isNextPrayer ? 4 : 2),
@@ -849,7 +842,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         ? Colors.white.withOpacity(0.2)
                         : isPassed
                         ? Colors.grey[100]
-                        : const Color(0xFFF36F21).withOpacity(0.1),
+                        : Colors.teal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -859,7 +852,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         ? Colors.white
                         : isPassed
                         ? Colors.grey[400]
-                        : const Color(0xFFF36F21),
+                        : Colors.teal,
                 size: 22,
               ),
             ),
@@ -881,7 +874,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                               ? Colors.white
                               : isPassed
                               ? Colors.grey[500]
-                              : const Color(0xFFF36F21),
+                              : Colors.teal,
                       letterSpacing: 0.2,
                     ),
                   ),
@@ -921,7 +914,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         ? Colors.white.withOpacity(0.2)
                         : isPassed
                         ? Colors.grey[50]
-                        : const Color(0xFFFFF4E6),
+                        : Colors.teal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -934,7 +927,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           ? Colors.white
                           : isPassed
                           ? Colors.grey[500]
-                          : const Color(0xFFF36F21),
+                          : Colors.teal,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -969,7 +962,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Cuba Lagi'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF36F21),
+                backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,

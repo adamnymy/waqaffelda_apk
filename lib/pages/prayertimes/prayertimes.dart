@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
-import '../../widgets/google_maps_location_picker.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 
@@ -39,20 +38,19 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Map<String, dynamic>? selectedCoordinates;
 
   final List<Map<String, dynamic>> malaysianCities = [
-    {'name': 'Kuala Lumpur', 'lat': 3.139, 'lng': 101.6869},
-    {'name': 'Johor Bahru', 'lat': 1.4927, 'lng': 103.7414},
+    {'name': 'Wilayah Persekutuan', 'lat': 3.139, 'lng': 101.6869},
+    {'name': 'Selangor', 'lat': 3.0738, 'lng': 101.5183},
+    {'name': 'Johor', 'lat': 1.4927, 'lng': 103.7414},
     {'name': 'Pulau Pinang', 'lat': 5.4164, 'lng': 100.3327},
-    {'name': 'Kota Kinabalu', 'lat': 5.9804, 'lng': 116.0735},
-    {'name': 'Kuching', 'lat': 1.5533, 'lng': 110.3592},
-    {'name': 'Shah Alam', 'lat': 3.0733, 'lng': 101.5185},
-    {'name': 'Melaka', 'lat': 2.2055, 'lng': 102.2502},
-    {'name': 'Ipoh', 'lat': 4.5975, 'lng': 101.0901},
-    {'name': 'Seremban', 'lat': 2.7297, 'lng': 101.9381},
-    {'name': 'Petaling Jaya', 'lat': 3.1073, 'lng': 101.6067},
-    {'name': 'Klang', 'lat': 3.0319, 'lng': 101.4443},
-    {'name': 'Kajang', 'lat': 2.9929, 'lng': 101.7904},
-    {'name': 'Ampang', 'lat': 3.1478, 'lng': 101.7596},
-    {'name': 'Subang Jaya', 'lat': 3.1478, 'lng': 101.5867},
+    {'name': 'Perak', 'lat': 4.5975, 'lng': 101.0901},
+    {'name': 'Kedah', 'lat': 6.1184, 'lng': 100.3685},
+    {'name': 'Kelantan', 'lat': 6.1254, 'lng': 102.2386},
+    {'name': 'Terengganu', 'lat': 5.3302, 'lng': 103.1408},
+    {'name': 'Pahang', 'lat': 3.8077, 'lng': 103.3260},
+    {'name': 'Negeri Sembilan', 'lat': 2.7297, 'lng': 101.9381},
+    {'name': 'Melaka', 'lat': 2.1896, 'lng': 102.2501},
+    {'name': 'Sabah', 'lat': 5.9804, 'lng': 116.0735},
+    {'name': 'Sarawak', 'lat': 1.5533, 'lng': 110.3592},
     {'name': 'Gunakan Lokasi Semasa', 'lat': null, 'lng': null},
   ];
 
@@ -390,23 +388,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                               },
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildQuickActionCard(
-                              icon: Icons.map_rounded,
-                              title: 'Pilih dari Peta',
-                              subtitle: 'Mana-mana lokasi',
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _openGoogleMapsPicker();
-                              },
-                            ),
-                          ),
                         ],
                       ),
                     ],
@@ -633,29 +614,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _openGoogleMapsPicker() {
-    double? initialLat = selectedCoordinates?['lat'];
-    double? initialLng = selectedCoordinates?['lng'];
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => OpenStreetMapLocationPicker(
-              initialLatitude: initialLat,
-              initialLongitude: initialLng,
-              onLocationSelected: (lat, lng, address) {
-                setState(() {
-                  selectedCity = address;
-                  selectedCoordinates = {'lat': lat, 'lng': lng};
-                });
-                _loadPrayerTimes();
-              },
-            ),
       ),
     );
   }

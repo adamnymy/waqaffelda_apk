@@ -31,44 +31,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     'Isyak': true,
   };
 
-  String? selectedLocationName;
-  double? selectedLatitude;
-  double? selectedLongitude;
-  String? selectedCity;
-  Map<String, dynamic>? selectedCoordinates;
-
-  final List<Map<String, dynamic>> malaysianCities = [
-    {'name': 'Kuala Lumpur', 'lat': 3.139, 'lng': 101.6869},
-    {'name': 'Shah Alam', 'lat': 3.0738, 'lng': 101.5183},
-    {'name': 'Putrajaya', 'lat': 2.9264, 'lng': 101.6550},
-    {'name': 'Petaling Jaya', 'lat': 3.2169, 'lng': 101.7285},
-    {'name': 'Johor Bahru', 'lat': 1.4927, 'lng': 103.7414},
-    {'name': 'Batu Pahat', 'lat': 2.0581, 'lng': 102.5689},
-    {'name': 'Kluang', 'lat': 2.2008, 'lng': 102.2501},
-    {'name': 'Pontian', 'lat': 1.8633, 'lng': 103.1408},
-    {'name': 'Pulau Pinang', 'lat': 5.4164, 'lng': 100.3327},
-    {'name': 'Ipoh', 'lat': 4.5975, 'lng': 101.0901},
-    {'name': 'Taiping', 'lat': 5.4164, 'lng': 100.3327},
-    {'name': 'Teluk Intan', 'lat': 3.8077, 'lng': 101.0901},
-    {'name': 'Kuala Kangsar', 'lat': 4.1842, 'lng': 100.6328},
-    {'name': 'Alor Setar', 'lat': 6.1184, 'lng': 100.3685},
-    {'name': 'Sungai Petani', 'lat': 5.6921, 'lng': 100.4917},
-    {'name': 'Kota Bharu', 'lat': 6.1254, 'lng': 102.2386},
-    {'name': 'Kuala Terengganu', 'lat': 5.3302, 'lng': 103.1408},
-    {'name': 'Kuantan', 'lat': 3.8077, 'lng': 103.3260},
-    {'name': 'Raub', 'lat': 3.7927, 'lng': 101.8574},
-    {'name': 'Jerantut', 'lat': 3.9414, 'lng': 102.3685},
-    {'name': 'Temerloh', 'lat': 3.4927, 'lng': 102.3685},
-    {'name': 'Seremban', 'lat': 2.7297, 'lng': 101.9381},
-    {'name': 'Port Dickson', 'lat': 2.4927, 'lng': 102.2501},
-    {'name': 'Melaka', 'lat': 2.1896, 'lng': 102.2501},
-    {'name': 'Kota Kinabalu', 'lat': 5.9804, 'lng': 116.0735},
-    {'name': 'Sandakan', 'lat': 5.8077, 'lng': 116.7381},
-    {'name': 'Kuching', 'lat': 1.5533, 'lng': 110.3592},
-    {'name': 'Miri', 'lat': 4.1842, 'lng': 114.9381},
-    {'name': 'Gunakan Lokasi Semasa', 'lat': null, 'lng': null},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -150,60 +112,29 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     try {
       Map<String, dynamic>? apiData;
 
-      if (selectedCoordinates != null &&
-          selectedCoordinates!['lat'] != null &&
-          selectedCoordinates!['lng'] != null) {
-        final lat = selectedCoordinates!['lat'] as double?;
-        final lng = selectedCoordinates!['lng'] as double?;
-        if (lat != null && lng != null) {
-          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-            lat,
-            lng,
-          );
-          // Get real location name from coordinates (either from city selection or map picker)
-          if (selectedCity != null && selectedCity != 'Gunakan Lokasi Semasa') {
-            // Use city name directly if selected from the list
-            locationName = selectedCity!;
-          } else {
-            // Get location name from coordinates if selected from map
-            locationName = await PrayerTimesService.getLocationName(lat, lng);
-          }
-        }
-      } else if (selectedLatitude != null && selectedLongitude != null) {
+      // Use current location (GPS only)
+      Position? position = await PrayerTimesService.getCurrentLocation();
+
+      if (position != null) {
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-          selectedLatitude!,
-          selectedLongitude!,
+          position.latitude,
+          position.longitude,
         );
-        // Get real location name for selected coordinates
+        // Get real location name from current position
         locationName = await PrayerTimesService.getLocationName(
-          selectedLatitude!,
-          selectedLongitude!,
+          position.latitude,
+          position.longitude,
         );
       } else {
-        // Use current location
-        Position? position = await PrayerTimesService.getCurrentLocation();
-
-        if (position != null) {
-          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-            position.latitude,
-            position.longitude,
-          );
-          // Get real location name from current position
-          locationName = await PrayerTimesService.getLocationName(
-            position.latitude,
-            position.longitude,
-          );
-        } else {
-          // Fallback to Kuala Lumpur if location permission denied
-          apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-            3.139,
-            101.6869,
-          );
-          locationName = await PrayerTimesService.getLocationName(
-            3.139,
-            101.6869,
-          );
-        }
+        // Fallback to Kuala Lumpur if location permission denied
+        apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+          3.139,
+          101.6869,
+        );
+        locationName = await PrayerTimesService.getLocationName(
+          3.139,
+          101.6869,
+        );
       }
 
       if (apiData != null) {
@@ -256,376 +187,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     }
   }
 
-  void _showLocationPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) => Container(
-            height: MediaQuery.of(context).size.height * 0.75,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              children: [
-                // Header with gradient
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.teal, Colors.teal.shade300],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.teal.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Drag handle
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Pilih Lokasi',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Dapatkan waktu solat yang tepat',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Quick actions section
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Akses Pantas',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildQuickActionCard(
-                              icon: Icons.my_location_rounded,
-                              title: 'Lokasi Semasa',
-                              subtitle: 'Gunakan GPS',
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  selectedCity = null;
-                                  selectedCoordinates = null;
-                                  selectedLatitude = null;
-                                  selectedLongitude = null;
-                                  selectedLocationName = null;
-                                });
-                                Navigator.pop(context);
-                                _loadPrayerTimes();
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const Divider(height: 1, thickness: 1),
-
-                // Cities list section
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-                        child: Text(
-                          'Bandar Popular',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 0,
-                          ),
-                          itemCount:
-                              malaysianCities.length -
-                              1, // Exclude "Gunakan Lokasi Semasa"
-                          itemBuilder: (context, index) {
-                            final city = malaysianCities[index];
-                            final isSelected = selectedCity == city['name'];
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: () {
-                                    setState(() {
-                                      selectedCity = city['name'];
-                                      selectedCoordinates = {
-                                        'lat': city['lat'],
-                                        'lng': city['lng'],
-                                      };
-                                    });
-                                    Navigator.pop(context);
-                                    _loadPrayerTimes();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          isSelected
-                                              ? Colors.teal.withOpacity(0.1)
-                                              : Colors.grey[50],
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color:
-                                            isSelected
-                                                ? Colors.teal
-                                                : Colors.transparent,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isSelected
-                                                    ? Colors.teal
-                                                    : Colors.grey[200],
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            Icons.location_city_rounded,
-                                            color:
-                                                isSelected
-                                                    ? Colors.white
-                                                    : Colors.grey[600],
-                                            size: 22,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                city['name'],
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w700,
-                                                  color:
-                                                      isSelected
-                                                          ? Colors.teal
-                                                          : Colors.black87,
-                                                  letterSpacing: 0.2,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                '${city['lat']}, ${city['lng']}',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey[600],
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        if (isSelected)
-                                          Container(
-                                            padding: const EdgeInsets.all(6),
-                                            decoration: BoxDecoration(
-                                              color: Colors.teal,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: const Icon(
-                                              Icons.check_rounded,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                          )
-                                        else
-                                          Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            color: Colors.grey[400],
-                                            size: 16,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  Widget _buildQuickActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Gradient gradient,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.colors.first.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: Colors.white, size: 26),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.9),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   IconData _getIconFromString(String iconName) {
     switch (iconName) {
       case 'wb_twilight':
@@ -663,10 +224,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.location_on_outlined, color: Colors.black),
-            onPressed: _showLocationPicker,
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Colors.black),
             onPressed: _loadPrayerTimes,
           ),
@@ -699,7 +256,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      height: 285, // Increased height to prevent overflow
+      height: 250, // Reduced height to prevent overflow
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/masjidnegara.jpg'),

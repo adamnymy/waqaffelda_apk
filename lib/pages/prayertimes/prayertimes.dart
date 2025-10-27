@@ -260,10 +260,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       height: 350,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/masjidnegara.jpg'),
+          image: AssetImage('assets/images/nabawi(sulthan-auliya).jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.2),
+            Colors.black.withOpacity(0.1),
             BlendMode.darken,
           ),
         ),

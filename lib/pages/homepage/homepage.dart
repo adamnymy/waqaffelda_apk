@@ -384,40 +384,6 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
           ),
-          SizedBox(width: screenWidth * 0.03),
-          // Notification Icon
-          Container(
-            padding: EdgeInsets.all(screenWidth * 0.025),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(screenWidth * 0.03),
-              border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
-            ),
-            child: Stack(
-              children: [
-                Icon(
-                  Icons.notifications_outlined,
-                  color: Colors.grey[700],
-                  size: screenWidth * 0.06,
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: BoxConstraints(
-                      minWidth: screenWidth * 0.015,
-                      minHeight: screenWidth * 0.015,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

@@ -204,6 +204,24 @@ class _KiblatPageState extends State<KiblatPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Arah Kiblat',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body:
           _loadingLocation
               ? Center(
@@ -282,42 +300,8 @@ class _KiblatPageState extends State<KiblatPage> {
               )
               : Column(
                 children: [
-                  // Simple App Bar
-                  Container(
-                    color: colorScheme.surface,
-                    padding: const EdgeInsets.only(
-                      top: 40,
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.black87,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Arah Kiblat',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 48), // Balance the back button
-                      ],
-                    ),
-                  ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
+              Expanded(
+                child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [

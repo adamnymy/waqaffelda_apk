@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
       ],
       theme: ThemeData(
         primarySwatch: Colors.teal,
+        fontFamily: 'Inter',
         colorScheme: ColorScheme.light(
           primary: Colors.teal,
           secondary: const Color(0xFFFBC02D), // Golden Yellow

@@ -15,7 +15,7 @@ class _QuranPageState extends State<QuranPage> {
   int selectedTabIndex = 0;
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  
+
   // Add these new variables
   List<Surah> allSurahs = [];
   bool isLoading = true;

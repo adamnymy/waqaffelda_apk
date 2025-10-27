@@ -155,7 +155,8 @@ class Surah {
       englishNameTranslation: json['englishNameTranslation'] ?? '',
       numberOfAyahs: json['numberOfAyahs'] ?? 0,
       revelationType: json['revelationType'] ?? '',
-      ayahs: (json['ayahs'] as List?)
+      ayahs:
+          (json['ayahs'] as List?)
               ?.map((ayah) => Ayah.fromJson(ayah))
               .toList() ??
           [],

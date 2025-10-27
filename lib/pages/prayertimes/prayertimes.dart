@@ -207,8 +207,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -233,9 +235,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       extendBodyBehindAppBar: true,
       body:
           isLoading
-              ? const Center(
+              ? Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colorScheme.primary,
+                  ),
                 ),
               )
               : errorMessage.isNotEmpty
@@ -255,12 +259,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Widget _buildHeaderCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       height: 350,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/nabawi(sulthan-auliya).jpg'),
+          image: const AssetImage('assets/images/nabawi(sulthan-auliya).jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
             Colors.black.withOpacity(0.1),
@@ -384,8 +390,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.teal.withOpacity(0.9),
-                          Colors.teal.shade700.withOpacity(0.9),
+                          colorScheme.primary.withOpacity(0.9),
+                          colorScheme.primary.withOpacity(0.8),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
@@ -458,9 +464,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Widget _buildAllPrayerTimesCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -494,20 +502,20 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           decoration: BoxDecoration(
                             color:
                                 isNextPrayer
-                                    ? Colors.teal.withOpacity(0.15)
+                                    ? colorScheme.primary.withOpacity(0.15)
                                     : isPassed
                                     ? Colors.grey.shade200
-                                    : Colors.teal.withOpacity(0.1),
+                                    : colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(
                             prayer['icon'] ?? Icons.access_time,
                             color:
                                 isNextPrayer
-                                    ? Colors.teal
+                                    ? colorScheme.primary
                                     : isPassed
                                     ? Colors.grey.shade400
-                                    : Colors.teal,
+                                    : colorScheme.primary,
                             size: 28,
                           ),
                         ),
@@ -520,10 +528,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                               fontWeight: FontWeight.bold,
                               color:
                                   isNextPrayer
-                                      ? Colors.teal
+                                      ? colorScheme.primary
                                       : isPassed
                                       ? Colors.grey.shade500
-                                      : Colors.black87,
+                                      : colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -534,13 +542,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.teal,
+                              color: colorScheme.primary,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Seterusnya',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
@@ -552,7 +560,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: isNextPrayer ? Colors.teal : Colors.black54,
+                            color:
+                                isNextPrayer
+                                    ? colorScheme.primary
+                                    : Colors.black54,
                           ),
                         ),
                       ],
@@ -574,6 +585,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Widget _buildErrorWidget() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -597,8 +610,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Cuba Lagi'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,

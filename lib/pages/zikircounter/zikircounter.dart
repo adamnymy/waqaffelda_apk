@@ -148,18 +148,23 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Zikir',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -171,7 +176,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
               padding: const EdgeInsets.all(20),
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF4E6),
+                color: colorScheme.secondary.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -181,7 +186,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green[700],
+                      color: colorScheme.primary,
                       fontFamily: 'Arabic',
                     ),
                     textAlign: TextAlign.center,
@@ -189,7 +194,10 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                   const SizedBox(height: 8),
                   Text(
                     _currentZikirTranslation,
-                    style: TextStyle(fontSize: 14, color: Colors.orange[700]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSecondary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -225,7 +233,11 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                       height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.grey[200],
+                        color: colorScheme.primary.withOpacity(0.1),
+                        border: Border.all(
+                          color: colorScheme.primary,
+                          width: 3,
+                        ),
                       ),
                       child: Center(
                         child: Text(
@@ -233,7 +245,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                           style: TextStyle(
                             fontSize: 64,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green[700],
+                            color: colorScheme.primary,
                           ),
                         ),
                       ),
@@ -283,7 +295,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                         value: _progressAnimation.value,
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.green[700]!,
+                          colorScheme.primary,
                         ),
                         minHeight: 8,
                         borderRadius: BorderRadius.circular(4),
@@ -316,7 +328,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                           'Subhanallah',
                           'سُبْحَانَ اللّٰهِ',
                           'Maha suci Allah',
-                          Colors.green,
+                          colorScheme,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -325,7 +337,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                           'Alhamdulillah',
                           'ٱلْحَمْدُ لِلّٰهِ',
                           'Segala puji bagi Allah',
-                          const Color(0xFFFFF4E6),
+                          colorScheme,
                         ),
                       ),
                     ],
@@ -338,7 +350,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                           'Allahu Akbar',
                           'ٱللّٰهُ أَكْبَرُ',
                           'Allah Maha Besar',
-                          const Color(0xFFFFF4E6),
+                          colorScheme,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -347,7 +359,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                           'La ilaha illallah',
                           'لَا إِلٰهَ إِلَّا ٱللّٰهُ',
                           'Tiada Tuhan melainkan Allah',
-                          const Color(0xFFFFF4E6),
+                          colorScheme,
                         ),
                       ),
                     ],
@@ -364,6 +376,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
   }
 
   Widget _buildTargetChip(int value) {
+    final colorScheme = Theme.of(context).colorScheme;
     bool isSelected = value == _target;
     return GestureDetector(
       onTap: () {
@@ -375,13 +388,13 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green[600] : Colors.grey[200],
+          color: isSelected ? colorScheme.primary : Colors.grey[200],
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           value.toString(),
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -394,7 +407,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     String label,
     String arabic,
     String translation,
-    Color bgColor,
+    ColorScheme colorScheme,
   ) {
     bool isSelected = _currentZikir == arabic;
     return GestureDetector(
@@ -402,13 +415,16 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green : const Color(0xFFFFF4E6),
+          color:
+              isSelected
+                  ? colorScheme.primary
+                  : colorScheme.secondary.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),

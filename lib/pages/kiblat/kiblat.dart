@@ -189,6 +189,7 @@ class _KiblatPageState extends State<KiblatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bearingToKaaba = _bearingToKaabaDegrees();
     final heading = _heading;
     final qiblaAngleDeg =
@@ -202,14 +203,14 @@ class _KiblatPageState extends State<KiblatPage> {
         ((qiblaAngleDeg.abs() <= 5) || ((360 - qiblaAngleDeg.abs()) <= 5));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAF9),
+      backgroundColor: colorScheme.background,
       body:
           _loadingLocation
               ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircularProgressIndicator(color: Colors.teal),
+                    CircularProgressIndicator(color: colorScheme.primary),
                     const SizedBox(height: 16),
                     Text(
                       'Mendapatkan lokasi...',
@@ -264,8 +265,8 @@ class _KiblatPageState extends State<KiblatPage> {
                         icon: const Icon(Icons.refresh),
                         label: const Text('Cuba Lagi'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 32,
                             vertical: 16,
@@ -283,7 +284,7 @@ class _KiblatPageState extends State<KiblatPage> {
                 children: [
                   // Simple App Bar
                   Container(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     padding: const EdgeInsets.only(
                       top: 40,
                       left: 16,
@@ -327,8 +328,8 @@ class _KiblatPageState extends State<KiblatPage> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.orange[50]!,
-                                  const Color(0xFFFFF4E6),
+                                  colorScheme.secondary.withOpacity(0.1),
+                                  colorScheme.secondary.withOpacity(0.05),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -336,7 +337,7 @@ class _KiblatPageState extends State<KiblatPage> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.orange.withOpacity(0.1),
+                                  color: colorScheme.secondary.withOpacity(0.1),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -347,12 +348,14 @@ class _KiblatPageState extends State<KiblatPage> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange[100],
+                                    color: colorScheme.secondary.withOpacity(
+                                      0.2,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
                                     Icons.location_on,
-                                    color: Colors.orange[700],
+                                    color: colorScheme.secondary,
                                     size: 24,
                                   ),
                                 ),
@@ -376,7 +379,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.orange[800],
+                                          color: colorScheme.onSecondary,
                                         ),
                                       ),
                                     ],
@@ -399,13 +402,13 @@ class _KiblatPageState extends State<KiblatPage> {
                               color:
                                   isAligned
                                       ? Colors.green[50]
-                                      : Colors.blue[50],
+                                      : colorScheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
                                 color:
                                     isAligned
                                         ? Colors.green[300]!
-                                        : Colors.blue[300]!,
+                                        : colorScheme.primary.withOpacity(0.3),
                                 width: 2,
                               ),
                             ),
@@ -419,7 +422,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                   color:
                                       isAligned
                                           ? Colors.green[700]
-                                          : Colors.blue[700],
+                                          : colorScheme.primary,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
@@ -431,7 +434,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                     color:
                                         isAligned
                                             ? Colors.green[700]
-                                            : Colors.blue[700],
+                                            : colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -451,13 +454,15 @@ class _KiblatPageState extends State<KiblatPage> {
                                   color:
                                       isAligned
                                           ? Colors.green.withOpacity(0.3)
-                                          : Colors.teal.withOpacity(0.2),
+                                          : colorScheme.primary.withOpacity(
+                                            0.2,
+                                          ),
                                   blurRadius: 30,
                                   spreadRadius: 10,
                                 ),
                               ],
                             ),
-                            child: _buildCompass(qiblaAngleDeg),
+                            child: _buildCompass(qiblaAngleDeg, colorScheme),
                           ),
 
                           const SizedBox(height: 32),
@@ -469,7 +474,7 @@ class _KiblatPageState extends State<KiblatPage> {
                               vertical: 16,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -484,7 +489,7 @@ class _KiblatPageState extends State<KiblatPage> {
                               children: [
                                 Icon(
                                   Icons.compass_calibration,
-                                  color: Colors.teal[600],
+                                  color: colorScheme.primary,
                                   size: 28,
                                 ),
                                 const SizedBox(width: 12),
@@ -495,7 +500,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                   style: TextStyle(
                                     fontSize: 36,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.grey[800],
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -509,10 +514,10 @@ class _KiblatPageState extends State<KiblatPage> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.teal[50],
+                                color: colorScheme.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.teal[200]!,
+                                  color: colorScheme.primary.withOpacity(0.3),
                                   width: 1,
                                 ),
                               ),
@@ -521,7 +526,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                 children: [
                                   Icon(
                                     Icons.route,
-                                    color: Colors.teal[700],
+                                    color: colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -529,7 +534,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                     'Jarak ke Kaabah: ',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.teal[700],
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                   Text(
@@ -537,7 +542,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.teal[900],
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -552,8 +557,8 @@ class _KiblatPageState extends State<KiblatPage> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.amber[50]!,
-                                  const Color(0xFFFFF4E6),
+                                  colorScheme.secondary.withOpacity(0.15),
+                                  colorScheme.secondary.withOpacity(0.05),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -561,7 +566,7 @@ class _KiblatPageState extends State<KiblatPage> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.amber.withOpacity(0.1),
+                                  color: colorScheme.secondary.withOpacity(0.1),
                                   blurRadius: 15,
                                   offset: const Offset(0, 5),
                                 ),
@@ -572,12 +577,14 @@ class _KiblatPageState extends State<KiblatPage> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.amber[100],
+                                    color: colorScheme.secondary.withOpacity(
+                                      0.2,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
                                     Icons.tips_and_updates,
-                                    color: Colors.amber[800],
+                                    color: colorScheme.secondary,
                                     size: 28,
                                   ),
                                 ),
@@ -592,7 +599,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.amber[900],
+                                          color: colorScheme.onSecondary,
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -620,13 +627,13 @@ class _KiblatPageState extends State<KiblatPage> {
     );
   }
 
-  Widget _buildCompass(double? qiblaAngleDeg) {
+  Widget _buildCompass(double? qiblaAngleDeg, ColorScheme colorScheme) {
     final size = 280.0;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F9F7),
+        color: colorScheme.surface,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -636,26 +643,39 @@ class _KiblatPageState extends State<KiblatPage> {
           ),
         ],
       ),
-      child: CustomPaint(painter: CompassPainter(qiblaAngleDeg: qiblaAngleDeg)),
+      child: CustomPaint(
+        painter: CompassPainter(
+          qiblaAngleDeg: qiblaAngleDeg,
+          primaryColor: colorScheme.primary,
+          secondaryColor: colorScheme.secondary,
+        ),
+      ),
     );
   }
 }
 
 class CompassPainter extends CustomPainter {
-  final double? qiblaAngleDeg; // rotation relative to top (12 o’clock)
-  CompassPainter({required this.qiblaAngleDeg});
+  final double? qiblaAngleDeg; // rotation relative to top (12 o'clock)
+  final Color primaryColor;
+  final Color secondaryColor;
+
+  CompassPainter({
+    required this.qiblaAngleDeg,
+    required this.primaryColor,
+    required this.secondaryColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 15;
 
-    // Outer border - green
+    // Outer border - using primary color
     final borderPaint =
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.5
-          ..color = Colors.green[600]!;
+          ..color = primaryColor;
     canvas.drawCircle(center, radius, borderPaint);
 
     // Tick marks
@@ -721,10 +741,10 @@ class CompassPainter extends CustomPainter {
 
     // QIBLA label at top
     final qiblaLabel = TextPainter(
-      text: const TextSpan(
+      text: TextSpan(
         text: 'QIBLA',
         style: TextStyle(
-          color: Colors.orange,
+          color: secondaryColor,
           fontWeight: FontWeight.w700,
           fontSize: 10,
         ),
@@ -746,7 +766,7 @@ class CompassPainter extends CustomPainter {
       // Arrow body
       final arrowPaint =
           Paint()
-            ..color = Colors.orange[700]!
+            ..color = secondaryColor
             ..style = PaintingStyle.fill;
 
       final arrowHead = Offset(
@@ -771,7 +791,7 @@ class CompassPainter extends CustomPainter {
       // Draw shaft as thick line
       final shaftPaint =
           Paint()
-            ..color = Colors.orange[700]!
+            ..color = secondaryColor
             ..strokeWidth = shaftWidth
             ..strokeCap = StrokeCap.round;
 

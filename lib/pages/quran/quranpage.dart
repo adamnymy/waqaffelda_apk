@@ -992,14 +992,16 @@ class _QuranPageState extends State<QuranPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
@@ -1008,10 +1010,10 @@ class _QuranPageState extends State<QuranPage> {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Surah',
           style: TextStyle(
-            color: Colors.black,
+            color: colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -1022,7 +1024,7 @@ class _QuranPageState extends State<QuranPage> {
         children: [
           // Search Bar
           Container(
-            color: Colors.white,
+            color: colorScheme.surface,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
               controller: _searchController,
@@ -1033,12 +1035,20 @@ class _QuranPageState extends State<QuranPage> {
               },
               decoration: InputDecoration(
                 hintText: 'Cari Surah...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                hintStyle: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.4),
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: colorScheme.onSurface.withOpacity(0.4),
+                ),
                 suffixIcon:
                     searchQuery.isNotEmpty
                         ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          icon: Icon(
+                            Icons.clear,
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
                           onPressed: () {
                             setState(() {
                               _searchController.clear();
@@ -1048,7 +1058,7 @@ class _QuranPageState extends State<QuranPage> {
                         )
                         : null,
                 filled: true,
-                fillColor: const Color(0xFFF5F5F5),
+                fillColor: colorScheme.primary.withOpacity(0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -1063,20 +1073,23 @@ class _QuranPageState extends State<QuranPage> {
 
           // Last Read Card (Featured Card)
           Container(
-            color: Colors.white,
+            color: colorScheme.surface,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                gradient: LinearGradient(
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withOpacity(0.8),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2E7D32).withOpacity(0.3),
+                    color: colorScheme.primary.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -1087,12 +1100,12 @@ class _QuranPageState extends State<QuranPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: colorScheme.onPrimary.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.menu_book_rounded,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 28,
                     ),
                   ),
@@ -1104,16 +1117,16 @@ class _QuranPageState extends State<QuranPage> {
                         Text(
                           'Bacaan Terakhir',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: colorScheme.onPrimary.withOpacity(0.9),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Al-Fatihah',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1122,7 +1135,7 @@ class _QuranPageState extends State<QuranPage> {
                         Text(
                           'Ayat 1 - Pembukaan',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: colorScheme.onPrimary.withOpacity(0.8),
                             fontSize: 12,
                           ),
                         ),
@@ -1132,12 +1145,12 @@ class _QuranPageState extends State<QuranPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: colorScheme.onPrimary.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       size: 16,
                     ),
                   ),
@@ -1148,7 +1161,7 @@ class _QuranPageState extends State<QuranPage> {
 
           // Tab Buttons with Icons
           Container(
-            color: Colors.white,
+            color: colorScheme.surface,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Row(
               children: [
@@ -1179,6 +1192,7 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildTabButton(String title, IconData icon, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = selectedTabIndex == index;
     return GestureDetector(
       onTap: () {
@@ -1191,16 +1205,22 @@ class _QuranPageState extends State<QuranPage> {
         decoration: BoxDecoration(
           gradient:
               isSelected
-                  ? const LinearGradient(
-                    colors: [Color(0xFFF36F21), Color(0xFFFF8C42)],
+                  ? LinearGradient(
+                    colors: [
+                      colorScheme.secondary,
+                      colorScheme.secondary.withOpacity(0.8),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   )
                   : null,
-          color: isSelected ? null : Colors.white,
+          color: isSelected ? null : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.transparent : const Color(0xFFE0E0E0),
+            color:
+                isSelected
+                    ? Colors.transparent
+                    : colorScheme.primary.withOpacity(0.2),
             width: 1,
           ),
         ),
@@ -1209,7 +1229,10 @@ class _QuranPageState extends State<QuranPage> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color:
+                  isSelected
+                      ? colorScheme.onSecondary
+                      : colorScheme.onSurface.withOpacity(0.6),
               size: 18,
             ),
             const SizedBox(width: 6),
@@ -1217,7 +1240,10 @@ class _QuranPageState extends State<QuranPage> {
               child: Text(
                 title,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[600],
+                  color:
+                      isSelected
+                          ? colorScheme.onSecondary
+                          : colorScheme.onSurface.withOpacity(0.6),
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 ),
@@ -1242,11 +1268,13 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildSurahList() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     // Show loading indicator
     if (isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF36F21)),
+          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
         ),
       );
     }
@@ -1262,7 +1290,10 @@ class _QuranPageState extends State<QuranPage> {
             Text(
               errorMessage,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
@@ -1270,7 +1301,8 @@ class _QuranPageState extends State<QuranPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('Cuba Lagi'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF36F21),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
           ],
@@ -1285,11 +1317,18 @@ class _QuranPageState extends State<QuranPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            Icon(
+              Icons.search_off,
+              size: 64,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
             const SizedBox(height: 16),
             Text(
               'Surah tidak ditemui',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
           ],
         ),
@@ -1307,14 +1346,16 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildSurahCard(Surah surah) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: colorScheme.primary.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1342,8 +1383,11 @@ class _QuranPageState extends State<QuranPage> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFF36F21), Color(0xFFFF8C42)],
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.secondary,
+                        colorScheme.secondary.withOpacity(0.8),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -1352,8 +1396,8 @@ class _QuranPageState extends State<QuranPage> {
                   child: Center(
                     child: Text(
                       '${surah.number}',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colorScheme.onSecondary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1371,10 +1415,10 @@ class _QuranPageState extends State<QuranPage> {
                       // Arabic Name on top
                       Text(
                         surah.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFF36F21),
+                          color: colorScheme.primary,
                           height: 1.2,
                         ),
                       ),
@@ -1382,10 +1426,10 @@ class _QuranPageState extends State<QuranPage> {
                       // Transliteration below Arabic
                       Text(
                         surah.englishName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1401,7 +1445,9 @@ class _QuranPageState extends State<QuranPage> {
                                   '${surah.numberOfAyahs} Ayat',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[600],
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.6,
+                                    ),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1412,7 +1458,9 @@ class _QuranPageState extends State<QuranPage> {
                                     horizontal: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[400],
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.4,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -1421,7 +1469,9 @@ class _QuranPageState extends State<QuranPage> {
                                     surah.malayTranslation,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.6,
+                                      ),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
@@ -1442,7 +1492,7 @@ class _QuranPageState extends State<QuranPage> {
                 // Arrow Icon
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: const Color(0xFFF36F21),
+                  color: colorScheme.primary,
                   size: 18,
                 ),
               ],
@@ -1643,14 +1693,16 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildParaCard(Map<String, dynamic> para) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: colorScheme.primary.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1672,8 +1724,11 @@ class _QuranPageState extends State<QuranPage> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFE65100), Color(0xFFFF6F00)],
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.secondary,
+                        colorScheme.secondary.withOpacity(0.8),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -1682,8 +1737,8 @@ class _QuranPageState extends State<QuranPage> {
                   alignment: Alignment.center,
                   child: Text(
                     '${para['number']}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colorScheme.onSecondary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1697,21 +1752,28 @@ class _QuranPageState extends State<QuranPage> {
                     children: [
                       Text(
                         para['name'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFE65100),
+                          color: colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Bermula: ${para['startSurah']}, Ayat ${para['startAyat']}',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.grey[400], size: 24),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurface.withOpacity(0.4),
+                  size: 24,
+                ),
               ],
             ),
           ),
@@ -1721,24 +1783,33 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildBookmarkList() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bookmarks_rounded, size: 64, color: Colors.grey[400]),
+          Icon(
+            Icons.bookmarks_rounded,
+            size: 64,
+            color: colorScheme.onSurface.withOpacity(0.4),
+          ),
           const SizedBox(height: 16),
           Text(
             'Tiada Tandabuku',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Tandakan ayat kegemaran anda',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurface.withOpacity(0.5),
+            ),
           ),
         ],
       ),

@@ -1420,6 +1420,7 @@ class _QuranPageState extends State<QuranPage> {
                           fontWeight: FontWeight.w700,
                           color: colorScheme.primary,
                           height: 1.2,
+                          fontFamily: 'Amiri',
                         ),
                       ),
                       const SizedBox(height: 4),

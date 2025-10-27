@@ -300,8 +300,8 @@ class _KiblatPageState extends State<KiblatPage> {
               )
               : Column(
                 children: [
-              Expanded(
-                child: SingleChildScrollView(
+                  Expanded(
+                    child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [

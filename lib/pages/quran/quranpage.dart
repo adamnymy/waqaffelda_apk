@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
+import '../../services/quran_service.dart';
+import '../../models/quran_models.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
@@ -13,6 +15,40 @@ class _QuranPageState extends State<QuranPage> {
   int selectedTabIndex = 0;
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  
+  // Add these new variables
+  List<Surah> allSurahs = [];
+  bool isLoading = true;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuranData();
+  }
+
+  // Add this method to load Quran data
+  Future<void> _loadQuranData() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      final surahs = await QuranService.getAllSurahs();
+      setState(() {
+        allSurahs = surahs;
+        isLoading = false;
+      });
+      print('✅ Loaded ${surahs.length} surahs successfully!');
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Gagal memuatkan data Al-Quran: $e';
+        isLoading = false;
+      });
+      print('❌ Error loading Quran: $e');
+    }
+  }
 
   // List of all 114 Surahs
   final List<Map<String, dynamic>> surahs = [
@@ -930,16 +966,15 @@ class _QuranPageState extends State<QuranPage> {
     },
   ];
 
-  List<Map<String, dynamic>> get filteredSurahs {
+  List<Surah> get filteredSurahs {
     if (searchQuery.isEmpty) {
-      return surahs;
+      return allSurahs;
     }
-    return surahs.where((surah) {
-      final nameTransliteration =
-          surah['nameTransliteration'].toString().toLowerCase();
-      final nameArabic = surah['nameArabic'].toString();
-      final meaning = surah['meaning'].toString().toLowerCase();
-      final number = surah['number'].toString();
+    return allSurahs.where((surah) {
+      final nameTransliteration = surah.englishName.toLowerCase();
+      final nameArabic = surah.name;
+      final meaning = surah.englishNameTranslation.toLowerCase();
+      final number = surah.number.toString();
       final query = searchQuery.toLowerCase();
 
       return nameTransliteration.contains(query) ||
@@ -1207,6 +1242,42 @@ class _QuranPageState extends State<QuranPage> {
   }
 
   Widget _buildSurahList() {
+    // Show loading indicator
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF36F21)),
+        ),
+      );
+    }
+
+    // Show error message
+    if (errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadQuranData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Cuba Lagi'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF36F21),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final displaySurahs = filteredSurahs;
 
     if (displaySurahs.isEmpty) {
@@ -1235,7 +1306,7 @@ class _QuranPageState extends State<QuranPage> {
     );
   }
 
-  Widget _buildSurahCard(Map<String, dynamic> surah) {
+  Widget _buildSurahCard(Surah surah) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -1257,7 +1328,7 @@ class _QuranPageState extends State<QuranPage> {
             // Navigate to surah detail page
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Membuka ${surah['nameTransliteration']}...'),
+                content: Text('Membuka ${surah.englishName}...'),
                 duration: const Duration(milliseconds: 1000),
               ),
             );
@@ -1280,7 +1351,7 @@ class _QuranPageState extends State<QuranPage> {
                   ),
                   child: Center(
                     child: Text(
-                      '${surah['number']}',
+                      '${surah.number}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -1299,7 +1370,7 @@ class _QuranPageState extends State<QuranPage> {
                     children: [
                       // Arabic Name on top
                       Text(
-                        surah['nameArabic'],
+                        surah.name,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -1310,7 +1381,7 @@ class _QuranPageState extends State<QuranPage> {
                       const SizedBox(height: 4),
                       // Transliteration below Arabic
                       Text(
-                        surah['nameTransliteration'],
+                        surah.englishName,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -1327,7 +1398,7 @@ class _QuranPageState extends State<QuranPage> {
                             child: Row(
                               children: [
                                 Text(
-                                  '${surah['ayatCount']} Ayat',
+                                  '${surah.numberOfAyahs} Ayat',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -1347,7 +1418,7 @@ class _QuranPageState extends State<QuranPage> {
                                 ),
                                 Flexible(
                                   child: Text(
-                                    surah['meaning'],
+                                    surah.malayTranslation,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[600],

@@ -153,6 +153,9 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
@@ -160,12 +163,12 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
         title: Text(
           'Zikir',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(

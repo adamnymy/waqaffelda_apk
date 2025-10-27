@@ -187,7 +187,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.primary,
-                      fontFamily: 'Arabic',
+                      fontFamily: 'Amiri',
                     ),
                     textAlign: TextAlign.center,
                   ),

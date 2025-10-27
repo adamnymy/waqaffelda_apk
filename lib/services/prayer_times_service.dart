@@ -662,17 +662,11 @@ class PrayerTimesService {
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
 
-        // Try to get the most specific location name possible
+        // Try to get user-friendly location name (prefer area/neighborhood over street names)
         String? locationName;
 
-        // Priority: subLocality (neighborhood/area) > locality (city) > subAdministrativeArea > administrativeArea
-        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
-          locationName = place.subLocality;
-          // If we have subLocality, we might want to combine it with locality
-          if (place.locality != null && place.locality != locationName) {
-            locationName = '$locationName, ${place.locality}';
-          }
-        } else if (place.locality != null && place.locality!.isNotEmpty) {
+        // Priority: locality (city/area) > subAdministrativeArea > administrativeArea > subLocality (only if short)
+        if (place.locality != null && place.locality!.isNotEmpty) {
           locationName = place.locality;
         } else if (place.subAdministrativeArea != null &&
             place.subAdministrativeArea!.isNotEmpty) {
@@ -680,9 +674,14 @@ class PrayerTimesService {
         } else if (place.administrativeArea != null &&
             place.administrativeArea!.isNotEmpty) {
           locationName = place.administrativeArea;
+        } else if (place.subLocality != null &&
+            place.subLocality!.isNotEmpty &&
+            place.subLocality!.length <= 30) {
+          // Only use subLocality if it's reasonably short
+          locationName = place.subLocality;
         }
 
-        // Filter out generic or unhelpful names
+        // Filter out generic or unhelpful names and limit length
         if (locationName != null) {
           final genericNames = [
             'Malaysia',
@@ -702,6 +701,10 @@ class PrayerTimesService {
           ];
 
           if (!genericNames.contains(locationName) && locationName.length > 2) {
+            // Limit location name to 35 characters to prevent overly long names
+            if (locationName.length > 35) {
+              locationName = locationName.substring(0, 32) + '...';
+            }
             print(
               'Location from geocoding: $locationName (lat: $latitude, lng: $longitude)',
             );

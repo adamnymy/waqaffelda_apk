@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
@@ -213,7 +214,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
@@ -224,7 +225,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.black),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
             onPressed: _loadPrayerTimes,
           ),
         ],
@@ -256,107 +257,202 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildHeaderCard() {
     return Container(
       width: double.infinity,
-      height: 250, // Reduced height to prevent overflow
+      height: 350,
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/masjidnegara.jpg'),
           fit: BoxFit.cover,
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 60, 24, 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white.withOpacity(0.7), // Adjusted opacity to 20%
-              Colors.white.withOpacity(0.6), // Adjusted opacity to 30%
-            ],
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.2),
+            BlendMode.darken,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              hijriDate,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+      ),
+      child: Stack(
+        children: [
+          // Blur effect
+          Container(
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.1)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          // Gradient overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.black.withOpacity(0.7),
+                ],
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              currentDate,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16, // Increased font size
-                fontWeight: FontWeight.bold, // Made it bold for emphasis
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          // Content
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
+            child: Column(
               children: [
-                const Icon(Icons.location_on, color: Colors.black, size: 18),
-                const SizedBox(width: 4),
-                Text(
-                  locationName,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 20),
+                // Date Section
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (nextPrayer != null && nextPrayer!['time'] != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Color(0xFFDEDEDE),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Waktu solat seterusnya',
-                      style: TextStyle(fontWeight: FontWeight.w400),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          nextPrayer!['name'] ?? 'Tidak diketahui',
-                          style: const TextStyle(
-                            color: Colors.teal,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        hijriDate,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 1,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0),
+                              Colors.white.withOpacity(0.5),
+                              Colors.white.withOpacity(0),
+                            ],
                           ),
                         ),
-                        Text(
-                          nextPrayer!['time'] ?? '--:--',
-                          style: const TextStyle(
-                            color: Colors.teal,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        currentDate,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.white.withOpacity(0.8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              locationName,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                // Next Prayer Card
+                if (nextPrayer != null && nextPrayer!['time'] != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.teal.withOpacity(0.9),
+                          Colors.teal.shade700.withOpacity(0.9),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Waktu Solat Seterusnya',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                nextPrayer!['name'] ?? 'Tidak diketahui',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            nextPrayer!['time'] ?? '--:--',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-          ],
-        ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

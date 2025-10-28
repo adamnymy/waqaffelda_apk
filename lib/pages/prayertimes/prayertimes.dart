@@ -13,7 +13,8 @@ class PrayerTimesPage extends StatefulWidget {
   _PrayerTimesPageState createState() => _PrayerTimesPageState();
 }
 
-class _PrayerTimesPageState extends State<PrayerTimesPage> {
+class _PrayerTimesPageState extends State<PrayerTimesPage>
+    with SingleTickerProviderStateMixin {
   String hijriDate = '';
   List<Map<String, dynamic>> prayerTimes = [];
   bool isLoading = true;
@@ -21,6 +22,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   String locationName = 'Memuatkan...';
   String currentDate = '';
   Map<String, String>? nextPrayer;
+
+  // Animation controller for refresh button
+  late AnimationController _refreshAnimationController;
+  bool _isRefreshing = false;
 
   // Track notification status for each prayer
   Map<String, bool> notificationStatus = {
@@ -35,12 +40,17 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   @override
   void initState() {
     super.initState();
+    _refreshAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
     _loadPrayerTimes();
     _setCurrentDate();
   }
 
   @override
   void dispose() {
+    _refreshAnimationController.dispose();
     super.dispose();
   }
 
@@ -102,6 +112,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Future<void> _loadPrayerTimes() async {
+    // Start rotation animation
+    setState(() {
+      _isRefreshing = true;
+    });
+    _refreshAnimationController.repeat();
+
     // Only show loading spinner on first load
     if (prayerTimes.isEmpty) {
       setState(() {
@@ -185,6 +201,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           isLoading = false;
         });
       }
+    } finally {
+      // Stop rotation animation when GPS detected
+      if (mounted) {
+        _refreshAnimationController.stop();
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
     }
   }
 
@@ -226,10 +250,45 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-            onPressed: _loadPrayerTimes,
-          ),
+          _isRefreshing
+              ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (index) {
+                      return AnimatedBuilder(
+                        animation: _refreshAnimationController,
+                        builder: (context, child) {
+                          final delay = index * 0.2;
+                          final animValue = (_refreshAnimationController.value -
+                                  delay)
+                              .clamp(0.0, 1.0);
+                          final scale =
+                              0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
+
+                          return Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ),
+              )
+              : IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                onPressed: _loadPrayerTimes,
+              ),
         ],
       ),
       extendBodyBehindAppBar: true,

@@ -3,6 +3,7 @@ import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
+import 'surah_detail_page.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
@@ -1367,10 +1368,10 @@ class _QuranPageState extends State<QuranPage> {
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             // Navigate to surah detail page
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Membuka ${surah.englishName}...'),
-                duration: const Duration(milliseconds: 1000),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SurahDetailPage(surah: surah),
               ),
             );
           },

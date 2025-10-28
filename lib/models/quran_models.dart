@@ -180,6 +180,7 @@ class Ayah {
   final int number;
   final String text;
   final int numberInSurah;
+  final String? translation; // Malay translation
   final int? juz;
   final int? manzil;
   final int? page;
@@ -191,6 +192,7 @@ class Ayah {
     required this.number,
     required this.text,
     required this.numberInSurah,
+    this.translation,
     this.juz,
     this.manzil,
     this.page,
@@ -204,6 +206,7 @@ class Ayah {
       number: json['number'] ?? 0,
       text: json['text'] ?? '',
       numberInSurah: json['numberInSurah'] ?? 0,
+      translation: json['translation'],
       juz: json['juz'] ?? 0,
       manzil: json['manzil'] ?? 0,
       page: json['page'] ?? 0,
@@ -218,6 +221,7 @@ class Ayah {
       'number': number,
       'text': text,
       'numberInSurah': numberInSurah,
+      'translation': translation,
       'juz': juz,
       'manzil': manzil,
       'page': page,

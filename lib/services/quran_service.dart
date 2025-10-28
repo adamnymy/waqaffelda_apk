@@ -39,6 +39,8 @@ class QuranService {
                   number: ayahJson['verse'] ?? 0,
                   text: ayahJson['text'] ?? '',
                   numberInSurah: ayahJson['verse'] ?? 0,
+                  translation:
+                      'Terjemahan akan datang...', // Placeholder translation
                 );
               }).toList();
 
@@ -101,6 +103,18 @@ class QuranService {
       print('❌ Ayah $ayahNumber not found in Surah $surahNumber');
       return null;
     }
+  }
+
+  /// Get all ayahs for a specific surah
+  static Future<List<Ayah>> getSurahAyahs(int surahNumber) async {
+    final surah = await getSurah(surahNumber);
+
+    if (surah == null) {
+      print('❌ Failed to load ayahs for surah $surahNumber');
+      return [];
+    }
+
+    return surah.ayahs;
   }
 
   /// Search for text in Quran

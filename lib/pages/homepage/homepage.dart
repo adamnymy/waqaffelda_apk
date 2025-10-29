@@ -270,30 +270,31 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Gradient background
-          Container(
-            height: screenHeight * 0.25, // Reduced gradient height
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.teal.shade400.withOpacity(0.3),
-                  const Color(0xFFFBC02D).withOpacity(0.2),
-                  Colors.white,
-                ],
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Stack(
+          children: [
+            // Gradient background (extends to status bar)
+            Container(
+              height: screenHeight * 0.25 + statusBarHeight,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.teal.shade400.withOpacity(0.3),
+                    const Color(0xFFFBC02D).withOpacity(0.2),
+                    Colors.white,
+                  ],
+                ),
               ),
             ),
-          ),
-          // Main content
-          SafeArea(
-            child: SingleChildScrollView(
-              controller: _scrollController,
+            // Main content with SafeArea
+            SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -331,8 +332,8 @@ class _HomepageState extends State<Homepage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
@@ -354,8 +355,15 @@ class _HomepageState extends State<Homepage> {
           Container(
             padding: EdgeInsets.all(screenWidth * 0.025),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.9),
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Image.asset(
               'assets/images/LogoWaqafer.png',
@@ -383,24 +391,28 @@ class _HomepageState extends State<Homepage> {
               child: Container(
                 height: screenHeight * 0.05,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Icon(Icons.search, color: Colors.white),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(Icons.search, color: Colors.grey.shade600),
                     ),
                     Text(
-                      'Search...',
+                      'Search',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Colors.grey.shade600,
                         fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

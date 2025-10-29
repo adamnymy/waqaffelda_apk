@@ -644,7 +644,8 @@ class PrayerTimesService {
         return {
           'name': prayer['name'],
           'time': prayer['time'],
-          'time24': prayer['time24'] ?? prayer['time'], // Include 24-hour format
+          'time24':
+              prayer['time24'] ?? prayer['time'], // Include 24-hour format
         };
       }
     }

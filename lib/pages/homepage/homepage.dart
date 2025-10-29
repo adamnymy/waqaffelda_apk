@@ -150,7 +150,8 @@ class _HomepageState extends State<Homepage> {
       // Expect nextPrayer contains 'name', 'time' (12-hour), and 'time24' (24-hour)
       final name = nextPrayer['name'] ?? '';
       final timeStr = nextPrayer['time'] ?? '';
-      final time24 = nextPrayer['time24'] ?? timeStr; // Use 24-hour format for calculation
+      final time24 =
+          nextPrayer['time24'] ?? timeStr; // Use 24-hour format for calculation
 
       print('Next prayer: $name at $timeStr (24h: $time24)'); // Debug log
 
@@ -163,7 +164,9 @@ class _HomepageState extends State<Homepage> {
       });
 
       // Only recreate countdown timer if prayer changed or timer doesn't exist
-      if (isPrayerChanged || _countdownTimer == null || !_countdownTimer!.isActive) {
+      if (isPrayerChanged ||
+          _countdownTimer == null ||
+          !_countdownTimer!.isActive) {
         // Parse time24 (24-hour format) and start countdown
         try {
           final parts = time24.split(':');
@@ -185,14 +188,18 @@ class _HomepageState extends State<Homepage> {
             // initialize countdown and total duration for progress
             _countdownTimer?.cancel();
             final initialCountdown = target.difference(now);
-            print('Starting new countdown: ${initialCountdown.inSeconds} seconds (${_formatDuration(initialCountdown)})'); // Debug log
-            
+            print(
+              'Starting new countdown: ${initialCountdown.inSeconds} seconds (${_formatDuration(initialCountdown)})',
+            ); // Debug log
+
             setState(() {
               _countdown = initialCountdown;
               _totalCountdown = initialCountdown;
             });
 
-            _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            _countdownTimer = Timer.periodic(const Duration(seconds: 1), (
+              timer,
+            ) {
               if (!mounted) return;
               final remaining = target.difference(DateTime.now());
               if (remaining.inSeconds <= 0) {

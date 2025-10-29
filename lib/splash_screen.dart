@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
     _startAnimations();
 
     // Navigate after animations complete
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 1), () {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(

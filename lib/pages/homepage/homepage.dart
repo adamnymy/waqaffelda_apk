@@ -272,47 +272,67 @@ class _HomepageState extends State<Homepage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.white, // Changed to white
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: screenHeight * 0.02),
-
-              // App Bar with Search
-              _buildAppBar(context),
-
-              SizedBox(height: screenHeight * 0.02),
-
-              // Step 3: Main Carousel
-              _buildMainCarousel(context),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // Step 4: Icon Menu
-              _buildIconMenu(context),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // Step 5: Compact Prayer Time Card (moved below menu)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.05,
-                ),
-                child: _buildCompactPrayerCard(context),
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Gradient background
+          Container(
+            height: screenHeight * 0.25, // Reduced gradient height
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.teal.shade400.withOpacity(0.3),
+                  const Color(0xFFFBC02D).withOpacity(0.2),
+                  Colors.white,
+                ],
               ),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // Step 6: Ayat Hari Ini
-              _buildAyatHariIni(context),
-
-              SizedBox(height: screenHeight * 0.03),
-            ],
+            ),
           ),
-        ),
+          // Main content
+          SafeArea(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // App Bar with Search
+                  _buildAppBar(context),
+
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // Step 1: Compact Prayer Time Card (at the top)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width * 0.03,
+                    ),
+                    child: _buildCompactPrayerCard(context),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Step 2: Icon Menu
+                  _buildIconMenu(context),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Step 3: Main Carousel (moved below menu)
+                  _buildMainCarousel(context),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Step 6: Ayat Hari Ini
+                  _buildAyatHariIni(context),
+
+                  SizedBox(height: screenHeight * 0.03),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
@@ -334,7 +354,7 @@ class _HomepageState extends State<Homepage> {
           Container(
             padding: EdgeInsets.all(screenWidth * 0.025),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.1),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
             ),
             child: Image.asset(
@@ -363,19 +383,23 @@ class _HomepageState extends State<Homepage> {
               child: Container(
                 height: screenHeight * 0.05,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Icon(Icons.search, color: Colors.grey),
+                      child: Icon(Icons.search, color: Colors.white),
                     ),
                     Text(
                       'Search...',
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: Colors.white70,
                         fontSize: screenWidth * 0.04,
                       ),
                     ),
@@ -509,8 +533,8 @@ class _HomepageState extends State<Homepage> {
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.04,
-        vertical: screenHeight * 0.015,
+        horizontal: screenWidth * 0.02,
+        vertical: screenHeight * 0.01,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -529,7 +553,7 @@ class _HomepageState extends State<Homepage> {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.05),
+        padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -624,7 +648,7 @@ class _HomepageState extends State<Homepage> {
                 ),
               ],
             ),
-            SizedBox(height: screenHeight * 0.02),
+            SizedBox(height: screenHeight * 0.015),
             // Time and countdown section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

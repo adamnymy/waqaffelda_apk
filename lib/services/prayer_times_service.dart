@@ -537,6 +537,7 @@ class PrayerTimesService {
         'name': 'Subuh',
         'arabic': 'الفجر',
         'time': _formatTime(timings['Fajr']),
+        'time24': timings['Fajr'], // Add raw 24-hour time
         'icon': 'wb_twilight',
         'color': 0xFF4A90E2,
         'isPassed': _isPrayerPassed(timings['Fajr']),
@@ -545,6 +546,7 @@ class PrayerTimesService {
         'name': 'Syuruk',
         'arabic': 'الشروق',
         'time': _formatTime(timings['Sunrise'] ?? '06:00'),
+        'time24': timings['Sunrise'] ?? '06:00', // Add raw 24-hour time
         'icon': 'wb_sunny',
         'color': 0xFFFFA726,
         'isPassed': _isPrayerPassed(timings['Sunrise'] ?? '06:00'),
@@ -553,6 +555,7 @@ class PrayerTimesService {
         'name': 'Zohor',
         'arabic': 'الظهر',
         'time': _formatTime(timings['Dhuhr']),
+        'time24': timings['Dhuhr'], // Add raw 24-hour time
         'icon': 'wb_sunny',
         'color': 0xFFFFB74D,
         'isPassed': _isPrayerPassed(timings['Dhuhr']),
@@ -561,6 +564,7 @@ class PrayerTimesService {
         'name': 'Asar',
         'arabic': 'العصر',
         'time': _formatTime(timings['Asr']),
+        'time24': timings['Asr'], // Add raw 24-hour time
         'icon': 'wb_cloudy',
         'color': 0xFFFF8A65,
         'isPassed': _isPrayerPassed(timings['Asr']),
@@ -569,6 +573,7 @@ class PrayerTimesService {
         'name': 'Maghrib',
         'arabic': 'المغرب',
         'time': _formatTime(timings['Maghrib']),
+        'time24': timings['Maghrib'], // Add raw 24-hour time
         'icon': 'brightness_3',
         'color': 0xFF9575CD,
         'isPassed': _isPrayerPassed(timings['Maghrib']),
@@ -577,6 +582,7 @@ class PrayerTimesService {
         'name': 'Isyak',
         'arabic': 'العشاء',
         'time': _formatTime(timings['Isha']),
+        'time24': timings['Isha'], // Add raw 24-hour time
         'icon': 'brightness_2',
         'color': 0xFF7986CB,
         'isPassed': _isPrayerPassed(timings['Isha']),
@@ -635,16 +641,24 @@ class PrayerTimesService {
       if (prayer['name'] == 'Syuruk') continue;
 
       if (!prayer['isPassed']) {
-        return {'name': prayer['name'], 'time': prayer['time']};
+        return {
+          'name': prayer['name'],
+          'time': prayer['time'],
+          'time24': prayer['time24'] ?? prayer['time'], // Include 24-hour format
+        };
       }
     }
     // If all prayers have passed, next prayer is Subuh of tomorrow
     // Return the actual Subuh time instead of 'Esok'
     final subuhPrayer = prayers.firstWhere(
       (prayer) => prayer['name'] == 'Subuh',
-      orElse: () => {'name': 'Subuh', 'time': '--:--'},
+      orElse: () => {'name': 'Subuh', 'time': '--:--', 'time24': '--:--'},
     );
-    return {'name': 'Subuh', 'time': subuhPrayer['time']};
+    return {
+      'name': 'Subuh',
+      'time': subuhPrayer['time'],
+      'time24': subuhPrayer['time24'] ?? subuhPrayer['time'],
+    };
   }
 
   // Get location name from coordinates (reverse geocoding) - enhanced for accuracy

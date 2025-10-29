@@ -83,8 +83,8 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _startTimer() {
-    // Keep a periodic tick to refresh next-prayer calculation (every second)
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    // Check for next prayer update every minute (not every second to avoid recreating countdown)
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _updateNextPrayer();
     });
   }
@@ -147,53 +147,68 @@ class _HomepageState extends State<Homepage> {
 
     final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
     if (nextPrayer != null && mounted) {
-      // Expect nextPrayer contains 'name' and 'time' (HH:mm)
+      // Expect nextPrayer contains 'name', 'time' (12-hour), and 'time24' (24-hour)
       final name = nextPrayer['name'] ?? '';
       final timeStr = nextPrayer['time'] ?? '';
+      final time24 = nextPrayer['time24'] ?? timeStr; // Use 24-hour format for calculation
+
+      print('Next prayer: $name at $timeStr (24h: $time24)'); // Debug log
+
+      // Check if this is a new prayer (name or time changed)
+      final newPrayerText = 'Solat Seterusnya: $name - $timeStr';
+      final bool isPrayerChanged = _nextPrayerText != newPrayerText;
 
       setState(() {
-        _nextPrayerText = 'Solat Seterusnya: $name - $timeStr';
+        _nextPrayerText = newPrayerText;
       });
 
-      // Parse time and start countdown
-      try {
-        final parts = timeStr.split(':');
-        if (parts.length >= 2) {
-          final int hour = int.parse(parts[0]);
-          final int minute = int.parse(parts[1]);
-          DateTime now = DateTime.now();
-          DateTime target = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            hour,
-            minute,
-          );
-          if (target.isBefore(now)) {
-            target = target.add(const Duration(days: 1));
-          }
-
-          // initialize countdown and total duration for progress
-          _countdownTimer?.cancel();
-          _countdown = target.difference(now);
-          _totalCountdown = _countdown;
-
-          _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-            if (!mounted) return;
-            final remaining = target.difference(DateTime.now());
-            if (remaining.inSeconds <= 0) {
-              timer.cancel();
-              // refresh prayer times for next prayer
-              _loadPrayerTimes();
-              return;
+      // Only recreate countdown timer if prayer changed or timer doesn't exist
+      if (isPrayerChanged || _countdownTimer == null || !_countdownTimer!.isActive) {
+        // Parse time24 (24-hour format) and start countdown
+        try {
+          final parts = time24.split(':');
+          if (parts.length >= 2) {
+            final int hour = int.parse(parts[0]);
+            final int minute = int.parse(parts[1]);
+            DateTime now = DateTime.now();
+            DateTime target = DateTime(
+              now.year,
+              now.month,
+              now.day,
+              hour,
+              minute,
+            );
+            if (target.isBefore(now)) {
+              target = target.add(const Duration(days: 1));
             }
+
+            // initialize countdown and total duration for progress
+            _countdownTimer?.cancel();
+            final initialCountdown = target.difference(now);
+            print('Starting new countdown: ${initialCountdown.inSeconds} seconds (${_formatDuration(initialCountdown)})'); // Debug log
+            
             setState(() {
-              _countdown = remaining;
+              _countdown = initialCountdown;
+              _totalCountdown = initialCountdown;
             });
-          });
+
+            _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (!mounted) return;
+              final remaining = target.difference(DateTime.now());
+              if (remaining.inSeconds <= 0) {
+                timer.cancel();
+                // refresh prayer times for next prayer
+                _loadPrayerTimes();
+                return;
+              }
+              setState(() {
+                _countdown = remaining;
+              });
+            });
+          }
+        } catch (e) {
+          print('Error parsing prayer time: $e'); // Debug log
         }
-      } catch (e) {
-        // ignore parse errors
       }
     }
   }
@@ -705,9 +720,9 @@ class _HomepageState extends State<Homepage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _countdown.inSeconds > 0
+                        _countdown.inSeconds >= 0
                             ? _formatDuration(_countdown)
-                            : '--:--:--',
+                            : 'Loading...',
                         style: TextStyle(
                           color: Colors.teal.shade600,
                           fontSize: screenWidth * 0.05,

@@ -81,47 +81,86 @@ class _KiblatPageState extends State<KiblatPage> {
   }
 
   Future<void> _init() async {
-    // Only show loading on first visit
-    if (_position == null) {
-      if (mounted) setState(() => _loadingLocation = true);
-    }
+    if (!mounted) return;
 
     try {
       await _ensureLocationPermission();
-      _position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-      );
 
-      // Get location name
-      if (_position != null) {
-        _distanceToKaaba = _calculateDistance(
-          _position!.latitude,
-          _position!.longitude,
-          _kaabaLat,
-          _kaabaLon,
-        );
-
-        try {
-          List<Placemark> placemarks = await placemarkFromCoordinates(
-            _position!.latitude,
-            _position!.longitude,
-          );
-          if (placemarks.isNotEmpty) {
-            final place = placemarks.first;
-            _locationName =
-                place.locality ??
-                place.subAdministrativeArea ??
-                place.administrativeArea ??
-                'Unknown Location';
-          }
-        } catch (e) {
-          _locationName = 'Location Found';
+      // 1. Try to get last known position for a quick start.
+      Position? lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        if (mounted) {
+          setState(() {
+            _position = lastKnown;
+            _loadingLocation = false; // Show compass immediately
+            _locationName = 'Updating location...';
+          });
+          // Update location name and distance in the background
+          _updateLocationDetails(lastKnown);
         }
       }
+
+      // 2. Get current position to refine accuracy.
+      _position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15), // Add a timeout
+      );
+
+      if (mounted) {
+        setState(() {
+          _loadingLocation = false;
+        });
+        // Update location name and distance with the new, more accurate position.
+        _updateLocationDetails(_position!);
+      }
+    } on TimeoutException catch (_) {
+      if (mounted) {
+        setState(() {
+          _error = 'Could not get location in time. Please try again.';
+          _loadingLocation = false;
+        });
+      }
     } catch (e) {
-      _error = 'Location unavailable: $e';
-    } finally {
-      if (mounted) setState(() => _loadingLocation = false);
+      if (mounted) {
+        setState(() {
+          _error = 'Location unavailable: $e';
+          _loadingLocation = false;
+        });
+      }
+    }
+  }
+
+  // Helper to fetch location name and distance without blocking the UI
+  Future<void> _updateLocationDetails(Position position) async {
+    final distance = _calculateDistance(
+      position.latitude,
+      position.longitude,
+      _kaabaLat,
+      _kaabaLon,
+    );
+
+    String locationName = 'Location Found';
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        locationName = place.locality ??
+            place.subAdministrativeArea ??
+            place.administrativeArea ??
+            'Unknown Location';
+      }
+    } catch (e) {
+      // Ignore reverse geocoding errors, as we have a fallback.
+    }
+
+    if (mounted) {
+      setState(() {
+        _distanceToKaaba = distance;
+        _locationName = locationName;
+      });
     }
   }
 

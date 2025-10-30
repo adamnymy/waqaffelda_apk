@@ -524,6 +524,111 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
   Widget _buildAllPrayerTimesCard() {
     final colorScheme = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Use asMap to get both index and value for efficient divider handling
+    final prayerWidgets =
+        prayerTimes.asMap().entries.map((entry) {
+          final int index = entry.key;
+          final Map<String, dynamic> prayer = entry.value;
+
+          final bool isNextPrayer =
+              nextPrayer != null &&
+              nextPrayer!['name'] == prayer['name'] &&
+              !prayer['isPassed'];
+          final bool isPassed = prayer['isPassed'] ?? false;
+
+          return Column(
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05, // Responsive padding
+                  vertical: screenWidth * 0.01,
+                ),
+                leading: Container(
+                  padding: EdgeInsets.all(
+                    screenWidth * 0.025,
+                  ), // Responsive padding
+                  decoration: BoxDecoration(
+                    color:
+                        isNextPrayer
+                            ? colorScheme.primary.withOpacity(0.15)
+                            : isPassed
+                            ? Colors.grey.shade200
+                            : colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    prayer['icon'] ?? Icons.access_time,
+                    color:
+                        isNextPrayer
+                            ? colorScheme.primary
+                            : isPassed
+                            ? Colors.grey.shade400
+                            : colorScheme.primary,
+                    size: screenWidth * 0.06, // Responsive icon size
+                  ),
+                ),
+                title: Text(
+                  prayer['name'] ?? '',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04, // Responsive font size
+                    fontWeight: FontWeight.bold,
+                    color:
+                        isNextPrayer
+                            ? colorScheme.primary
+                            : isPassed
+                            ? Colors.grey.shade500
+                            : colorScheme.onSurface,
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isNextPrayer)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Seterusnya',
+                          style: TextStyle(
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                screenWidth * 0.025, // Responsive font size
+                          ),
+                        ),
+                      ),
+                    SizedBox(width: screenWidth * 0.03),
+                    Text(
+                      prayer['time'] ?? '--:--',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04, // Responsive font size
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isNextPrayer ? colorScheme.primary : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (index < prayerTimes.length - 1)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Colors.grey.shade200,
+                  indent: screenWidth * 0.05,
+                  endIndent: screenWidth * 0.05,
+                ),
+            ],
+          );
+        }).toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -537,108 +642,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           ),
         ],
       ),
-      child: Column(
-        children:
-            prayerTimes.map((prayer) {
-              final bool isNextPrayer =
-                  nextPrayer != null &&
-                  nextPrayer!['name'] == prayer['name'] &&
-                  !prayer['isPassed'];
-              final bool isPassed = prayer['isPassed'] ?? false;
-              final int index = prayerTimes.indexOf(prayer);
-
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color:
-                                isNextPrayer
-                                    ? colorScheme.primary.withOpacity(0.15)
-                                    : isPassed
-                                    ? Colors.grey.shade200
-                                    : colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            prayer['icon'] ?? Icons.access_time,
-                            color:
-                                isNextPrayer
-                                    ? colorScheme.primary
-                                    : isPassed
-                                    ? Colors.grey.shade400
-                                    : colorScheme.primary,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            prayer['name'] ?? '',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isNextPrayer
-                                      ? colorScheme.primary
-                                      : isPassed
-                                      ? Colors.grey.shade500
-                                      : colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                        if (isNextPrayer)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Seterusnya',
-                              style: TextStyle(
-                                color: colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 16),
-                        Text(
-                          prayer['time'] ?? '--:--',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                isNextPrayer
-                                    ? colorScheme.primary
-                                    : Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (index < prayerTimes.length - 1)
-                    Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Colors.grey.shade200,
-                      indent: 20,
-                      endIndent: 20,
-                    ),
-                ],
-              );
-            }).toList(),
+      // ClipRRect ensures the dividers don't overflow the rounded corners
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(children: prayerWidgets),
       ),
     );
   }

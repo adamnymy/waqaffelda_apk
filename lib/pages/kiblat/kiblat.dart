@@ -147,7 +147,8 @@ class _KiblatPageState extends State<KiblatPage> {
       );
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        locationName = place.locality ??
+        locationName =
+            place.locality ??
             place.subAdministrativeArea ??
             place.administrativeArea ??
             'Unknown Location';

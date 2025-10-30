@@ -52,17 +52,23 @@ class _KiblatPageState extends State<KiblatPage> {
           final qAngle = (bearing - newHeading + 360) % 360;
           final off = qAngle.abs();
           final delta = off <= 180 ? off : (360 - off);
-          final isAligned = delta <= 5;
+          final isAligned = delta.round() == 0;
           if (isAligned && !_wasAligned) {
-            // Haptic + sound once when entering aligned zone
+            // Strong haptic + vibration + sound once when aligned to Qibla
             try {
-              HapticFeedback.mediumImpact();
-            } catch (_) {}
-            try {
-              HapticFeedback.lightImpact();
+              HapticFeedback.heavyImpact();
             } catch (_) {}
             try {
               HapticFeedback.vibrate();
+            } catch (_) {}
+            try {
+              HapticFeedback.heavyImpact();
+            } catch (_) {}
+            try {
+              HapticFeedback.vibrate();
+            } catch (_) {}
+            try {
+              HapticFeedback.heavyImpact();
             } catch (_) {}
             SystemSound.play(SystemSoundType.click);
           }
@@ -237,10 +243,10 @@ class _KiblatPageState extends State<KiblatPage> {
             ? (bearingToKaaba - heading + 360) % 360
             : null;
 
-    // Check if aligned (within 5 degrees)
+    // Check if aligned (exactly 0 degrees)
     final isAligned =
         qiblaAngleDeg != null &&
-        ((qiblaAngleDeg.abs() <= 5) || ((360 - qiblaAngleDeg.abs()) <= 5));
+        (qiblaAngleDeg.round() == 0 || qiblaAngleDeg.round() == 360);
 
     return Scaffold(
       backgroundColor: colorScheme.background,

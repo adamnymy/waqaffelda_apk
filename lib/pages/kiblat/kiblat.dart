@@ -120,7 +120,8 @@ class _KiblatPageState extends State<KiblatPage> {
 
       // 2. Get current position to refine accuracy.
       _position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high, // Changed to high for better accuracy
+        desiredAccuracy:
+            LocationAccuracy.high, // Changed to high for better accuracy
         timeLimit: const Duration(seconds: 15), // Add a timeout
       );
 
@@ -223,7 +224,7 @@ class _KiblatPageState extends State<KiblatPage> {
   double? _bearingToKaabaDegrees() {
     final pos = _position;
     if (pos == null) return null;
-    
+
     final lat1 = _degToRad(pos.latitude);
     final lon1 = _degToRad(pos.longitude);
     final lat2 = _degToRad(_kaabaLat);
@@ -235,16 +236,19 @@ class _KiblatPageState extends State<KiblatPage> {
         math.cos(lat1) * math.sin(lat2) -
         math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
     final theta = math.atan2(y, x);
-    
+
     // Convert to degrees and normalize to 0-360
     double bearing = (_radToDeg(theta) + 360) % 360;
-    
+
     // Apply magnetic declination for Malaysia (approximately +0.5° to +1.5°)
     // For better accuracy across Malaysia, we use an average of +1.0°
     // This compensates for the difference between true north and magnetic north
-    final magneticDeclination = _getMagneticDeclination(pos.latitude, pos.longitude);
+    final magneticDeclination = _getMagneticDeclination(
+      pos.latitude,
+      pos.longitude,
+    );
     bearing = (bearing + magneticDeclination + 360) % 360;
-    
+
     return bearing;
   }
 
@@ -253,7 +257,7 @@ class _KiblatPageState extends State<KiblatPage> {
     // Malaysia is roughly between latitude 1°N to 7°N, longitude 99°E to 119°E
     // Magnetic declination in Malaysia varies from +0.3° to +1.8°
     // We use a simplified model based on location
-    
+
     // Northern Malaysia (Perlis, Kedah, Penang, Perak) - higher declination
     if (latitude > 5.0) {
       return 1.2;

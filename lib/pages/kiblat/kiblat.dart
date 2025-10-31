@@ -32,6 +32,10 @@ class _KiblatPageState extends State<KiblatPage> {
   void initState() {
     super.initState();
     _init();
+  }
+
+  // Start compass subscription only after location is obtained
+  void _startCompassSubscription() {
     // Guard: Only subscribe to compass on mobile platforms
     if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
       setState(() {
@@ -40,11 +44,17 @@ class _KiblatPageState extends State<KiblatPage> {
       return;
     }
 
+    // Cancel existing subscription if any
+    _compassSub?.cancel();
+
     _compassSub = FlutterCompass.events?.listen(
       (event) {
         if (!mounted) return;
         final newHeading = event.heading; // may be null on some devices
         if (newHeading == null) return;
+
+        // Only process if we have a valid position
+        if (_position == null) return;
 
         // Compute qibla angle to check alignment for feedback
         final bearing = _bearingToKaabaDegrees();
@@ -101,6 +111,8 @@ class _KiblatPageState extends State<KiblatPage> {
             _loadingLocation = false; // Show compass immediately
             _locationName = 'Updating location...';
           });
+          // Start compass subscription after we have initial position
+          _startCompassSubscription();
           // Update location name and distance in the background
           _updateLocationDetails(lastKnown);
         }
@@ -108,7 +120,7 @@ class _KiblatPageState extends State<KiblatPage> {
 
       // 2. Get current position to refine accuracy.
       _position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
+        desiredAccuracy: LocationAccuracy.high, // Changed to high for better accuracy
         timeLimit: const Duration(seconds: 15), // Add a timeout
       );
 
@@ -116,6 +128,8 @@ class _KiblatPageState extends State<KiblatPage> {
         setState(() {
           _loadingLocation = false;
         });
+        // Start compass subscription with accurate position
+        _startCompassSubscription();
         // Update location name and distance with the new, more accurate position.
         _updateLocationDetails(_position!);
       }
@@ -209,6 +223,7 @@ class _KiblatPageState extends State<KiblatPage> {
   double? _bearingToKaabaDegrees() {
     final pos = _position;
     if (pos == null) return null;
+    
     final lat1 = _degToRad(pos.latitude);
     final lon1 = _degToRad(pos.longitude);
     final lat2 = _degToRad(_kaabaLat);
@@ -220,8 +235,37 @@ class _KiblatPageState extends State<KiblatPage> {
         math.cos(lat1) * math.sin(lat2) -
         math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
     final theta = math.atan2(y, x);
-    final bearing = (_radToDeg(theta) + 360) % 360; // degrees from north
+    
+    // Convert to degrees and normalize to 0-360
+    double bearing = (_radToDeg(theta) + 360) % 360;
+    
+    // Apply magnetic declination for Malaysia (approximately +0.5° to +1.5°)
+    // For better accuracy across Malaysia, we use an average of +1.0°
+    // This compensates for the difference between true north and magnetic north
+    final magneticDeclination = _getMagneticDeclination(pos.latitude, pos.longitude);
+    bearing = (bearing + magneticDeclination + 360) % 360;
+    
     return bearing;
+  }
+
+  // Get approximate magnetic declination for Malaysia region
+  double _getMagneticDeclination(double latitude, double longitude) {
+    // Malaysia is roughly between latitude 1°N to 7°N, longitude 99°E to 119°E
+    // Magnetic declination in Malaysia varies from +0.3° to +1.8°
+    // We use a simplified model based on location
+    
+    // Northern Malaysia (Perlis, Kedah, Penang, Perak) - higher declination
+    if (latitude > 5.0) {
+      return 1.2;
+    }
+    // Central Malaysia (Selangor, KL, Pahang, etc) - medium declination
+    else if (latitude > 3.0) {
+      return 1.0;
+    }
+    // Southern Malaysia (Johor) and East Malaysia - lower declination
+    else {
+      return 0.8;
+    }
   }
 
   double _degToRad(double d) => d * math.pi / 180.0;
@@ -323,7 +367,10 @@ class _KiblatPageState extends State<KiblatPage> {
                           setState(() {
                             _loadingLocation = true;
                             _error = null;
+                            _position = null;
+                            _heading = null;
                           });
+                          _compassSub?.cancel();
                           _init();
                         },
                         icon: const Icon(Icons.refresh),
@@ -625,7 +672,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Kalibrasi Kompas',
+                                        'Tips Ketepatan',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -634,10 +681,11 @@ class _KiblatPageState extends State<KiblatPage> {
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        'Gerakkan telefon dalam bentuk 8/∞',
+                                        '• Jauhkan dari objek magnetik\n• Gerakkan telefon bentuk 8/∞ untuk kalibrasi\n• Pastikan GPS aktif untuk ketepatan lokasi',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey[700],
+                                          height: 1.5,
                                         ),
                                       ),
                                     ],

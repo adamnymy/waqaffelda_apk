@@ -594,7 +594,7 @@ class _HomepageState extends State<Homepage> {
             // SVG Background with opacity
             Positioned.fill(
               child: Opacity(
-                opacity: 0.35,
+                opacity: 0.22,
                 child: SvgPicture.asset(
                   'assets/images/widget-bg-wsolat.svg',
                   fit: BoxFit.cover,

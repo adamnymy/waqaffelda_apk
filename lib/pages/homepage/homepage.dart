@@ -13,6 +13,7 @@ import '../quran/quranpage.dart';
 import '../kiblat/kiblat.dart';
 import '../../utils/page_transitions.dart';
 import 'searchpage/search_page.dart'; // Corrected import path for SearchPage
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -300,19 +301,11 @@ class _HomepageState extends State<Homepage> {
         controller: _scrollController,
         child: Stack(
           children: [
-            // Gradient background (extends to status bar)
+            // Solid navy blue background (extends to status bar)
             Container(
               height: screenHeight * 0.25 + statusBarHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.teal.shade400.withOpacity(0.3),
-                    const Color(0xFFFBC02D).withOpacity(0.2),
-                    Colors.white,
-                  ],
-                ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2C5F7C), // Softer navy blue color
               ),
             ),
             // Main content with SafeArea
@@ -586,160 +579,180 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            // Header with progress ring and prayer name
-            Row(
-              children: [
-                // Progress ring with clock icon
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Stack(
-                    alignment: Alignment.center,
+            // SVG Background with opacity
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.9,
+                child: SvgPicture.asset(
+                  'assets/images/widget-bg-wsolat.svg',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with progress ring and prayer name
+                  Row(
                     children: [
-                      if (_totalCountdown != null &&
-                          _totalCountdown!.inSeconds > 0)
-                        CircularProgressIndicator(
-                          value:
-                              (_totalCountdown!.inSeconds -
-                                  _countdown.inSeconds) /
-                              _totalCountdown!.inSeconds,
-                          strokeWidth: 3,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFFFBC02D),
-                          ),
-                          backgroundColor: Colors.grey.shade200,
+                      // Progress ring with clock icon
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (_totalCountdown != null &&
+                                _totalCountdown!.inSeconds > 0)
+                              CircularProgressIndicator(
+                                value:
+                                    (_totalCountdown!.inSeconds -
+                                        _countdown.inSeconds) /
+                                    _totalCountdown!.inSeconds,
+                                strokeWidth: 3,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Color(0xFFFBC02D),
+                                ),
+                                backgroundColor: Colors.grey.shade200,
+                              ),
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.access_time_rounded,
+                                color: Colors.teal.shade600,
+                                size: 20,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                      SizedBox(width: screenWidth * 0.04),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'SOLAT SETERUSNYA',
+                              style: TextStyle(
+                                color: Colors.grey.shade800,
+                                fontSize: screenWidth * 0.032,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              nextPrayerName.isNotEmpty
+                                  ? nextPrayerName.toUpperCase()
+                                  : 'MEMUAT...',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: screenWidth * 0.052,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Action button
                       Container(
-                        width: 40,
-                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.teal.shade50,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          Icons.access_time_rounded,
-                          color: Colors.teal.shade600,
-                          size: 20,
+                        child: IconButton(
+                          tooltip: 'Lihat Waktu Solat',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              SmoothPageRoute(page: const PrayerTimesPage()),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.teal.shade600,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(width: screenWidth * 0.04),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(height: screenHeight * 0.015),
+                  // Time and countdown section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'SOLAT SETERUSNYA',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: screenWidth * 0.032,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
+                      // Prayer Time
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'WAKTU',
+                              style: TextStyle(
+                                color: Colors.grey.shade800,
+                                fontSize: screenWidth * 0.028,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              nextPrayerTime.isNotEmpty
+                                  ? nextPrayerTime
+                                  : '--:--',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: screenWidth * 0.06,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        nextPrayerName.isNotEmpty
-                            ? nextPrayerName.toUpperCase()
-                            : 'MEMUAT...',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: screenWidth * 0.052,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Action button
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    tooltip: 'Lihat Waktu Solat',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        SmoothPageRoute(page: const PrayerTimesPage()),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.teal.shade600,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.015),
-            // Time and countdown section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Prayer Time
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'WAKTU',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: screenWidth * 0.028,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: screenWidth * 0.06,
-                          fontWeight: FontWeight.w800,
+                      // Countdown
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'BAKI MASA',
+                              style: TextStyle(
+                                color: Colors.grey.shade800,
+                                fontSize: screenWidth * 0.028,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _countdown.inSeconds >= 0
+                                  ? _formatDuration(_countdown)
+                                  : 'Loading...',
+                              style: TextStyle(
+                                color: Colors.teal.shade600,
+                                fontSize: screenWidth * 0.05,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                // Countdown
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'BAKI MASA',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: screenWidth * 0.028,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _countdown.inSeconds >= 0
-                            ? _formatDuration(_countdown)
-                            : 'Loading...',
-                        style: TextStyle(
-                          color: Colors.teal.shade600,
-                          fontSize: screenWidth * 0.05,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

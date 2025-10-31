@@ -1007,50 +1007,41 @@ class CompassPainter extends CustomPainter {
     // Draw rotating arrow that points to Qibla
     if (qiblaBearing != null && heading != null) {
       // Calculate the relative angle: where Qibla is relative to current heading
-      final relativeAngle = (qiblaBearing! - heading!) * math.pi / 180;
-      final arrowLength = radius - 50;
+      final relativeAngle = (qiblaBearing! - heading!);
+      final arrowAngle = relativeAngle * math.pi / 180;
 
-      // Arrow points in the direction of relativeAngle (0° = North/up on static compass)
-      final angle =
-          relativeAngle -
-          math.pi / 2; // Adjust for canvas coordinates (0° = right)
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(arrowAngle);
 
-      // Arrow shaft
-      final shaftStart = center;
-      final shaftEnd = Offset(
-        center.dx + arrowLength * math.cos(angle),
-        center.dy + arrowLength * math.sin(angle),
+      // Modern sleek arrow design
+      final arrowLength = radius - 40;
+
+      // Main arrow body - rounded capsule shape
+      final bodyPath = Path();
+      final bodyWidth = 10.0;
+      final bodyLength = arrowLength - 25;
+
+      // Create rounded rectangle for arrow body
+      bodyPath.addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: Offset(0, -bodyLength / 2 + 5),
+            width: bodyWidth,
+            height: bodyLength,
+          ),
+          Radius.circular(bodyWidth / 2),
+        ),
       );
 
-      final shaftPaint =
+      final bodyPaint =
           Paint()
             ..color = secondaryColor
-            ..strokeWidth = 6
-            ..strokeCap = StrokeCap.round;
-      canvas.drawLine(shaftStart, shaftEnd, shaftPaint);
+            ..style = PaintingStyle.fill;
 
-      // Arrow head
-      final headSize = 20.0;
-      final headWidth = 12.0;
+      canvas.drawPath(bodyPath, bodyPaint);
 
-      final tip = shaftEnd;
-      final left = Offset(
-        tip.dx -
-            headSize * math.cos(angle) +
-            headWidth * math.cos(angle + math.pi / 2),
-        tip.dy -
-            headSize * math.sin(angle) +
-            headWidth * math.sin(angle + math.pi / 2),
-      );
-      final right = Offset(
-        tip.dx -
-            headSize * math.cos(angle) +
-            headWidth * math.cos(angle - math.pi / 2),
-        tip.dy -
-            headSize * math.sin(angle) +
-            headWidth * math.sin(angle - math.pi / 2),
-      );
-
+      // Arrow head - sharp pointed triangle
       final headPaint =
           Paint()
             ..color = secondaryColor
@@ -1058,11 +1049,33 @@ class CompassPainter extends CustomPainter {
 
       final headPath =
           Path()
-            ..moveTo(tip.dx, tip.dy)
-            ..lineTo(left.dx, left.dy)
-            ..lineTo(right.dx, right.dy)
+            ..moveTo(0, -arrowLength) // Sharp tip
+            ..lineTo(-18, -arrowLength + 32) // Left wing
+            ..lineTo(-8, -arrowLength + 26) // Left inner
+            ..lineTo(0, -arrowLength + 22) // Center notch
+            ..lineTo(8, -arrowLength + 26) // Right inner
+            ..lineTo(18, -arrowLength + 32) // Right wing
             ..close();
+
       canvas.drawPath(headPath, headPaint);
+
+      // Add subtle shadow/depth to arrow head
+      final shadowPaint =
+          Paint()
+            ..color = Colors.black.withOpacity(0.15)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3);
+
+      canvas.drawPath(headPath, shadowPaint);
+
+      // Optional: Add a small circle at the base for better visual balance
+      final basePaint =
+          Paint()
+            ..color = secondaryColor.withOpacity(0.8)
+            ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(Offset(0, 10), 6, basePaint);
+
+      canvas.restore();
     }
 
     // Simple center dot

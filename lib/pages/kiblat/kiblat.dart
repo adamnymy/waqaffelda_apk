@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class KiblatPage extends StatefulWidget {
   const KiblatPage({Key? key}) : super(key: key);
@@ -381,6 +382,22 @@ class _KiblatPageState extends State<KiblatPage> {
   double _degToRad(double d) => d * math.pi / 180.0;
   double _radToDeg(double r) => r * 180.0 / math.pi;
 
+  // Get cardinal direction from bearing
+  String _getCardinalDirection(double bearing) {
+    const directions = [
+      'U', // Utara (North)
+      'TL', // Timur Laut (Northeast)
+      'T', // Timur (East)
+      'TG', // Tenggara (Southeast)
+      'S', // Selatan (South)
+      'BD', // Barat Daya (Southwest)
+      'B', // Barat (West)
+      'BL', // Barat Laut (Northwest)
+    ];
+    final index = ((bearing + 22.5) / 45).floor() % 8;
+    return directions[index];
+  }
+
   @override
   void dispose() {
     _compassSub?.cancel();
@@ -655,22 +672,20 @@ class _KiblatPageState extends State<KiblatPage> {
 
                           const SizedBox(height: 24),
 
-                          // Compass with Glow Effect
+                          // Compass with Glow Effect (only when aligned)
                           Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      isAligned
-                                          ? Colors.green.withOpacity(0.3)
-                                          : colorScheme.primary.withOpacity(
-                                            0.2,
-                                          ),
-                                  blurRadius: 30,
-                                  spreadRadius: 10,
-                                ),
-                              ],
+                              boxShadow:
+                                  isAligned
+                                      ? [
+                                        BoxShadow(
+                                          color: Colors.green.withOpacity(0.3),
+                                          blurRadius: 30,
+                                          spreadRadius: 10,
+                                        ),
+                                      ]
+                                      : [], // No shadow when not aligned
                             ),
                             child: _buildCompass(
                               bearingToKaaba,
@@ -681,12 +696,9 @@ class _KiblatPageState extends State<KiblatPage> {
 
                           const SizedBox(height: 32),
 
-                          // Angle Display with Card
+                          // Qibla Direction Display with Card
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
+                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
@@ -698,24 +710,49 @@ class _KiblatPageState extends State<KiblatPage> {
                                 ),
                               ],
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Column(
                               children: [
-                                Icon(
-                                  Icons.compass_calibration,
-                                  color: colorScheme.primary,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 12),
                                 Text(
-                                  qiblaAngleDeg == null
-                                      ? '--°'
-                                      : '${qiblaAngleDeg.toStringAsFixed(0)}°',
+                                  'Arah Kiblat',
                                   style: TextStyle(
-                                    fontSize: 36,
-                                    fontWeight: FontWeight.w800,
-                                    color: colorScheme.onSurface,
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
                                   ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      bearingToKaaba == null
+                                          ? '--'
+                                          : '${bearingToKaaba.toStringAsFixed(1)}°',
+                                      style: TextStyle(
+                                        fontSize: 42,
+                                        fontWeight: FontWeight.w800,
+                                        color: colorScheme.primary,
+                                        height: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8),
+                                      child: Text(
+                                        bearingToKaaba == null
+                                            ? ''
+                                            : _getCardinalDirection(
+                                              bearingToKaaba,
+                                            ),
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.secondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -848,28 +885,40 @@ class _KiblatPageState extends State<KiblatPage> {
     ColorScheme colorScheme,
   ) {
     final size = 280.0;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: CustomPaint(
-        painter: CompassPainter(
-          qiblaBearing: qiblaBearing,
-          heading: heading,
-          primaryColor: colorScheme.primary,
-          secondaryColor: colorScheme.secondary,
+    return Column(
+      children: [
+        // Kaaba icon at top (static, always visible)
+        SvgPicture.asset(
+          'assets/icons/arah_kiblat/kaaba-icon.svg',
+          width: 48,
+          height: 48,
         ),
-      ),
+        const SizedBox(height: 16),
+        // Compass circle
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: CustomPaint(
+            painter: CompassPainter(
+              qiblaBearing: qiblaBearing,
+              heading: heading,
+              primaryColor: colorScheme.primary,
+              secondaryColor: colorScheme.secondary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -958,8 +1007,6 @@ class CompassPainter extends CustomPainter {
     // Draw rotating arrow that points to Qibla
     if (qiblaBearing != null && heading != null) {
       // Calculate the relative angle: where Qibla is relative to current heading
-      // If heading is 0° (pointing North) and Qibla is at 90° (East), arrow should point right (90°)
-      // If heading is 45° (pointing NE) and Qibla is at 90° (East), arrow should point at 45° (SE relative to device)
       final relativeAngle = (qiblaBearing! - heading!) * math.pi / 180;
       final arrowLength = radius - 50;
 
@@ -968,7 +1015,7 @@ class CompassPainter extends CustomPainter {
           relativeAngle -
           math.pi / 2; // Adjust for canvas coordinates (0° = right)
 
-      // Simple arrow shaft
+      // Arrow shaft
       final shaftStart = center;
       final shaftEnd = Offset(
         center.dx + arrowLength * math.cos(angle),
@@ -982,7 +1029,7 @@ class CompassPainter extends CustomPainter {
             ..strokeCap = StrokeCap.round;
       canvas.drawLine(shaftStart, shaftEnd, shaftPaint);
 
-      // Simple arrow head
+      // Arrow head
       final headSize = 20.0;
       final headWidth = 12.0;
 

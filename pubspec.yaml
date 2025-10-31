@@ -85,6 +85,7 @@ flutter:
     - assets/images/widget-bg-wsolat.svg
     - assets/quran/surah_metadata.json
     - assets/quran/quran_arabic.json
+    - assets/icons/arah_kiblat/kaaba-icon.svg
 
 
     

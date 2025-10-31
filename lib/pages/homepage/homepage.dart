@@ -301,19 +301,11 @@ class _HomepageState extends State<Homepage> {
         controller: _scrollController,
         child: Stack(
           children: [
-            // Gradient background (extends to status bar)
+            // Solid navy blue background (extends to status bar)
             Container(
               height: screenHeight * 0.25 + statusBarHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.teal.shade400.withOpacity(0.3),
-                    const Color(0xFFFBC02D).withOpacity(0.2),
-                    Colors.white,
-                  ],
-                ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2C5F7C), // Softer navy blue color
               ),
             ),
             // Main content with SafeArea
@@ -594,7 +586,7 @@ class _HomepageState extends State<Homepage> {
             // SVG Background with opacity
             Positioned.fill(
               child: Opacity(
-                opacity: 0.4,
+                opacity: 0.9,
                 child: SvgPicture.asset(
                   'assets/images/widget-bg-wsolat.svg',
                   fit: BoxFit.cover,

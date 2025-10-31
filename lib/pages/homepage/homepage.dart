@@ -594,7 +594,7 @@ class _HomepageState extends State<Homepage> {
             // SVG Background with opacity
             Positioned.fill(
               child: Opacity(
-                opacity: 0.22,
+                opacity: 0.4,
                 child: SvgPicture.asset(
                   'assets/images/widget-bg-wsolat.svg',
                   fit: BoxFit.cover,
@@ -654,7 +654,7 @@ class _HomepageState extends State<Homepage> {
                             Text(
                               'SOLAT SETERUSNYA',
                               style: TextStyle(
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade800,
                                 fontSize: screenWidth * 0.032,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.2,
@@ -711,7 +711,7 @@ class _HomepageState extends State<Homepage> {
                             Text(
                               'WAKTU',
                               style: TextStyle(
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade800,
                                 fontSize: screenWidth * 0.028,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -738,7 +738,7 @@ class _HomepageState extends State<Homepage> {
                             Text(
                               'BAKI MASA',
                               style: TextStyle(
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade800,
                                 fontSize: screenWidth * 0.028,
                                 fontWeight: FontWeight.w600,
                               ),

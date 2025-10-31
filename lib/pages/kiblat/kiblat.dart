@@ -38,20 +38,38 @@ class _KiblatPageState extends State<KiblatPage> {
   void _startCompassSubscription() {
     // Guard: Only subscribe to compass on mobile platforms
     if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
-      setState(() {
-        _error = 'Compass not supported on this platform.';
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Compass not supported on this platform.';
+        });
+      }
       return;
     }
 
     // Cancel existing subscription if any
     _compassSub?.cancel();
 
-    _compassSub = FlutterCompass.events?.listen(
+    // Check if compass is available
+    if (FlutterCompass.events == null) {
+      if (mounted) {
+        setState(() {
+          _error = 'Compass sensor not found on this device.';
+        });
+      }
+      return;
+    }
+
+    _compassSub = FlutterCompass.events!.listen(
       (event) {
         if (!mounted) return;
         final newHeading = event.heading; // may be null on some devices
-        if (newHeading == null) return;
+
+        // Handle null heading (compass not available or needs calibration)
+        if (newHeading == null) {
+          // Don't set error, just skip this reading
+          print('Compass reading null - may need calibration');
+          return;
+        }
 
         // Only process if we have a valid position
         if (_position == null) return;
@@ -91,8 +109,11 @@ class _KiblatPageState extends State<KiblatPage> {
       },
       onError: (e) {
         if (!mounted) return;
-        setState(() => _error = 'Compass error: $e');
+        print('Compass error: $e');
+        // Don't show error to user, compass might recover
+        // Only log for debugging
       },
+      cancelOnError: false, // Don't cancel on error, try to recover
     );
   }
 
@@ -102,10 +123,14 @@ class _KiblatPageState extends State<KiblatPage> {
     try {
       await _ensureLocationPermission();
 
+      Position? currentPosition;
+      bool hasLastKnown = false;
+
       // 1. Try to get last known position for a quick start.
-      Position? lastKnown = await Geolocator.getLastKnownPosition();
-      if (lastKnown != null) {
-        if (mounted) {
+      try {
+        Position? lastKnown = await Geolocator.getLastKnownPosition();
+        if (lastKnown != null && mounted) {
+          hasLastKnown = true;
           setState(() {
             _position = lastKnown;
             _loadingLocation = false; // Show compass immediately
@@ -116,35 +141,75 @@ class _KiblatPageState extends State<KiblatPage> {
           // Update location name and distance in the background
           _updateLocationDetails(lastKnown);
         }
+      } catch (e) {
+        print('Last known position error: $e');
       }
 
-      // 2. Get current position to refine accuracy.
-      _position = await Geolocator.getCurrentPosition(
-        desiredAccuracy:
-            LocationAccuracy.high, // Changed to high for better accuracy
-        timeLimit: const Duration(seconds: 15), // Add a timeout
-      );
+      // 2. Get current position to refine accuracy with retry logic
+      int retryCount = 0;
+      const maxRetries = 3;
 
-      if (mounted) {
+      while (retryCount < maxRetries && mounted) {
+        try {
+          currentPosition = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+            timeLimit: Duration(
+              seconds: 10 + (retryCount * 5),
+            ), // Progressive timeout
+          );
+          break; // Success, exit retry loop
+        } on TimeoutException catch (_) {
+          retryCount++;
+          print('Location timeout, attempt $retryCount of $maxRetries');
+          if (retryCount >= maxRetries) {
+            // If we have last known position, continue with that
+            if (hasLastKnown && mounted) {
+              print('Using last known position after timeout');
+              return; // Already have last known position active
+            }
+            throw TimeoutException(
+              'Location request timed out after $maxRetries attempts',
+            );
+          }
+          // Wait a bit before retry
+          await Future.delayed(Duration(seconds: 1));
+        } catch (e) {
+          retryCount++;
+          print('Location error (attempt $retryCount): $e');
+          if (retryCount >= maxRetries) {
+            if (hasLastKnown && mounted) {
+              return; // Use last known position
+            }
+            rethrow;
+          }
+          await Future.delayed(Duration(seconds: 1));
+        }
+      }
+
+      // Successfully got current position
+      if (currentPosition != null && mounted) {
         setState(() {
+          _position = currentPosition;
           _loadingLocation = false;
         });
-        // Start compass subscription with accurate position
+        // Restart compass subscription with accurate position
         _startCompassSubscription();
         // Update location name and distance with the new, more accurate position.
-        _updateLocationDetails(_position!);
+        _updateLocationDetails(currentPosition);
       }
     } on TimeoutException catch (_) {
       if (mounted) {
         setState(() {
-          _error = 'Could not get location in time. Please try again.';
+          _error =
+              'Could not get location in time. Please refresh or check GPS settings.';
           _loadingLocation = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Location unavailable: $e';
+          _error =
+              'Location unavailable: ${e.toString().replaceAll('Exception:', '').trim()}';
           _loadingLocation = false;
         });
       }
@@ -208,16 +273,26 @@ class _KiblatPageState extends State<KiblatPage> {
   Future<void> _ensureLocationPermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      throw 'Location services are disabled.';
+      throw Exception(
+        'GPS is turned off. Please enable location services in your device settings.',
+      );
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.deniedForever ||
-        permission == LocationPermission.denied) {
-      throw 'Location permission denied.';
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception(
+        'Location permission is permanently denied. Please enable it in app settings.',
+      );
+    }
+
+    if (permission == LocationPermission.denied) {
+      throw Exception(
+        'Location permission denied. Please allow location access to find Qibla direction.',
+      );
     }
   }
 
@@ -237,38 +312,69 @@ class _KiblatPageState extends State<KiblatPage> {
         math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
     final theta = math.atan2(y, x);
 
-    // Convert to degrees and normalize to 0-360
-    double bearing = (_radToDeg(theta) + 360) % 360;
+    // Convert to degrees and normalize to 0-360 (this is the TRUE bearing)
+    final double trueBearing = (_radToDeg(theta) + 360) % 360;
 
-    // Apply magnetic declination for Malaysia (approximately +0.5° to +1.5°)
-    // For better accuracy across Malaysia, we use an average of +1.0°
-    // This compensates for the difference between true north and magnetic north
+    // flutter_compass returns heading relative to magnetic north on Android,
+    // and relative to true north on iOS. We must return the Qibla bearing
+    // in the same reference frame as the device heading so comparisons are
+    // correct.
+    // - On Android: convert true bearing -> magnetic bearing by subtracting
+    //   the magnetic declination (positive = east). Magnetic = True - Decl.
+    // - On iOS: the heading is already relative to true north, so return
+    //   the true bearing unchanged.
     final magneticDeclination = _getMagneticDeclination(
       pos.latitude,
       pos.longitude,
     );
-    bearing = (bearing + magneticDeclination + 360) % 360;
 
-    return bearing;
+    if (kIsWeb) {
+      // Web compass handling varies widely; return true bearing as a safe
+      // default (user will calibrate/verify on actual devices).
+      return trueBearing;
+    }
+
+    if (Platform.isAndroid) {
+      final double magneticBearing =
+          (trueBearing - magneticDeclination + 360) % 360;
+      return magneticBearing;
+    } else {
+      // iOS and other platforms: assume heading is relative to true north
+      return trueBearing;
+    }
   }
 
-  // Get approximate magnetic declination for Malaysia region
+  // Get more accurate magnetic declination for Malaysia
+  // Based on World Magnetic Model data for 2024
   double _getMagneticDeclination(double latitude, double longitude) {
-    // Malaysia is roughly between latitude 1°N to 7°N, longitude 99°E to 119°E
-    // Magnetic declination in Malaysia varies from +0.3° to +1.8°
-    // We use a simplified model based on location
+    // Malaysia magnetic declination (positive = east, negative = west)
+    // Values based on NOAA World Magnetic Model for 2024
 
-    // Northern Malaysia (Perlis, Kedah, Penang, Perak) - higher declination
-    if (latitude > 5.0) {
-      return 1.2;
+    // West Malaysia (Peninsular Malaysia)
+    if (longitude < 105.0) {
+      // Northern region (Perlis, Kedah, Penang, Perak)
+      if (latitude > 4.5) {
+        return 0.3; // ~0.3° East
+      }
+      // Central region (Selangor, KL, Negeri Sembilan, Melaka)
+      else if (latitude > 2.5) {
+        return 0.2; // ~0.2° East
+      }
+      // Southern region (Johor)
+      else {
+        return 0.1; // ~0.1° East
+      }
     }
-    // Central Malaysia (Selangor, KL, Pahang, etc) - medium declination
-    else if (latitude > 3.0) {
-      return 1.0;
-    }
-    // Southern Malaysia (Johor) and East Malaysia - lower declination
+    // East Malaysia (Sabah, Sarawak, Labuan)
     else {
-      return 0.8;
+      // Northern Sabah/Sarawak
+      if (latitude > 3.0) {
+        return 0.8; // ~0.8° East
+      }
+      // Southern Sabah/Sarawak
+      else {
+        return 0.6; // ~0.6° East
+      }
     }
   }
 
@@ -315,6 +421,29 @@ class _KiblatPageState extends State<KiblatPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.refresh,
+              color: _loadingLocation ? Colors.grey : colorScheme.onSurface,
+            ),
+            tooltip: 'Refresh Location',
+            onPressed:
+                _loadingLocation
+                    ? null
+                    : () async {
+                      setState(() {
+                        _loadingLocation = true;
+                        _error = null;
+                        _position = null;
+                        _heading = null;
+                        _wasAligned = false;
+                      });
+                      _compassSub?.cancel();
+                      await _init();
+                    },
+          ),
+        ],
       ),
       body:
           _loadingLocation
@@ -543,7 +672,11 @@ class _KiblatPageState extends State<KiblatPage> {
                                 ),
                               ],
                             ),
-                            child: _buildCompass(qiblaAngleDeg, colorScheme),
+                            child: _buildCompass(
+                              bearingToKaaba,
+                              heading,
+                              colorScheme,
+                            ),
                           ),
 
                           const SizedBox(height: 32),
@@ -709,7 +842,11 @@ class _KiblatPageState extends State<KiblatPage> {
     );
   }
 
-  Widget _buildCompass(double? qiblaAngleDeg, ColorScheme colorScheme) {
+  Widget _buildCompass(
+    double? qiblaBearing,
+    double? heading,
+    ColorScheme colorScheme,
+  ) {
     final size = 280.0;
     return Container(
       width: size,
@@ -727,7 +864,8 @@ class _KiblatPageState extends State<KiblatPage> {
       ),
       child: CustomPaint(
         painter: CompassPainter(
-          qiblaAngleDeg: qiblaAngleDeg,
+          qiblaBearing: qiblaBearing,
+          heading: heading,
           primaryColor: colorScheme.primary,
           secondaryColor: colorScheme.secondary,
         ),
@@ -737,12 +875,14 @@ class _KiblatPageState extends State<KiblatPage> {
 }
 
 class CompassPainter extends CustomPainter {
-  final double? qiblaAngleDeg; // rotation relative to top (12 o'clock)
+  final double? qiblaBearing; // absolute bearing to Kaaba in degrees
+  final double? heading; // current compass heading in degrees
   final Color primaryColor;
   final Color secondaryColor;
 
   CompassPainter({
-    required this.qiblaAngleDeg,
+    required this.qiblaBearing,
+    required this.heading,
     required this.primaryColor,
     required this.secondaryColor,
   });
@@ -750,26 +890,29 @@ class CompassPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 15;
+    final radius = size.width / 2 - 10;
 
-    // Outer border - using primary color
-    final borderPaint =
+    // Draw static compass (no rotation)
+
+    // Simple outer circle
+    final outerCirclePaint =
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5
-          ..color = primaryColor;
-    canvas.drawCircle(center, radius, borderPaint);
+          ..strokeWidth = 2
+          ..color = Colors.grey[300]!;
+    canvas.drawCircle(center, radius, outerCirclePaint);
 
-    // Tick marks
+    // Draw only major tick marks (every 30 degrees) - minimal
     final tickPaint =
         Paint()
           ..strokeCap = StrokeCap.round
+          ..strokeWidth = 2
           ..color = Colors.grey[400]!;
 
     for (int d = 0; d < 360; d += 30) {
       final rad = (d - 90) * math.pi / 180;
-      final innerR = radius - 15;
-      final outerR = radius - 5;
+      final innerR = radius - 12;
+      final outerR = radius - 2;
 
       final p1 = Offset(
         center.dx + innerR * math.cos(rad),
@@ -779,133 +922,114 @@ class CompassPainter extends CustomPainter {
         center.dx + outerR * math.cos(rad),
         center.dy + outerR * math.sin(rad),
       );
-      tickPaint.strokeWidth = 2;
       canvas.drawLine(p1, p2, tickPaint);
     }
 
-    // Cardinal labels
+    // Simple cardinal direction labels - only N
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     );
 
-    for (int d = 0; d < 360; d += 90) {
-      final rad = (d - 90) * math.pi / 180;
-      final label =
-          d == 0
-              ? 'N'
-              : d == 90
-              ? 'E'
-              : d == 180
-              ? 'S'
-              : 'W';
-      final labelOffset = Offset(
-        center.dx + (radius - 30) * math.cos(rad),
-        center.dy + (radius - 30) * math.sin(rad),
-      );
-      textPainter.text = TextSpan(
-        text: label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey,
-        ),
-      );
-      textPainter.layout();
-      canvas.save();
-      canvas.translate(
-        labelOffset.dx - textPainter.width / 2,
-        labelOffset.dy - textPainter.height / 2,
-      );
-      textPainter.paint(canvas, Offset.zero);
-      canvas.restore();
-    }
+    // North indicator (always at top)
+    final northRad = (0 - 90) * math.pi / 180;
+    final northOffset = Offset(
+      center.dx + (radius - 35) * math.cos(northRad),
+      center.dy + (radius - 35) * math.sin(northRad),
+    );
 
-    // QIBLA label at top
-    final qiblaLabel = TextPainter(
-      text: TextSpan(
-        text: 'QIBLA',
-        style: TextStyle(
-          color: secondaryColor,
-          fontWeight: FontWeight.w700,
-          fontSize: 10,
-        ),
+    textPainter.text = TextSpan(
+      text: 'N',
+      style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: primaryColor,
       ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
     );
-    qiblaLabel.layout();
-    qiblaLabel.paint(
-      canvas,
-      Offset(center.dx - qiblaLabel.width / 2, center.dy - radius + 20),
+    textPainter.layout();
+    canvas.save();
+    canvas.translate(
+      northOffset.dx - textPainter.width / 2,
+      northOffset.dy - textPainter.height / 2,
     );
+    textPainter.paint(canvas, Offset.zero);
+    canvas.restore();
 
-    // Qibla arrow
-    if (qiblaAngleDeg != null) {
-      final angle = (qiblaAngleDeg! - 90) * math.pi / 180;
+    // Draw rotating arrow that points to Qibla
+    if (qiblaBearing != null && heading != null) {
+      // Calculate the relative angle: where Qibla is relative to current heading
+      // If heading is 0° (pointing North) and Qibla is at 90° (East), arrow should point right (90°)
+      // If heading is 45° (pointing NE) and Qibla is at 90° (East), arrow should point at 45° (SE relative to device)
+      final relativeAngle = (qiblaBearing! - heading!) * math.pi / 180;
       final arrowLength = radius - 50;
 
-      // Arrow body
-      final arrowPaint =
-          Paint()
-            ..color = secondaryColor
-            ..style = PaintingStyle.fill;
+      // Arrow points in the direction of relativeAngle (0° = North/up on static compass)
+      final angle =
+          relativeAngle -
+          math.pi / 2; // Adjust for canvas coordinates (0° = right)
 
-      final arrowHead = Offset(
+      // Simple arrow shaft
+      final shaftStart = center;
+      final shaftEnd = Offset(
         center.dx + arrowLength * math.cos(angle),
         center.dy + arrowLength * math.sin(angle),
       );
 
-      // Draw arrow shaft
-      final shaftWidth = 8.0;
-      final shaftLength = arrowLength - 20;
-
-      final shaftStart = Offset(
-        center.dx - shaftLength * 0.3 * math.cos(angle),
-        center.dy - shaftLength * 0.3 * math.sin(angle),
-      );
-
-      final shaftEnd = Offset(
-        center.dx + (arrowLength - 25) * math.cos(angle),
-        center.dy + (arrowLength - 25) * math.sin(angle),
-      );
-
-      // Draw shaft as thick line
       final shaftPaint =
           Paint()
             ..color = secondaryColor
-            ..strokeWidth = shaftWidth
+            ..strokeWidth = 6
             ..strokeCap = StrokeCap.round;
-
       canvas.drawLine(shaftStart, shaftEnd, shaftPaint);
 
-      // Arrow head (triangle)
+      // Simple arrow head
       final headSize = 20.0;
+      final headWidth = 12.0;
+
+      final tip = shaftEnd;
       final left = Offset(
-        arrowHead.dx + headSize * math.cos(angle + math.pi * 0.75),
-        arrowHead.dy + headSize * math.sin(angle + math.pi * 0.75),
+        tip.dx -
+            headSize * math.cos(angle) +
+            headWidth * math.cos(angle + math.pi / 2),
+        tip.dy -
+            headSize * math.sin(angle) +
+            headWidth * math.sin(angle + math.pi / 2),
       );
       final right = Offset(
-        arrowHead.dx + headSize * math.cos(angle - math.pi * 0.75),
-        arrowHead.dy + headSize * math.sin(angle - math.pi * 0.75),
+        tip.dx -
+            headSize * math.cos(angle) +
+            headWidth * math.cos(angle - math.pi / 2),
+        tip.dy -
+            headSize * math.sin(angle) +
+            headWidth * math.sin(angle - math.pi / 2),
       );
-      final path =
+
+      final headPaint =
+          Paint()
+            ..color = secondaryColor
+            ..style = PaintingStyle.fill;
+
+      final headPath =
           Path()
-            ..moveTo(arrowHead.dx, arrowHead.dy)
+            ..moveTo(tip.dx, tip.dy)
             ..lineTo(left.dx, left.dy)
             ..lineTo(right.dx, right.dy)
             ..close();
-      canvas.drawPath(path, arrowPaint);
+      canvas.drawPath(headPath, headPaint);
     }
 
-    // Center dot
-    final centerPaint = Paint()..color = Colors.grey[300]!;
-    canvas.drawCircle(center, 5, centerPaint);
+    // Simple center dot
+    final centerDotPaint =
+        Paint()
+          ..color = Colors.grey[400]!
+          ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 5, centerDotPaint);
   }
 
   @override
   bool shouldRepaint(covariant CompassPainter oldDelegate) {
-    return oldDelegate.qiblaAngleDeg != qiblaAngleDeg;
+    return oldDelegate.qiblaBearing != qiblaBearing ||
+        oldDelegate.heading != heading;
   }
 }
 

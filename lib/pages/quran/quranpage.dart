@@ -1337,9 +1337,47 @@ class _QuranPageState extends State<QuranPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: displaySurahs.length,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+      itemCount: displaySurahs.length + 1, // +1 for credit footer
       itemBuilder: (context, index) {
+        // Show credit at the end
+        if (index == displaySurahs.length) {
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            child: Column(
+              children: [
+                Divider(color: colorScheme.primary.withOpacity(0.2)),
+                const SizedBox(height: 12),
+                Text(
+                  'Sumber Data Al-Quran',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Quran.com API',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Terjemahan Bahasa Melayu',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: colorScheme.onSurface.withOpacity(0.4),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         final surah = displaySurahs[index];
         return _buildSurahCard(surah);
       },

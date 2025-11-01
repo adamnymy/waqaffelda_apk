@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:quran/quran.dart' as quran;
+import 'package:http/http.dart' as http;
 import '../models/quran_models.dart';
 
 class QuranService {
+  static const String _baseUrl = 'https://api.quran.com/api/v4';
   static List<Surah>? _cachedSurahs;
+  static Map<int, List<Ayah>> _cachedAyahs = {};
 
-  /// Load all Surahs from local JSON file
+  /// Load all Surahs using quran package
   static Future<List<Surah>> getAllSurahs() async {
     // Return cached data if available
     if (_cachedSurahs != null) {
@@ -13,53 +17,49 @@ class QuranService {
     }
 
     try {
-      // Load metadata JSON
+      // Load metadata JSON for additional info
       final String metadataString = await rootBundle.loadString(
         'assets/quran/surah_metadata.json',
       );
       final List<dynamic> metadataJson = json.decode(metadataString);
 
-      // Load ayahs JSON
-      final String ayahsString = await rootBundle.loadString(
-        'assets/quran/quran_arabic.json',
-      );
-      final Map<String, dynamic> ayahsData = json.decode(ayahsString);
-
-      // Combine metadata with ayahs
       _cachedSurahs = [];
+
+      // Use quran package to get verse data
       for (var metadata in metadataJson) {
-        final surahNumber = metadata['number'].toString();
-        final ayahsList = ayahsData[surahNumber] as List<dynamic>?;
+        final surahNumber = metadata['number'];
+        final totalVerses = quran.getVerseCount(surahNumber);
+        final List<Ayah> ayahs = [];
 
-        if (ayahsList != null) {
-          // Convert ayahs to Ayah objects
-          final ayahs =
-              ayahsList.map((ayahJson) {
-                return Ayah(
-                  number: ayahJson['verse'] ?? 0,
-                  text: ayahJson['text'] ?? '',
-                  numberInSurah: ayahJson['verse'] ?? 0,
-                  translation:
-                      'Terjemahan akan datang...', // Placeholder translation
-                );
-              }).toList();
+        // Get all verses for this surah from quran package
+        for (int verse = 1; verse <= totalVerses; verse++) {
+          final arabicText = quran.getVerse(surahNumber, verse);
 
-          // Create Surah object
-          _cachedSurahs!.add(
-            Surah(
-              number: metadata['number'] ?? 0,
-              name: metadata['name'] ?? '',
-              englishName: metadata['englishName'] ?? '',
-              englishNameTranslation: metadata['englishNameTranslation'] ?? '',
-              numberOfAyahs: metadata['numberOfAyahs'] ?? 0,
-              revelationType: metadata['revelationType'] ?? '',
-              ayahs: ayahs,
+          ayahs.add(
+            Ayah(
+              number: verse,
+              text: arabicText,
+              numberInSurah: verse,
+              translation: 'Terjemahan akan datang...', // Placeholder
             ),
           );
         }
+
+        // Create Surah object
+        _cachedSurahs!.add(
+          Surah(
+            number: metadata['number'] ?? 0,
+            name: metadata['name'] ?? '',
+            englishName: metadata['englishName'] ?? '',
+            englishNameTranslation: metadata['englishNameTranslation'] ?? '',
+            numberOfAyahs: metadata['numberOfAyahs'] ?? 0,
+            revelationType: metadata['revelationType'] ?? '',
+            ayahs: ayahs,
+          ),
+        );
       }
 
-      print('✅ Loaded ${_cachedSurahs!.length} surahs from local storage');
+      print('✅ Loaded ${_cachedSurahs!.length} surahs using quran package');
       return _cachedSurahs!;
     } catch (e) {
       print('❌ Error loading Quran data: $e');
@@ -105,16 +105,125 @@ class QuranService {
     }
   }
 
-  /// Get all ayahs for a specific surah
+  /// Get all ayahs for a specific surah from API with fallback to package
   static Future<List<Ayah>> getSurahAyahs(int surahNumber) async {
-    final surah = await getSurah(surahNumber);
-
-    if (surah == null) {
-      print('❌ Failed to load ayahs for surah $surahNumber');
-      return [];
+    // Return cached data if available
+    if (_cachedAyahs.containsKey(surahNumber)) {
+      print(
+        '✅ Loaded ${_cachedAyahs[surahNumber]!.length} ayahs from cache for surah $surahNumber',
+      );
+      return _cachedAyahs[surahNumber]!;
     }
 
-    return surah.ayahs;
+    try {
+      // Try API first for clean text and translation
+      final ayahs = await _getAyahsFromAPI(surahNumber);
+      if (ayahs.isNotEmpty) {
+        _cachedAyahs[surahNumber] = ayahs;
+        return ayahs;
+      }
+    } catch (e) {
+      print('⚠️ API failed, using fallback: $e');
+    }
+
+    // Fallback to quran package
+    try {
+      final totalVerses = quran.getVerseCount(surahNumber);
+      final List<Ayah> ayahs = [];
+
+      for (int verse = 1; verse <= totalVerses; verse++) {
+        final arabicText = quran.getVerse(surahNumber, verse);
+
+        ayahs.add(
+          Ayah(
+            number: verse,
+            text: arabicText,
+            numberInSurah: verse,
+            translation: 'Terjemahan tidak tersedia dalam mod offline',
+          ),
+        );
+      }
+
+      print(
+        '✅ Loaded $totalVerses ayahs for surah $surahNumber using quran package (offline)',
+      );
+      _cachedAyahs[surahNumber] = ayahs;
+      return ayahs;
+    } catch (e) {
+      print('❌ Error loading ayahs: $e');
+      return [];
+    }
+  }
+
+  /// Fetch ayahs from Quran.com API
+  static Future<List<Ayah>> _getAyahsFromAPI(int surahNumber) async {
+    try {
+      // Get Arabic text (Imlaei - clean without complex tajweed symbols)
+      final arabicResponse = await http
+          .get(
+            Uri.parse(
+              '$_baseUrl/quran/verses/imlaei?chapter_number=$surahNumber',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (arabicResponse.statusCode != 200) {
+        throw Exception(
+          'Failed to load Arabic text: ${arabicResponse.statusCode}',
+        );
+      }
+
+      // Get Malay translation (translation_id 39 = Malay)
+      final translationResponse = await http
+          .get(
+            Uri.parse(
+              '$_baseUrl/quran/translations/39?chapter_number=$surahNumber',
+            ),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (translationResponse.statusCode != 200) {
+        throw Exception(
+          'Failed to load translation: ${translationResponse.statusCode}',
+        );
+      }
+
+      final arabicData = json.decode(arabicResponse.body);
+      final translationData = json.decode(translationResponse.body);
+
+      final List<Ayah> ayahs = [];
+      final arabicVerses = arabicData['verses'] as List;
+      final translationVerses = translationData['translations'] as List;
+
+      for (int i = 0; i < arabicVerses.length; i++) {
+        final arabicVerse = arabicVerses[i];
+        final translationVerse =
+            i < translationVerses.length ? translationVerses[i] : null;
+
+        ayahs.add(
+          Ayah(
+            number: arabicVerse['verse_number'] ?? (i + 1),
+            text: arabicVerse['text_imlaei'] ?? '',
+            numberInSurah:
+                arabicVerse['verse_key']?.split(':')[1] != null
+                    ? int.parse(arabicVerse['verse_key'].split(':')[1])
+                    : (i + 1),
+            translation:
+                translationVerse?['text'] ?? 'Terjemahan tidak tersedia',
+          ),
+        );
+      }
+
+      print(
+        '✅ Loaded ${ayahs.length} ayahs for surah $surahNumber from API with translation',
+      );
+      return ayahs;
+    } catch (e) {
+      print('❌ API Error: $e');
+      rethrow;
+    }
   }
 
   /// Search for text in Quran

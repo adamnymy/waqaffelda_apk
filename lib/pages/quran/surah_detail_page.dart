@@ -327,6 +327,39 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                 }, childCount: ayahs.length),
               ),
             ),
+
+          // Credit Footer
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              margin: const EdgeInsets.only(top: 16),
+              child: Column(
+                children: [
+                  Divider(color: colorScheme.primary.withOpacity(0.2)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Sumber: Quran.com API',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Terjemahan Bahasa Melayu',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -445,7 +478,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                   ayah.text,
                   style: TextStyle(
                     fontSize: arabicFontSize,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.normal,
                     color: colorScheme.onSurface,
                     fontFamily: 'Amiri',
                     height: 2.0,

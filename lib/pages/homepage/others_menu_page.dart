@@ -4,6 +4,7 @@ import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
 import '../zikircounter/zikircounter.dart';
 import '../../utils/page_transitions.dart';
+import '../doaharian/doa_harian_page.dart';
 
 class OthersMenuPage extends StatelessWidget {
   const OthersMenuPage({Key? key}) : super(key: key);
@@ -174,7 +175,12 @@ class OthersMenuPage extends StatelessWidget {
                   const Color(0xFFFBC02D),
                   () {
                     Navigator.pop(context);
-                    // TODO: Navigate to Doa page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DoaHarianPage(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuItem(

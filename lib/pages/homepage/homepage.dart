@@ -9,12 +9,13 @@ import '../navbar_pages/program/program_page.dart';
 import '../navbar_pages/waqaf/waqafpage.dart';
 import '../navbar_pages/inbox/inboxpage.dart';
 import '../navbar_pages/akaun/akaunpage.dart';
-import '../quran/quranpage.dart';
-import '../kiblat/kiblat.dart';
-import '../../utils/page_transitions.dart';
-import 'searchpage/search_page.dart'; // Corrected import path for SearchPage
+import '../doaharian/doa_harian_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../utils/page_transitions.dart';
 import 'others_menu_page.dart';
+import 'searchpage/search_page.dart';
+import '../kiblat/kiblat.dart';
+import '../quran/quranpage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -819,7 +820,12 @@ class _HomepageState extends State<Homepage> {
             'Doa Harian',
             Icons.volunteer_activism_outlined,
             const Color(0xFFFBC02D),
-            () {},
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DoaHarianPage()),
+              );
+            },
           ),
           _buildMenuItem('Tahlil', Icons.auto_stories, Colors.teal, () {}),
           _buildMenuItem(

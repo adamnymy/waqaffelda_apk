@@ -14,6 +14,7 @@ import '../kiblat/kiblat.dart';
 import '../../utils/page_transitions.dart';
 import 'searchpage/search_page.dart'; // Corrected import path for SearchPage
 import 'package:flutter_svg/flutter_svg.dart';
+import 'others_menu_page.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -825,7 +826,9 @@ class _HomepageState extends State<Homepage> {
             'Lainnya',
             Icons.apps_outlined,
             const Color(0xFFFBC02D),
-            () {},
+            () {
+              OthersMenuPage.show(context);
+            },
           ),
         ],
       ),

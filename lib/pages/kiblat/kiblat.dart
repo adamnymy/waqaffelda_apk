@@ -418,12 +418,13 @@ class _KiblatPageState extends State<KiblatPage> {
             : null;
 
     // Check if aligned (within ±_alignmentThreshold degrees)
-    final isAligned = (() {
-      if (qiblaAngleDeg == null) return false;
-      final off = qiblaAngleDeg;
-      final delta = off <= 180 ? off : (360 - off);
-      return delta <= _alignmentThreshold;
-    })();
+    final isAligned =
+        (() {
+          if (qiblaAngleDeg == null) return false;
+          final off = qiblaAngleDeg;
+          final delta = off <= 180 ? off : (360 - off);
+          return delta <= _alignmentThreshold;
+        })();
 
     return Scaffold(
       backgroundColor: colorScheme.background,

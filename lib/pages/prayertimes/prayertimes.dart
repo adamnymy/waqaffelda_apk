@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
@@ -323,18 +324,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     return Container(
       width: double.infinity,
       height: 350,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage('assets/images/masjidnegara.jpg'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.1),
-            BlendMode.darken,
-          ),
-        ),
-      ),
       child: Stack(
         children: [
+          // SVG background (use SvgPicture for vector assets)
+          Positioned.fill(
+            child: SvgPicture.asset(
+              'assets/images/widget-bg-wsolat-v2.svg',
+              fit: BoxFit.cover,
+            ),
+          ),
           // Blur effect
           Container(
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.1)),

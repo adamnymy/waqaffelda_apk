@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
+import '../../services/notification_service.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 
@@ -45,8 +46,26 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+    _initializeNotifications();
     _loadPrayerTimes();
     _setCurrentDate();
+  }
+
+  /// Initialize notification service
+  Future<void> _initializeNotifications() async {
+    try {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      final granted = await notificationService.requestPermission();
+
+      if (granted) {
+        print('✅ Notification permission granted');
+      } else {
+        print('⚠️ Notification permission denied');
+      }
+    } catch (e) {
+      print('❌ Error initializing notifications: $e');
+    }
   }
 
   @override
@@ -185,6 +204,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                 }).toList();
             isLoading = false;
           });
+
+          // Schedule notifications after prayer times loaded
+          _scheduleNotifications();
         }
       } else {
         if (mounted) {
@@ -227,6 +249,57 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         return Icons.brightness_2;
       default:
         return Icons.access_time;
+    }
+  }
+
+  /// Schedule prayer time notifications
+  Future<void> _scheduleNotifications() async {
+    try {
+      if (prayerTimes.isEmpty) return;
+
+      final notificationService = NotificationService();
+      await notificationService.schedulePrayerNotifications(prayerTimes);
+
+      // Show confirmation snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.notifications_active, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text('Notifikasi waktu solat telah dijadualkan'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      print('✅ Prayer notifications scheduled successfully');
+    } catch (e) {
+      print('❌ Error scheduling notifications: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Gagal menjadualkan notifikasi')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 

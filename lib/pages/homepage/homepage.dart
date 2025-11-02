@@ -815,17 +815,12 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem('Hadith 40', Icons.book_outlined, Colors.teal, () {}),
           _buildMenuItem(
-            'Doa',
+            'Doa Harian',
             Icons.volunteer_activism_outlined,
             const Color(0xFFFBC02D),
             () {},
           ),
-          _buildMenuItem(
-            'Kegemaran',
-            Icons.favorite_outline,
-            Colors.teal,
-            () {},
-          ),
+          _buildMenuItem('Tahlil', Icons.auto_stories, Colors.teal, () {}),
           _buildMenuItem(
             'Lainnya',
             Icons.apps_outlined,

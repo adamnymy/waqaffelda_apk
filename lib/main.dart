@@ -3,10 +3,21 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'splash_screen.dart'; // Import SplashScreen
+import 'services/notification_service.dart'; // Import NotificationService
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Add this
   WebViewPlatform.instance; // Add this
+
+  // Initialize notification service on app startup
+  try {
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    print('✅ Notification service initialized in main()');
+  } catch (e) {
+    print('⚠️ Error initializing notification service in main(): $e');
+  }
+
   runApp(const MyApp());
 }
 

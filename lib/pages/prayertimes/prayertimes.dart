@@ -333,14 +333,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
               fit: BoxFit.cover,
             ),
           ),
-          // Blur effect
-          Container(
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.1)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
           // Gradient overlay
           Container(
             decoration: BoxDecoration(

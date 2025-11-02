@@ -28,6 +28,8 @@ class _KiblatPageState extends State<KiblatPage> {
 
   static const double _kaabaLat = 21.4225; // Masjid al-Haram
   static const double _kaabaLon = 39.8262;
+  // Alignment threshold (degrees). Consider aligned when within ± this value.
+  static const double _alignmentThreshold = 3.0;
 
   @override
   void initState() {
@@ -81,7 +83,8 @@ class _KiblatPageState extends State<KiblatPage> {
           final qAngle = (bearing - newHeading + 360) % 360;
           final off = qAngle.abs();
           final delta = off <= 180 ? off : (360 - off);
-          final isAligned = delta.round() == 0;
+          // Consider aligned if within ±_alignmentThreshold degrees
+          final isAligned = delta <= _alignmentThreshold;
           if (isAligned && !_wasAligned) {
             // Strong haptic + vibration + sound once when aligned to Qibla
             try {
@@ -414,10 +417,13 @@ class _KiblatPageState extends State<KiblatPage> {
             ? (bearingToKaaba - heading + 360) % 360
             : null;
 
-    // Check if aligned (exactly 0 degrees)
-    final isAligned =
-        qiblaAngleDeg != null &&
-        (qiblaAngleDeg.round() == 0 || qiblaAngleDeg.round() == 360);
+    // Check if aligned (within ±_alignmentThreshold degrees)
+    final isAligned = (() {
+      if (qiblaAngleDeg == null) return false;
+      final off = qiblaAngleDeg;
+      final delta = off <= 180 ? off : (360 - off);
+      return delta <= _alignmentThreshold;
+    })();
 
     return Scaffold(
       backgroundColor: colorScheme.background,

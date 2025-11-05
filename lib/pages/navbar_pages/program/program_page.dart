@@ -1,65 +1,153 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../navbar.dart';
 import '../../homepage/homepage.dart';
 import '../waqaf/waqafpage.dart';
 import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
 
+
 class ProgramPage extends StatefulWidget {
   const ProgramPage({Key? key}) : super(key: key);
+
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
 }
 
+
 class _ProgramPageState extends State<ProgramPage> {
   int _currentIndex = 1;
   final ScrollController _scrollController = ScrollController();
+ 
   final List<Map<String, dynamic>> programs = [
     {
-      'title': 'KEMPEN',
+      'title': 'Kempen Potong Lima',
       'description':
-          'Waqaf FELDA telah melancarkan pelbagai kempen untuk mengumpul dana \'ain dari orang ramai sebagai sebahagian daripada usaha mereka untuk memperluaskan manfaat wakaf kepada masyarakat.',
-      'date': '20/03/2025',
+          '"RM5 Sebulan, Impak Selamanya"\n'
+          'Jom sertai kempen potong lima dengan menyumbang RM5 sahaja. Walaupun jumlahnya kecil, sumbangan ini dapat memberikan impak yang besar apabila digabungkan dengan sumbangan orang lain. Dana yang terkumpul akan diagihkan kepada mereka yang memerlukan dibawah lima kluster agihan manfaat iaitu kesihatan dan dhaif, pendidikan dan kerohanian, bencana, kemudahan awam dan ekonomi.',
+      'date': '01/03/2025',
       'icon': Icons.campaign_rounded,
-      'gradient': [Color(0xFF6A11CB), Color(0xFF2575FC)],
-      'image': 'assets/images/kempen.jpg', // placeholder
-    },
-    {
-      'title': 'WAQAF VAGANZA',
-      'description':
-          'Salah satu kempen terkini yang dianjurkan adalah "Wakaf Vaganza", yang mengajak orang ramai untuk menyertai usaha wakaf ini. Kempen ini bukan sahaja bertujuan untuk mengumpul dana tetapi juga untuk menyebarkan kesedaran tentang kepentingan wakaf dalam masyarakat Islam.',
-      'date': '20/03/2025',
-      'icon': Icons.celebration_rounded,
-      'gradient': [Color(0xFFF36F21), Color(0xFFFF8C42)],
-      'image': 'assets/images/vaganza.jpg', // placeholder
-    },
-    {
-      'title': 'DAKWAH',
-      'description':
-          'Dengan melibatkan aktiviti dakwah, Waqaf FELDA berusaha untuk memperkukuhkan aspek spiritual dalam kehidupan masyarakat, meningkatkan kesedaran agama, dan membentuk masyarakat yang lebih harmoni dan bertanggungjawab berdasarkan prinsip-prinsip Islam.',
-      'date': '20/03/2025',
-      'icon': Icons.mosque_rounded,
       'gradient': [Color(0xFF11998E), Color(0xFF38EF7D)],
-      'image': 'assets/images/dakwah.jpg', // placeholder
+      'image': 'assets/images/KP5R3.png',
+      'url': 'https://waqaffelda.waqafer.com.my/order/form/42',
     },
     {
-      'title': 'WAQAF QURAN',
+      'title': 'Infak Subuh',
       'description':
-          'Kempen wakaf senaskhah Al-Quran ini adalah peluang keemasan untuk kita semua berkongsi keberkatan dan kebaikan bersama golongan yang memerlukan.',
+          '"Sebaik-baik waktu adalah pagi hari"\n'
+          'Infak Subuh mengajak anda menyumbang di waktu penuh keberkatan ini. Sedekah kecil di awal pagi mampu membawa ketenangan dan rezeki yang diberkati sepanjang hari.',
+      'date': '01/09/2025',
+      'icon': Icons.wb_sunny,
+      'gradient': [Color(0xFF6A11CB), Color(0xFF2575FC)],
+      'image': 'assets/images/IST2.png',
+      'url': 'https://waqaffelda.waqafer.com.my/order/form/40',
+    },
+    {
+      'title': 'Infak Set Persalinan Akhir',
+      'description':
+          'Infak Terakhir, Pahala Berpanjangan...\n'
+          'Bayangkan… di saat seorang insan kembali kepada Allah, keluarga sedang berduka… Set Persalinan Akhir yang anda infakkan inilah yang memudahkan urusan mereka.\n\n'
+          '💠 Lengkap – Semua keperluan pengurusan jenazah dalam satu set.\n'
+          '💠 Patuh Syariah – Mengikut garis panduan Islam.\n'
+          '💠 Berkualiti – Bahan suci dan terjamin.\n\n'
+          'Sumbangan anda adalah penghormatan terakhir buat si mati, dan ladang pahala untuk anda di akhirat.',
+      'date': '01/10/2025',
+      'icon': Icons.mosque_rounded,
+      'gradient': [Color(0xFFF36F21), Color(0xFFFF8C42)],
+      'image': 'assets/images/SPAT1.png',
+      'url': 'https://waqaffelda.waqafer.com.my/order/form/50',
+    },
+    {
+      'title': 'Wakaf Senaskhah Al-Quran',
+      'description':
+          'Sedekah Jariah yang Tidak Putus...\n'
+          'Setiap kali Al-Quran yang anda wakafkan dibaca, pahala mengalir kepada anda. Bantu sediakan mushaf suci untuk masjid, surau, sekolah dan mereka yang memerlukan. Satu Al-Quran, berjuta bacaan, pahala tidak putus hingga akhirat.',
       'date': '20/03/2025',
       'icon': Icons.menu_book_rounded,
       'gradient': [Color(0xFFDA22FF), Color(0xFF9733EE)],
-      'image': 'assets/images/quran.jpg', // placeholder
+      'image': 'assets/images/WQT1.png',
+      'url': 'https://waqaffelda.waqafer.com.my/order/form/44',
     },
   ];
+
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak dapat membuka pautan'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ralat: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+
+  Future<void> _shareProgram(Map<String, dynamic> program) async {
+    final String title = program['title'] as String;
+    final String url = program['url'] as String;
+    final String date = program['date'] as String;
+   
+    final String shareText = '''
+🌟 *${title}*
+
+
+📅 Tarikh: ${date}
+
+
+Jom sertai program ini bersama Waqaf FELDA!
+
+
+Daftar sekarang:
+${url}
+
+
+#WaqafFELDA #Sedekah #Kebajikan
+''';
+
+
+    try {
+      await Share.share(
+        shareText,
+        subject: title,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ralat berkongsi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
 
+
     setState(() {
       _currentIndex = index;
     });
+
 
     switch (index) {
       case 0:
@@ -111,11 +199,13 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -157,16 +247,14 @@ class _ProgramPageState extends State<ProgramPage> {
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF36F21),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.info_outline_rounded,
-                            color: Colors.white,
-                            size: 28,
+                        // CUSTOM IMAGE ICON - Tukar bahagian ini
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/IB1.png',
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -175,7 +263,7 @@ class _ProgramPageState extends State<ProgramPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Aktiviti Terkini',
+                                'Program Terkini',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -184,7 +272,7 @@ class _ProgramPageState extends State<ProgramPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Sertai program-program Waqaf FELDA untuk manfaat bersama',
+                                'Jom sertai program-program WAQAF FELDA kerana setiap sumbangan anda adalah pelaburan akhirat yang terus memberi manfaat kepada mereka yang memerlukan.',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey[700],
@@ -243,6 +331,7 @@ class _ProgramPageState extends State<ProgramPage> {
             ),
           ),
 
+
           // Program Cards
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -257,7 +346,7 @@ class _ProgramPageState extends State<ProgramPage> {
             ),
           ),
 
-          // Bottom Spacing
+
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
@@ -269,13 +358,20 @@ class _ProgramPageState extends State<ProgramPage> {
     );
   }
 
+
   Widget _buildProgramCard(Map<String, dynamic> program) {
+    final List<Color> gradient = List<Color>.from(program['gradient']);
+    final IconData icon = program['icon'] as IconData;
+    final String date = program['date'] as String;
+    final String title = program['title'] as String;
+    final String description = program['description'] as String;
+    final String image = program['image'] as String;
+
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          _showProgramDetails(program);
-        },
+        onTap: () => _showProgramDetails(program),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
@@ -292,91 +388,89 @@ class _ProgramPageState extends State<ProgramPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Card Header with Gradient
-              Container(
-                height: 140,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: program['gradient'],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
                 child: Stack(
                   children: [
-                    // Decorative pattern
-                    Positioned(
-                      right: -20,
-                      bottom: -20,
-                      child: Icon(
-                        program['icon'],
-                        size: 120,
-                        color: Colors.white.withOpacity(0.2),
+                    Image.asset(
+                      image,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: gradient,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(0.06),
+                            Colors.black.withOpacity(0.20),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: gradient),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: Colors.white, size: 26),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: gradient[0].withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: gradient[0].withOpacity(0.18)),
+                      ),
+                      child: Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  program['icon'],
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_today_rounded,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      program['date'],
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                          Icon(Icons.calendar_today_rounded, size: 14, color: gradient[0]),
+                          const SizedBox(width: 6),
                           Text(
-                            program['title'],
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
+                            date,
+                            style: TextStyle(
+                              color: gradient[0],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -385,22 +479,17 @@ class _ProgramPageState extends State<ProgramPage> {
                   ],
                 ),
               ),
-
-              // Card Body
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 6),
                     Text(
-                      program['description'],
-                      maxLines: 3,
+                      description,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        height: 1.5,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -411,23 +500,17 @@ class _ProgramPageState extends State<ProgramPage> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: program['gradient'][0],
+                            color: gradient[0],
                             letterSpacing: 0.5,
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: program['gradient'],
-                            ),
+                            gradient: LinearGradient(colors: gradient),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                          child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
                         ),
                       ],
                     ),
@@ -441,342 +524,332 @@ class _ProgramPageState extends State<ProgramPage> {
     );
   }
 
+
   void _showProgramDetails(Map<String, dynamic> program) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          final List<Color> gradient = List<Color>.from(program['gradient']);
+          final IconData icon = program['icon'] as IconData;
+          final String title = program['title'] as String;
+          final String date = program['date'] as String;
+          final String description = program['description'] as String;
+          final String url = program['url'] as String;
+          final String image = program['image'] as String;
+         
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    // Drag handle
-                    Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-
-                    // Content
-                    Expanded(
-                      child: ListView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.all(0),
-                        children: [
-                          // Header Image
-                          Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: program['gradient'],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                // Decorative pattern
-                                Positioned(
-                                  right: -40,
-                                  top: -40,
-                                  child: Icon(
-                                    program['icon'],
-                                    size: 200,
-                                    color: Colors.white.withOpacity(0.15),
-                                  ),
-                                ),
-                                // Content
-                                SafeArea(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(12),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(
-                                                  0.25,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                program['icon'],
-                                                color: Colors.white,
-                                                size: 32,
-                                              ),
-                                            ),
-                                            IconButton(
-                                              onPressed:
-                                                  () => Navigator.pop(context),
-                                              icon: const Icon(
-                                                Icons.close_rounded,
-                                                color: Colors.white,
-                                                size: 28,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              program['title'],
-                                              style: const TextStyle(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(
-                                                  0.25,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(
-                                                    Icons
-                                                        .calendar_today_rounded,
-                                                    color: Colors.white,
-                                                    size: 14,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    program['date'],
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Details Section
-                          Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Maklumat Program',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  program['description'],
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.grey[700],
-                                    height: 1.6,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // Action Buttons
-                                Container(
-                                  padding: const EdgeInsets.all(20),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(0),
+                    children: [
+                      Container(
+                        height: 250,
+                        child: Stack(
+                          children: [
+                            Image.asset(
+                              image,
+                              height: 250,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [
-                                        program['gradient'][0].withOpacity(0.1),
-                                        program['gradient'][1].withOpacity(
-                                          0.05,
+                                      colors: gradient,
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      icon,
+                                      size: 100,
+                                      color: Colors.white.withOpacity(0.5),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.18),
+                                    Colors.black.withOpacity(0.45),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SafeArea(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.25),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(0.3),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            icon,
+                                            color: Colors.white,
+                                            size: 32,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          icon: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(0.25),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: const Icon(
+                                              Icons.close_rounded,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          // Handle participation
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Terima kasih atas minat anda!',
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black26,
+                                                offset: Offset(0, 2),
+                                                blurRadius: 4,
                                               ),
-                                              backgroundColor: Color(
-                                                0xFFF36F21,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              program['gradient'][0],
-                                          foregroundColor: Colors.white,
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Container(
                                           padding: const EdgeInsets.symmetric(
-                                            vertical: 16,
+                                            horizontal: 12,
+                                            vertical: 6,
                                           ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.25),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(0.3),
+                                              width: 1,
                                             ),
                                           ),
-                                          elevation: 0,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(Icons.how_to_reg_rounded),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Sertai Program',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.calendar_today_rounded,
+                                                color: Colors.white,
+                                                size: 14,
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      OutlinedButton(
-                                        onPressed: () {
-                                          // Handle sharing
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Berkongsi program...',
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                date,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
-                                              backgroundColor: Color(
-                                                0xFFF36F21,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor:
-                                              program['gradient'][0],
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 16,
-                                          ),
-                                          side: BorderSide(
-                                            color: program['gradient'][0],
-                                            width: 2,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
+                                            ],
                                           ),
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(Icons.share_rounded),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Kongsi Program',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-
-                                const SizedBox(height: 24),
-
-                                // Additional Info
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.info_outline_rounded,
-                                        color: Colors.grey[600],
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          'Untuk maklumat lanjut, sila hubungi pihak Waqaf FELDA',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Maklumat Program',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              description,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey[700],
+                                height: 1.6,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    gradient[0].withOpacity(0.1),
+                                    gradient[1].withOpacity(0.05),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      _launchURL(url);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: gradient[0],
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Icon(Icons.how_to_reg_rounded),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Sertai Program',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      _shareProgram(program);
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: gradient[0],
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      side: BorderSide(
+                                        color: gradient[0],
+                                        width: 2,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Icon(Icons.share_rounded),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Kongsi Program',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    color: Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Untuk maklumat lanjut, sila hubungi pihak Waqaf FELDA',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-          ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
+

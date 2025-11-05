@@ -54,6 +54,19 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <!-- App-level BootReceiver: schedules a lightweight native WorkManager task on boot
+             to ensure WorkManager is touched after device restarts. This does not replace
+             Dart-side WorkManager persisted work, but helps on devices where WorkManager may
+             need a nudge. -->
+        <receiver android:name="com.example.waqaffelda_apk.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

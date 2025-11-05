@@ -44,26 +44,26 @@ class MainActivity : FlutterActivity() {
 					} else {
 						result.success(true)
 					}
-					"openBatteryOptimizationSettings" -> {
-						try {
-							val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-							startActivity(intent)
-							result.success(true)
-						} catch (e: Exception) {
-							result.error("error", "Failed to open battery optimization settings: ${e.message}", null)
-						}
+				}
+				"openBatteryOptimizationSettings" -> {
+					try {
+						val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+						startActivity(intent)
+						result.success(true)
+					} catch (e: Exception) {
+						result.error("error", "Failed to open battery optimization settings: ${e.message}", null)
 					}
-					"requestIgnoreBatteryOptimizations" -> {
-						try {
-							val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-							intent.data = Uri.parse("package:" + packageName)
-							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-							startActivity(intent)
-							result.success(true)
-						} catch (e: Exception) {
-							result.error("error", "Failed to request ignore battery optimizations: ${e.message}", null)
-						}
+				}
+				"requestIgnoreBatteryOptimizations" -> {
+					try {
+						val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+						intent.data = Uri.parse("package:" + packageName)
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+						startActivity(intent)
+						result.success(true)
+					} catch (e: Exception) {
+						result.error("error", "Failed to request ignore battery optimizations: ${e.message}", null)
 					}
 				}
 				else -> result.notImplemented()

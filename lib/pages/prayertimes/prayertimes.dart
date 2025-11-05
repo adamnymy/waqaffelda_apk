@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
 import '../../services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 
@@ -16,7 +17,7 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   String hijriDate = '';
   List<Map<String, dynamic>> prayerTimes = [];
   bool isLoading = true;
@@ -42,6 +43,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _refreshAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -49,6 +51,53 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     _initializeNotifications();
     _loadPrayerTimes();
     _setCurrentDate();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // When app resumes, check if we need to reschedule
+    if (state == AppLifecycleState.resumed) {
+      print('📱 App resumed - checking if reschedule needed');
+      _checkAndReschedule();
+    }
+  }
+
+  /// Check and reschedule notifications if date changed
+  Future<void> _checkAndReschedule() async {
+    if (prayerTimes.isEmpty) return;
+
+    try {
+      final notificationService = NotificationService();
+      final shouldReschedule = await notificationService.shouldReschedule();
+
+      if (shouldReschedule) {
+        print('🔄 Date changed, rescheduling...');
+        await notificationService.schedulePrayerNotificationsWithTracking(
+          prayerTimes,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.update, color: Colors.white),
+                  SizedBox(width: 12),
+                  Text('Notifikasi dikemaskini untuk hari baru'),
+                ],
+              ),
+              backgroundColor: Colors.blue,
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Error checking reschedule: $e');
+    }
   }
 
   /// Initialize notification service
@@ -70,6 +119,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _refreshAnimationController.dispose();
     super.dispose();
   }
@@ -258,7 +308,24 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       if (prayerTimes.isEmpty) return;
 
       final notificationService = NotificationService();
-      await notificationService.schedulePrayerNotifications(prayerTimes);
+
+      // Use enhanced method with date tracking
+      final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
+        prayerTimes,
+      );
+
+      if (!wasRescheduled) {
+        // Not rescheduled, means already scheduled for today
+        print('ℹ️ Notifications already scheduled for today');
+        return;
+      }
+
+      // Cache minimal prayer times so background rescheduler can re-register
+      try {
+        await NotificationService().cachePrayerTimesMinimal(prayerTimes);
+      } catch (e) {
+        print('⚠️ Failed to cache prayer times: $e');
+      }
 
       // Show confirmation snackbar
       if (mounted) {
@@ -283,7 +350,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       print('✅ Prayer notifications scheduled successfully');
     } catch (e) {
       print('❌ Error scheduling notifications: $e');
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -303,12 +369,281 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
   }
 
+  /// Show schedule info dialog
+  Future<void> _showScheduleInfo() async {
+    try {
+      final notificationService = NotificationService();
+      final info = await notificationService.getScheduleInfo();
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text('📅 Notification Schedule Info'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Today: ${info['today']}'),
+                  SizedBox(height: 8),
+                  Text(
+                    'Last Scheduled: ${info['lastScheduledDate'] ?? 'Never'}',
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Status: ${info['isScheduledForToday'] ? '✅ Scheduled for today' : '⚠️ Not scheduled'}',
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Prayer times will be scheduled automatically when you open this page.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Close'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _forceReschedule();
+                  },
+                  child: Text('Force Reschedule'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _showExactAlarmAndBatteryDialog();
+                  },
+                  child: Text('Exact & Battery'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _showExecutionLog();
+                  },
+                  child: Text('Execution Log'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      print('❌ Error showing schedule info: $e');
+    }
+  }
+
+  /// Show dialog to check/request exact-alarm permission and battery optimizations
+  Future<void> _showExactAlarmAndBatteryDialog() async {
+    try {
+      final notificationService = NotificationService();
+      final canSchedule = await notificationService.canScheduleExactAlarms();
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text('🔒 Exact Alarm & Battery'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Exact alarms allowed: ${canSchedule ? 'Yes ✅' : 'No ⚠️'}',
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'If exact alarms are not allowed, you can request the permission.\n\nAlso consider exempting the app from battery optimizations on aggressive OEMs (MIUI, Huawei, Samsung) to avoid delayed background work.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Close'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    final ok =
+                        await notificationService.requestExactAlarmPermission();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? 'Opened exact-alarm settings (grant permission if needed)'
+                                : 'Failed to open exact-alarm settings',
+                          ),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text('Request Exact Alarm'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    // First try to request ignore battery optimizations for this app
+                    final ok =
+                        await notificationService
+                            .requestIgnoreBatteryOptimizations();
+                    if (!ok) {
+                      // Fallback to open battery optimization settings
+                      await notificationService
+                          .openBatteryOptimizationSettings();
+                    }
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Opened battery optimization settings'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text('Open Battery Optimizations'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      print('❌ Error showing exact/battery dialog: $e');
+    }
+  }
+
+  /// Force reschedule notifications
+  Future<void> _forceReschedule() async {
+    if (prayerTimes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please load prayer times first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final notificationService = NotificationService();
+      await notificationService.forceReschedule(prayerTimes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.refresh, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Notifikasi telah dijadualkan semula')),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error force rescheduling: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// Show execution log dialog reading persisted timestamps from SharedPreferences
+  Future<void> _showExecutionLog() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final buffer = StringBuffer();
+
+      for (var prayerName in NotificationService.prayerConfig.keys) {
+        final keyBase =
+            prayerName.toString().replaceAll(' ', '_').toLowerCase();
+        final scheduled = prefs.getString('scheduled_${keyBase}');
+        final executed = prefs.getString('executed_${keyBase}');
+        if (scheduled == null && executed == null) continue;
+        buffer.writeln('$prayerName');
+        buffer.writeln('  Scheduled: ${scheduled ?? '-'}');
+        buffer.writeln('  Executed:  ${executed ?? '-'}');
+        if (scheduled != null && executed != null) {
+          try {
+            final s = DateTime.parse(scheduled).toUtc();
+            final e = DateTime.parse(executed).toUtc();
+            final diff = e.difference(s).inSeconds;
+            buffer.writeln('  Elapsed: ${diff}s');
+          } catch (_) {}
+        }
+        buffer.writeln('');
+      }
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text('📊 Execution Log'),
+              content: SingleChildScrollView(
+                child: Text(
+                  buffer.isEmpty ? 'No execution logs yet.' : buffer.toString(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      print('❌ Error showing execution log: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          try {
+            final notificationService = NotificationService();
+            await notificationService.scheduleTestNotificationWorkManager();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Test notification scheduled (≈10s)'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          } catch (e) {
+            print('❌ Failed to schedule test notification: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to schedule test notification')),
+              );
+            }
+          }
+        },
+        tooltip: 'Schedule test notification',
+        child: Icon(Icons.notifications_active),
+      ),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -363,6 +698,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                 icon: const Icon(Icons.refresh_rounded, color: Colors.white),
                 onPressed: _loadPrayerTimes,
               ),
+          // Debug button to check notification schedule
+          IconButton(
+            icon: const Icon(Icons.info_outline, color: Colors.white),
+            onPressed: _showScheduleInfo,
+          ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -380,9 +720,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
               : Column(
                 children: [
                   _buildHeaderCard(),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                       child: _buildAllPrayerTimesCard(),
                     ),
                   ),
@@ -393,6 +734,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
   Widget _buildHeaderCard() {
     final colorScheme = Theme.of(context).colorScheme;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       width: double.infinity,
@@ -420,164 +763,180 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
             ),
           ),
           // Content
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                // Date Section
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        hijriDate,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.5,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+              child: Column(
+                children: [
+                  // Date Section - Fixed height card with flexible content
+                  Expanded(
+                    flex: 6,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.04,
+                        vertical: screenHeight * 0.008,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 1,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withOpacity(0),
-                              Colors.white.withOpacity(0.5),
-                              Colors.white.withOpacity(0),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        currentDate,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            color: Colors.white.withOpacity(0.8),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              locationName,
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              hijriDate,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.035,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.003),
+                            Container(
+                              height: 1,
+                              width: 30,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0),
+                                    Colors.white.withOpacity(0.5),
+                                    Colors.white.withOpacity(0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.003),
+                            Text(
+                              currentDate,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.038,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                // Next Prayer Card
-                if (nextPrayer != null && nextPrayer!['time'] != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          colorScheme.primary.withOpacity(0.9),
-                          colorScheme.primary.withOpacity(0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Waktu Solat Seterusnya',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.5,
+                            SizedBox(height: screenHeight * 0.005),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.location_on_outlined,
+                                  color: Colors.white.withOpacity(0.8),
+                                  size: screenWidth * 0.04,
                                 ),
+                                SizedBox(width: screenWidth * 0.015),
+                                Text(
+                                  locationName,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: screenWidth * 0.048,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Next Prayer Card - Fixed height card with flexible content
+                  if (nextPrayer != null && nextPrayer!['time'] != null)
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenHeight * 0.008,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colorScheme.primary.withOpacity(0.9),
+                              colorScheme.primary.withOpacity(0.8),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Waktu Solat Seterusnya',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: screenWidth * 0.03,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  SizedBox(height: screenHeight * 0.003),
+                                  Text(
+                                    nextPrayer!['name'] ?? 'Tidak diketahui',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: screenWidth * 0.058,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                nextPrayer!['name'] ?? 'Tidak diketahui',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                              SizedBox(width: screenWidth * 0.04),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.035,
+                                  vertical: screenHeight * 0.008,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  nextPrayer!['time'] ?? '--:--',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenWidth * 0.058,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            nextPrayer!['time'] ?? '--:--',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

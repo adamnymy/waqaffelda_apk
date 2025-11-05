@@ -48,9 +48,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+    _setCurrentDate();
+    // Initialize notifications first, then load prayer times
+    // Prayer times loading will trigger auto-schedule if needed
     _initializeNotifications();
     _loadPrayerTimes();
-    _setCurrentDate();
   }
 
   @override
@@ -109,8 +111,26 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       if (granted) {
         print('✅ Notification permission granted');
+        // Schedule will be triggered after prayer times are loaded
       } else {
         print('⚠️ Notification permission denied');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Notifikasi diperlukan untuk menghantar peringatan waktu solat',
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Cuba Lagi',
+                textColor: Colors.white,
+                onPressed: () => _initializeNotifications(),
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       print('❌ Error initializing notifications: $e');
@@ -309,6 +329,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       final notificationService = NotificationService();
 
+      // Check if this is the first time (no last_scheduled_date)
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstTime = !prefs.containsKey('last_scheduled_date');
+
       // Use enhanced method with date tracking
       final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
         prayerTimes,
@@ -327,8 +351,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         print('⚠️ Failed to cache prayer times: $e');
       }
 
-      // Show confirmation snackbar
-      if (mounted) {
+      // Show confirmation snackbar (always show on first time, or when rescheduled)
+      if (mounted && (isFirstTime || wasRescheduled)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -336,12 +360,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                 Icon(Icons.notifications_active, color: Colors.white),
                 SizedBox(width: 12),
                 Expanded(
-                  child: Text('Notifikasi waktu solat telah dijadualkan'),
+                  child: Text(
+                    isFirstTime
+                        ? '✅ Notifikasi waktu solat telah diaktifkan!'
+                        : 'Notifikasi waktu solat telah dijadualkan',
+                  ),
                 ),
               ],
             ),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: isFirstTime ? 5 : 3),
             behavior: SnackBarBehavior.floating,
           ),
         );

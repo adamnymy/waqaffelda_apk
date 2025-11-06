@@ -79,22 +79,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         await notificationService.schedulePrayerNotificationsWithTracking(
           prayerTimes,
         );
-
+        // SnackBar removed per user request. Keep function but suppress UI toast.
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.update, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Notifikasi dikemaskini untuk hari baru'),
-                ],
-              ),
-              backgroundColor: Colors.blue,
-              duration: Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          // Optionally log or handle non-UI feedback here.
+          print('Notifikasi dikemaskini untuk hari baru (snackbar suppressed)');
         }
       }
     } catch (e) {
@@ -115,21 +103,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       } else {
         print('⚠️ Notification permission denied');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Notifikasi diperlukan untuk menghantar peringatan waktu solat',
-              ),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 5),
-              behavior: SnackBarBehavior.floating,
-              action: SnackBarAction(
-                label: 'Cuba Lagi',
-                textColor: Colors.white,
-                onPressed: () => _initializeNotifications(),
-              ),
-            ),
+          // SnackBar removed per user request. Keep function but suppress UI toast.
+          print(
+            'Notifikasi diperlukan untuk menghantar peringatan waktu solat (snackbar suppressed)',
           );
+          // If you still want a retry mechanism, call _initializeNotifications() from UI elsewhere.
         }
       }
     } catch (e) {
@@ -353,25 +331,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       // Show confirmation snackbar (always show on first time, or when rescheduled)
       if (mounted && (isFirstTime || wasRescheduled)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.notifications_active, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    isFirstTime
-                        ? '✅ Notifikasi waktu solat telah diaktifkan!'
-                        : 'Notifikasi waktu solat telah dijadualkan',
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: isFirstTime ? 5 : 3),
-            behavior: SnackBarBehavior.floating,
-          ),
+        // Confirmation snackbar removed per user request.
+        print(
+          isFirstTime
+              ? 'Notifikasi waktu solat telah diaktifkan! (snackbar suppressed)'
+              : 'Notifikasi waktu solat telah dijadualkan (snackbar suppressed)',
         );
       }
 
@@ -379,20 +343,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     } catch (e) {
       print('❌ Error scheduling notifications: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Gagal menjadualkan notifikasi')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        // Error snackbar removed per user request. Keep function but suppress UI toast.
+        print('Gagal menjadualkan notifikasi (snackbar suppressed) - $e');
       }
     }
   }

@@ -48,9 +48,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+    _setCurrentDate();
+    // Initialize notifications first, then load prayer times
+    // Prayer times loading will trigger auto-schedule if needed
     _initializeNotifications();
     _loadPrayerTimes();
-    _setCurrentDate();
   }
 
   @override
@@ -77,22 +79,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         await notificationService.schedulePrayerNotificationsWithTracking(
           prayerTimes,
         );
-
+        // SnackBar removed per user request. Keep function but suppress UI toast.
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.update, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Notifikasi dikemaskini untuk hari baru'),
-                ],
-              ),
-              backgroundColor: Colors.blue,
-              duration: Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          // Optionally log or handle non-UI feedback here.
+          print('Notifikasi dikemaskini untuk hari baru (snackbar suppressed)');
         }
       }
     } catch (e) {
@@ -109,8 +99,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       if (granted) {
         print('✅ Notification permission granted');
+        // Schedule will be triggered after prayer times are loaded
       } else {
         print('⚠️ Notification permission denied');
+        if (mounted) {
+          // SnackBar removed per user request. Keep function but suppress UI toast.
+          print(
+            'Notifikasi diperlukan untuk menghantar peringatan waktu solat (snackbar suppressed)',
+          );
+          // If you still want a retry mechanism, call _initializeNotifications() from UI elsewhere.
+        }
       }
     } catch (e) {
       print('❌ Error initializing notifications: $e');
@@ -309,6 +307,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       final notificationService = NotificationService();
 
+      // Check if this is the first time (no last_scheduled_date)
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstTime = !prefs.containsKey('last_scheduled_date');
+
       // Use enhanced method with date tracking
       final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
         prayerTimes,
@@ -327,23 +329,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         print('⚠️ Failed to cache prayer times: $e');
       }
 
-      // Show confirmation snackbar
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.notifications_active, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text('Notifikasi waktu solat telah dijadualkan'),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
+      // Show confirmation snackbar (always show on first time, or when rescheduled)
+      if (mounted && (isFirstTime || wasRescheduled)) {
+        // Confirmation snackbar removed per user request.
+        print(
+          isFirstTime
+              ? 'Notifikasi waktu solat telah diaktifkan! (snackbar suppressed)'
+              : 'Notifikasi waktu solat telah dijadualkan (snackbar suppressed)',
         );
       }
 
@@ -351,267 +343,17 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     } catch (e) {
       print('❌ Error scheduling notifications: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Gagal menjadualkan notifikasi')),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        // Error snackbar removed per user request. Keep function but suppress UI toast.
+        print('Gagal menjadualkan notifikasi (snackbar suppressed) - $e');
       }
     }
   }
 
-  /// Show schedule info dialog
-  Future<void> _showScheduleInfo() async {
-    try {
-      final notificationService = NotificationService();
-      final info = await notificationService.getScheduleInfo();
+  // _showScheduleInfo removed as per user request (info button removed)
 
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text('📅 Notification Schedule Info'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Today: ${info['today']}'),
-                  SizedBox(height: 8),
-                  Text(
-                    'Last Scheduled: ${info['lastScheduledDate'] ?? 'Never'}',
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Status: ${info['isScheduledForToday'] ? '✅ Scheduled for today' : '⚠️ Not scheduled'}',
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Prayer times will be scheduled automatically when you open this page.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Close'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    await _forceReschedule();
-                  },
-                  child: Text('Force Reschedule'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    await _showExactAlarmAndBatteryDialog();
-                  },
-                  child: Text('Exact & Battery'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    await _showExecutionLog();
-                  },
-                  child: Text('Execution Log'),
-                ),
-              ],
-            ),
-      );
-    } catch (e) {
-      print('❌ Error showing schedule info: $e');
-    }
-  }
-
-  /// Show dialog to check/request exact-alarm permission and battery optimizations
-  Future<void> _showExactAlarmAndBatteryDialog() async {
-    try {
-      final notificationService = NotificationService();
-      final canSchedule = await notificationService.canScheduleExactAlarms();
-
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text('🔒 Exact Alarm & Battery'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Exact alarms allowed: ${canSchedule ? 'Yes ✅' : 'No ⚠️'}',
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    'If exact alarms are not allowed, you can request the permission.\n\nAlso consider exempting the app from battery optimizations on aggressive OEMs (MIUI, Huawei, Samsung) to avoid delayed background work.',
-                    style: TextStyle(fontSize: 13),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Close'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    final ok =
-                        await notificationService.requestExactAlarmPermission();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            ok
-                                ? 'Opened exact-alarm settings (grant permission if needed)'
-                                : 'Failed to open exact-alarm settings',
-                          ),
-                          duration: Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text('Request Exact Alarm'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    // First try to request ignore battery optimizations for this app
-                    final ok =
-                        await notificationService
-                            .requestIgnoreBatteryOptimizations();
-                    if (!ok) {
-                      // Fallback to open battery optimization settings
-                      await notificationService
-                          .openBatteryOptimizationSettings();
-                    }
-
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Opened battery optimization settings'),
-                          duration: Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text('Open Battery Optimizations'),
-                ),
-              ],
-            ),
-      );
-    } catch (e) {
-      print('❌ Error showing exact/battery dialog: $e');
-    }
-  }
-
-  /// Force reschedule notifications
-  Future<void> _forceReschedule() async {
-    if (prayerTimes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please load prayer times first'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    try {
-      final notificationService = NotificationService();
-      await notificationService.forceReschedule(prayerTimes);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.refresh, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Notifikasi telah dijadualkan semula')),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      print('❌ Error force rescheduling: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
-  }
-
-  /// Show execution log dialog reading persisted timestamps from SharedPreferences
-  Future<void> _showExecutionLog() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final buffer = StringBuffer();
-
-      for (var prayerName in NotificationService.prayerConfig.keys) {
-        final keyBase =
-            prayerName.toString().replaceAll(' ', '_').toLowerCase();
-        final scheduled = prefs.getString('scheduled_${keyBase}');
-        final executed = prefs.getString('executed_${keyBase}');
-        if (scheduled == null && executed == null) continue;
-        buffer.writeln('$prayerName');
-        buffer.writeln('  Scheduled: ${scheduled ?? '-'}');
-        buffer.writeln('  Executed:  ${executed ?? '-'}');
-        if (scheduled != null && executed != null) {
-          try {
-            final s = DateTime.parse(scheduled).toUtc();
-            final e = DateTime.parse(executed).toUtc();
-            final diff = e.difference(s).inSeconds;
-            buffer.writeln('  Elapsed: ${diff}s');
-          } catch (_) {}
-        }
-        buffer.writeln('');
-      }
-
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text('📊 Execution Log'),
-              content: SingleChildScrollView(
-                child: Text(
-                  buffer.isEmpty ? 'No execution logs yet.' : buffer.toString(),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Close'),
-                ),
-              ],
-            ),
-      );
-    } catch (e) {
-      print('❌ Error showing execution log: $e');
-    }
-  }
+  // Removed exact-alarm/battery dialog, force reschedule, and execution log
+  // These were only referenced from the info (ℹ️) button which the user asked to remove.
+  // If you want them re-added later, we can restore them on request.
 
   @override
   Widget build(BuildContext context) {
@@ -619,31 +361,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            final notificationService = NotificationService();
-            await notificationService.scheduleTestNotificationWorkManager();
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Test notification scheduled (≈10s)'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            }
-          } catch (e) {
-            print('❌ Failed to schedule test notification: $e');
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to schedule test notification')),
-              );
-            }
-          }
-        },
-        tooltip: 'Schedule test notification',
-        child: Icon(Icons.notifications_active),
-      ),
+      // FloatingActionButton removed
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -698,11 +416,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                 icon: const Icon(Icons.refresh_rounded, color: Colors.white),
                 onPressed: _loadPrayerTimes,
               ),
-          // Debug button to check notification schedule
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white),
-            onPressed: _showScheduleInfo,
-          ),
+          // Info button removed
         ],
       ),
       extendBodyBehindAppBar: true,

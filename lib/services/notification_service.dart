@@ -151,21 +151,21 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
         }
 
         final delaySeconds = scheduledTime.difference(now).inSeconds;
+        // Build dynamic title/body including scheduled time
+        final timeLabel = DateFormat('HH:mm').format(scheduledTime);
 
         print(
           '🔧 [BG] Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
         );
 
+        final bgTitle = 'Waktu Solat $prayerName — $timeLabel';
+        final bgBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
           inputData: {
-            'title':
-                NotificationService.prayerConfig[prayerName]?['title'] ??
-                'Waktu Solat',
-            'body':
-                NotificationService.prayerConfig[prayerName]?['body'] ??
-                'Sudah tiba waktu solat',
+            'title': bgTitle,
+            'body': bgBody,
             'channelId':
                 NotificationService.prayerConfig[prayerName]?['channelId'] ??
                 'prayer_default',
@@ -211,41 +211,40 @@ class NotificationService {
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_subuh',
       'channelName': 'Waktu Subuh',
-      'title': '🕌 Waktu Solat Subuh',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Subuh. Jangan lewatkan!',
+      'title': 'Waktu Solat Subuh',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Subuh.',
     },
     'Zohor': {
       'color': 0xFFFFC107, // Yellow - matahari tengahari
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_zohor',
       'channelName': 'Waktu Zohor',
-      'title': '🕌 Waktu Solat Zohor',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Zohor. Jangan lewatkan!',
+      'title': 'Waktu Solat Zohor',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Zohor.',
     },
     'Asar': {
       'color': 0xFFFF9800, // Orange - petang
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_asar',
       'channelName': 'Waktu Asar',
-      'title': '🕌 Waktu Solat Asar',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Asar. Jangan lewatkan!',
+      'title': 'Waktu Solat Asar',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Asar.',
     },
     'Maghrib': {
       'color': 0xFFFF5722, // Deep Orange - senja
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_maghrib',
       'channelName': 'Waktu Maghrib',
-      'title': '🕌 Waktu Solat Maghrib',
-      'body':
-          'Sudah tiba waktu untuk menunaikan solat Maghrib. Jangan lewatkan!',
+      'title': 'Waktu Solat Maghrib',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Maghrib.',
     },
     'Isyak': {
       'color': 0xFF3F51B5, // Indigo - malam
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_isyak',
       'channelName': 'Waktu Isyak',
-      'title': '🕌 Waktu Solat Isyak',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Isyak. Jangan lewatkan!',
+      'title': 'Waktu Solat Isyak',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Isyak.',
     },
   };
 
@@ -380,6 +379,56 @@ class NotificationService {
       return res == true;
     } catch (e) {
       print('⚠️ requestIgnoreBatteryOptimizations call failed: $e');
+      return false;
+    }
+  }
+
+  /// Schedule native exact alarm using AlarmManager (guaranteed exact timing)
+  Future<bool> _scheduleNativeExactAlarm(
+    int notificationId,
+    DateTime scheduledTime,
+    String prayerName,
+    String title,
+    String body,
+    String channelId,
+  ) async {
+    try {
+      final triggerAtMillis = scheduledTime.millisecondsSinceEpoch;
+      final res = await _exactAlarmChannel.invokeMethod('scheduleExactAlarm', {
+        'notificationId': notificationId,
+        'triggerAtMillis': triggerAtMillis,
+        'prayerName': prayerName,
+        'title': title,
+        'body': body,
+        'channelId': channelId,
+      });
+      return res == true;
+    } catch (e) {
+      print('⚠️ Failed to schedule native exact alarm: $e');
+      return false;
+    }
+  }
+
+  /// Cancel native exact alarm
+  Future<bool> _cancelNativeExactAlarm(int notificationId) async {
+    try {
+      final res = await _exactAlarmChannel.invokeMethod('cancelExactAlarm', {
+        'notificationId': notificationId,
+      });
+      return res == true;
+    } catch (e) {
+      print('⚠️ Failed to cancel native exact alarm: $e');
+      return false;
+    }
+  }
+
+  /// Cancel all native exact alarms
+  Future<bool> cancelAllNativeExactAlarms() async {
+    try {
+      final res = await _exactAlarmChannel.invokeMethod('cancelAllExactAlarms');
+      return res == true;
+    } catch (e) {
+      print('⚠️ Failed to cancel all native exact alarms: $e');
       return false;
     }
   }
@@ -660,7 +709,8 @@ class NotificationService {
     await prefs.setString('last_scheduled_date', today);
   }
 
-  /// Schedule a single prayer notification using WorkManager
+  /// Schedule a single prayer notification using NATIVE EXACT ALARMS (primary)
+  /// with WorkManager as backup for devices without exact alarm permission
   Future<void> _scheduleSinglePrayerWorkManager(
     String prayerName,
     String timeString,
@@ -684,77 +734,76 @@ class NotificationService {
     }
 
     final delaySeconds = scheduledTime.difference(now).inSeconds;
+    final notificationId = _getNotificationId(prayerName);
+
+    final timeLabel = DateFormat('HH:mm').format(scheduledTime);
+    final dynamicTitle = 'Waktu Solat $prayerName — $timeLabel';
+    final dynamicBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
 
     print(
       '🔧 Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
     );
 
-    // For critical prayers (Subuh), also schedule an exact local alarm using
-    // flutter_local_notifications zonedSchedule with androidAllowWhileIdle=true.
-    // This increases the chance of on-time delivery during Doze/idle.
-    if (prayerName.toLowerCase() == 'subuh') {
-      try {
-        final notificationId = _getNotificationId(prayerName);
-        final androidDetails = AndroidNotificationDetails(
-          config['channelId'],
-          config['channelName'],
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: config['icon'] ?? '@mipmap/ic_launcher',
-        );
+    // PRIMARY METHOD: Use native AlarmManager.setExactAndAllowWhileIdle for ALL prayers
+    bool nativeScheduleSuccess = false;
+    try {
+      final success = await _scheduleNativeExactAlarm(
+        notificationId,
+        scheduledTime,
+        prayerName,
+        dynamicTitle,
+        dynamicBody,
+        config['channelId'],
+      );
 
-        const iosDetails = DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        );
-
-        final details = NotificationDetails(
-          android: androidDetails,
-          iOS: iosDetails,
-        );
-
-        // Schedule exact alarm (allow while idle)
-        await _notifications.zonedSchedule(
-          notificationId,
-          config['title'],
-          config['body'],
-          scheduledTime,
-          details,
-          androidAllowWhileIdle: true,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-
+      if (success) {
         print(
-          '🔔 Exact alarm scheduled for $prayerName (id:$notificationId) at $scheduledTime',
+          '✅ Native exact alarm scheduled for $prayerName (id:$notificationId) at $scheduledTime',
         );
-      } catch (e) {
-        print('⚠️ Failed to schedule exact alarm for $prayerName: $e');
+        nativeScheduleSuccess = true;
+      } else {
+        print(
+          '⚠️ Native exact alarm scheduling returned false for $prayerName - will use WorkManager as fallback',
+        );
       }
+    } catch (e) {
+      print('❌ Failed to schedule native exact alarm for $prayerName: $e');
     }
 
-    await Workmanager().registerOneOffTask(
-      'prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}', // Unique task name
-      'showPrayerNotification', // Task identifier
-      inputData: {
-        'title': config['title'],
-        'body': config['body'],
-        'channelId': config['channelId'],
-        'scheduledAt': scheduledTime.toUtc().toIso8601String(),
-      },
-      initialDelay: Duration(seconds: delaySeconds),
-      constraints: Constraints(
-        networkType: NetworkType.not_required,
-        requiresCharging: false,
-        requiresDeviceIdle: false,
-        requiresBatteryNotLow: false,
-        requiresStorageNotLow: false,
-      ),
-      backoffPolicy: BackoffPolicy.linear,
-      backoffPolicyDelay: const Duration(seconds: 10),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-    );
+    // BACKUP METHOD: Only use WorkManager as fallback if native scheduling failed
+    // WorkManager is less precise but better than nothing.
+    if (!nativeScheduleSuccess) {
+      try {
+        await Workmanager().registerOneOffTask(
+          'prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
+          'showPrayerNotification',
+          inputData: {
+            'title': dynamicTitle,
+            'body': dynamicBody,
+            'channelId': config['channelId'],
+            'scheduledAt': scheduledTime.toUtc().toIso8601String(),
+          },
+          initialDelay: Duration(seconds: delaySeconds),
+          constraints: Constraints(
+            networkType: NetworkType.not_required,
+            requiresCharging: false,
+            requiresDeviceIdle: false,
+            requiresBatteryNotLow: false,
+            requiresStorageNotLow: false,
+          ),
+          backoffPolicy: BackoffPolicy.linear,
+          backoffPolicyDelay: const Duration(seconds: 10),
+          existingWorkPolicy: ExistingWorkPolicy.replace,
+        );
+        print('📦 WorkManager backup scheduled for $prayerName');
+      } catch (e) {
+        print('⚠️ Failed to schedule WorkManager backup for $prayerName: $e');
+      }
+    } else {
+      print(
+        '⏭️ Skipping WorkManager backup for $prayerName (native alarm succeeded)',
+      );
+    }
   }
 
   /// Handle notification tap
@@ -845,6 +894,14 @@ class NotificationService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('last_scheduled_date');
     print('🗑️ Cleared last scheduled date');
+
+    // Cancel all native exact alarms
+    try {
+      await cancelAllNativeExactAlarms();
+      print('🗑️ Cancelled all native exact alarms');
+    } catch (e) {
+      print('⚠️ Failed to cancel native alarms: $e');
+    }
 
     // Cancel all existing WorkManager tasks
     await Workmanager().cancelAll();

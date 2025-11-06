@@ -151,21 +151,21 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
         }
 
         final delaySeconds = scheduledTime.difference(now).inSeconds;
+        // Build dynamic title/body including scheduled time
+        final timeLabel = DateFormat('HH:mm').format(scheduledTime);
 
         print(
           '🔧 [BG] Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
         );
 
+        final bgTitle = 'Waktu Solat $prayerName — $timeLabel';
+        final bgBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
           inputData: {
-            'title':
-                NotificationService.prayerConfig[prayerName]?['title'] ??
-                'Waktu Solat',
-            'body':
-                NotificationService.prayerConfig[prayerName]?['body'] ??
-                'Sudah tiba waktu solat',
+            'title': bgTitle,
+            'body': bgBody,
             'channelId':
                 NotificationService.prayerConfig[prayerName]?['channelId'] ??
                 'prayer_default',
@@ -211,41 +211,40 @@ class NotificationService {
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_subuh',
       'channelName': 'Waktu Subuh',
-      'title': '🕌 Waktu Solat Subuh',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Subuh. Jangan lewatkan!',
+      'title': 'Waktu Solat Subuh',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Subuh.',
     },
     'Zohor': {
       'color': 0xFFFFC107, // Yellow - matahari tengahari
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_zohor',
       'channelName': 'Waktu Zohor',
-      'title': '🕌 Waktu Solat Zohor',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Zohor. Jangan lewatkan!',
+      'title': 'Waktu Solat Zohor',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Zohor.',
     },
     'Asar': {
       'color': 0xFFFF9800, // Orange - petang
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_asar',
       'channelName': 'Waktu Asar',
-      'title': '🕌 Waktu Solat Asar',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Asar. Jangan lewatkan!',
+      'title': 'Waktu Solat Asar',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Asar.',
     },
     'Maghrib': {
       'color': 0xFFFF5722, // Deep Orange - senja
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_maghrib',
       'channelName': 'Waktu Maghrib',
-      'title': '🕌 Waktu Solat Maghrib',
-      'body':
-          'Sudah tiba waktu untuk menunaikan solat Maghrib. Jangan lewatkan!',
+      'title': 'Waktu Solat Maghrib',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Maghrib.',
     },
     'Isyak': {
       'color': 0xFF3F51B5, // Indigo - malam
       'icon': '@mipmap/ic_launcher',
       'channelId': 'prayer_isyak',
       'channelName': 'Waktu Isyak',
-      'title': '🕌 Waktu Solat Isyak',
-      'body': 'Sudah tiba waktu untuk menunaikan solat Isyak. Jangan lewatkan!',
+      'title': 'Waktu Solat Isyak',
+      'body': 'Sudah tiba waktu untuk menunaikan solat Isyak.',
     },
   };
 
@@ -737,20 +736,23 @@ class NotificationService {
     final delaySeconds = scheduledTime.difference(now).inSeconds;
     final notificationId = _getNotificationId(prayerName);
 
+    final timeLabel = DateFormat('HH:mm').format(scheduledTime);
+    final dynamicTitle = 'Waktu Solat $prayerName — $timeLabel';
+    final dynamicBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
+
     print(
       '🔧 Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
     );
 
     // PRIMARY METHOD: Use native AlarmManager.setExactAndAllowWhileIdle for ALL prayers
-    // This is the ONLY reliable way to get exact timing even in Doze mode
     bool nativeScheduleSuccess = false;
     try {
       final success = await _scheduleNativeExactAlarm(
         notificationId,
         scheduledTime,
         prayerName,
-        config['title'],
-        config['body'],
+        dynamicTitle,
+        dynamicBody,
         config['channelId'],
       );
 
@@ -776,8 +778,8 @@ class NotificationService {
           'prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
           inputData: {
-            'title': config['title'],
-            'body': config['body'],
+            'title': dynamicTitle,
+            'body': dynamicBody,
             'channelId': config['channelId'],
             'scheduledAt': scheduledTime.toUtc().toIso8601String(),
           },

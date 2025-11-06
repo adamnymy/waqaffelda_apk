@@ -67,6 +67,16 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- AlarmReceiver: handles exact alarms from AlarmManager for prayer notifications.
+             This ensures notifications are shown EXACTLY at prayer times, even during Doze mode. -->
+        <receiver android:name="com.example.waqaffelda_apk.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.waqaffelda_apk.ACTION_PRAYER_ALARM" />
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

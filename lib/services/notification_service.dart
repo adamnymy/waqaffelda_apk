@@ -158,8 +158,8 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
           '🔧 [BG] Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
         );
 
-        final bgTitle = 'Waktu Solat $prayerName — $timeLabel';
-        final bgBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
+        final bgTitle = 'Waktu Solat $prayerName';
+        final bgBody = 'Masa: $timeLabel. Sudah masuk waktu solat $prayerName';
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
@@ -776,8 +776,8 @@ class NotificationService {
     final notificationId = _getNotificationId(prayerName);
 
     final timeLabel = DateFormat('HH:mm').format(scheduledTime);
-    final dynamicTitle = 'Waktu Solat $prayerName — $timeLabel';
-    final dynamicBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
+    final dynamicTitle = 'Waktu Solat $prayerName';
+    final dynamicBody = 'Masa: $timeLabel. Sudah masuk waktu solat $prayerName';
 
     print(
       '🔧 Scheduling $prayerName (ID:$notificationId) for ${scheduledTime.toString()} (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',

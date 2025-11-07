@@ -310,18 +310,24 @@ class NotificationService {
     print('✅ Notification service initialized');
 
     // Check if exact alarm scheduling is available (Android 12+). If not available,
-    // we will log it so the UI can prompt the user to grant the permission.
+    // automatically request the permission for precise notifications.
     try {
       final can = await canScheduleExactAlarms();
       if (!can) {
-        print(
-          '⚠️ App cannot schedule exact alarms. Consider requesting the exact-alarm permission from the user.',
-        );
+        print('⚠️ Exact alarm permission not granted - requesting now...');
+        final granted = await requestExactAlarmPermission();
+        if (granted) {
+          print('✅ Exact alarm permission granted by user');
+        } else {
+          print(
+            '⚠️ Exact alarm permission denied - notifications may not be precise',
+          );
+        }
       } else {
-        print('✅ App can schedule exact alarms (or not required on this OS)');
+        print('✅ Exact alarm permission already granted');
       }
     } catch (e) {
-      print('⚠️ Error checking exact alarm capability: $e');
+      print('⚠️ Error checking/requesting exact alarm capability: $e');
     }
   }
 
@@ -504,7 +510,7 @@ class NotificationService {
     return iosGranted ?? androidGranted ?? true;
   }
 
-  /// Parse time string to TZDateTime (handles 12-hour format with AM/PM)
+  /// Parse time string to TZDateTime (handles both 24-hour and 12-hour format with AM/PM)
   tz.TZDateTime? _parseTimeString(String timeStr) {
     try {
       final now = tz.TZDateTime.now(tz.local);
@@ -512,34 +518,60 @@ class NotificationService {
       // Remove any extra spaces
       timeStr = timeStr.trim();
 
-      // Parse format: "HH:MM AM/PM" or "H:MM AM/PM"
+      // Check if it's 12-hour format (contains AM/PM) or 24-hour format
       final parts = timeStr.split(' ');
-      if (parts.length != 2) return null;
 
-      final timePart = parts[0];
-      final period = parts[1].toUpperCase();
+      if (parts.length == 2) {
+        // 12-hour format: "HH:MM AM/PM" or "H:MM AM/PM"
+        final timePart = parts[0];
+        final period = parts[1].toUpperCase();
 
-      final timeComponents = timePart.split(':');
-      if (timeComponents.length != 2) return null;
+        final timeComponents = timePart.split(':');
+        if (timeComponents.length != 2) return null;
 
-      int hour = int.parse(timeComponents[0]);
-      final minute = int.parse(timeComponents[1]);
+        int hour = int.parse(timeComponents[0]);
+        final minute = int.parse(timeComponents[1]);
 
-      // Convert to 24-hour format
-      if (period == 'PM' && hour != 12) {
-        hour += 12;
-      } else if (period == 'AM' && hour == 12) {
-        hour = 0;
+        // Convert to 24-hour format
+        if (period == 'PM' && hour != 12) {
+          hour += 12;
+        } else if (period == 'AM' && hour == 12) {
+          hour = 0;
+        }
+
+        return tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+      } else if (parts.length == 1) {
+        // 24-hour format: "HH:MM" or "HH:MM:SS" or "H:MM"
+        final timeComponents = timeStr.split(':');
+
+        // Handle both "HH:MM" and "HH:MM:SS" formats
+        if (timeComponents.length < 2 || timeComponents.length > 3) return null;
+
+        final hour = int.parse(timeComponents[0]);
+        final minute = int.parse(timeComponents[1]);
+        // Ignore seconds if present (timeComponents[2])
+
+        final result = tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+
+        print('✅ Parsed time "$timeStr" → ${result.toString()}');
+        return result;
       }
 
-      return tz.TZDateTime(
-        tz.local,
-        now.year,
-        now.month,
-        now.day,
-        hour,
-        minute,
-      );
+      return null;
     } catch (e) {
       print('⚠️ Error parsing time "$timeStr": $e');
       return null;
@@ -684,7 +716,12 @@ class NotificationService {
 
     for (var prayer in prayerTimes) {
       final prayerName = prayer['name'] as String;
-      final prayerTimeString = prayer['time'] as String;
+      // Use time24 if available, fallback to time (12-hour format)
+      final prayerTimeString = (prayer['time24'] ?? prayer['time']) as String;
+
+      print(
+        '📋 Processing $prayerName: time24=${prayer['time24']}, time=${prayer['time']}, using=$prayerTimeString',
+      );
 
       // Skip Syuruk as requested
       if (prayerName.toLowerCase() == 'syuruk') {
@@ -723,6 +760,7 @@ class NotificationService {
     final now = DateTime.now();
     final parsedTime = _parseTimeString(timeString);
     if (parsedTime == null) {
+      print('❌ Failed to parse time string: $timeString for $prayerName');
       throw Exception('Invalid time string: $timeString');
     }
 
@@ -730,6 +768,7 @@ class NotificationService {
 
     // If the prayer time has already passed today, schedule for tomorrow
     if (scheduledTime.isBefore(now)) {
+      print('⏰ $prayerName time has passed today, scheduling for tomorrow');
       scheduledTime = scheduledTime.add(const Duration(days: 1));
     }
 
@@ -741,7 +780,7 @@ class NotificationService {
     final dynamicBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
 
     print(
-      '🔧 Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
+      '🔧 Scheduling $prayerName (ID:$notificationId) for ${scheduledTime.toString()} (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
     );
 
     // PRIMARY METHOD: Use native AlarmManager.setExactAndAllowWhileIdle for ALL prayers

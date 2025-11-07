@@ -677,30 +677,34 @@ class PrayerTimesService {
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
 
-        // Try to get user-friendly location name (prefer area/neighborhood over street names)
+        // Try to get user-friendly location name
+        // Priority: subLocality (kampung/kawasan) > locality (city) > subAdministrativeArea > administrativeArea
         String? locationName;
 
-        // Priority: locality (city/area) > subAdministrativeArea > administrativeArea > subLocality (only if short)
-        if (place.locality != null && place.locality!.isNotEmpty) {
-          locationName = place.locality;
-        } else if (place.subAdministrativeArea != null &&
-            place.subAdministrativeArea!.isNotEmpty) {
-          locationName = place.subAdministrativeArea;
-        } else if (place.administrativeArea != null &&
-            place.administrativeArea!.isNotEmpty) {
-          locationName = place.administrativeArea;
-        } else if (place.subLocality != null &&
-            place.subLocality!.isNotEmpty &&
-            place.subLocality!.length <= 30) {
-          // Only use subLocality if it's reasonably short
+        // FIRST: Try subLocality (kampung, taman, kawasan)
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
           locationName = place.subLocality;
         }
+        // SECOND: Try locality (city/town name)
+        else if (place.locality != null && place.locality!.isNotEmpty) {
+          locationName = place.locality;
+        }
+        // THIRD: Try subAdministrativeArea (district)
+        else if (place.subAdministrativeArea != null &&
+            place.subAdministrativeArea!.isNotEmpty) {
+          locationName = place.subAdministrativeArea;
+        }
+        // FOURTH: Try administrativeArea (state)
+        else if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          locationName = place.administrativeArea;
+        }
 
-        // Filter out generic or unhelpful names and limit length
+        // Clean up and validate the location name
         if (locationName != null) {
+          // Remove generic state/country names if they appear
           final genericNames = [
             'Malaysia',
-            'Kuala Lumpur',
             'Wilayah Persekutuan',
             'Selangor',
             'Johor',
@@ -715,13 +719,22 @@ class PrayerTimesService {
             'Sarawak',
           ];
 
-          if (!genericNames.contains(locationName) && locationName.length > 2) {
-            // Limit location name to 35 characters to prevent overly long names
-            if (locationName.length > 35) {
-              locationName = locationName.substring(0, 32) + '...';
+          // Don't filter out if it's a subLocality (kampung/taman/kawasan)
+          final isSubLocality =
+              place.subLocality != null &&
+              place.subLocality!.isNotEmpty &&
+              locationName == place.subLocality;
+
+          // Only use if it's specific (subLocality) OR not a generic name
+          if (isSubLocality ||
+              (!genericNames.contains(locationName) &&
+                  locationName.length > 2)) {
+            // Limit location name to 40 characters for better display
+            if (locationName.length > 40) {
+              locationName = locationName.substring(0, 37) + '...';
             }
             print(
-              'Location from geocoding: $locationName (lat: $latitude, lng: $longitude)',
+              'Location from geocoding: $locationName (subLocality: ${place.subLocality}, locality: ${place.locality})',
             );
             return locationName;
           }

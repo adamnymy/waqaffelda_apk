@@ -737,8 +737,8 @@ class NotificationService {
     final notificationId = _getNotificationId(prayerName);
 
     final timeLabel = DateFormat('HH:mm').format(scheduledTime);
-    final dynamicTitle = 'Waktu Solat $prayerName — $timeLabel';
-    final dynamicBody = 'Sudah tiba waktu untuk menunaikan solat $prayerName';
+    final dynamicTitle = 'Waktu Solat $prayerName';
+    final dynamicBody = 'Masa: $timeLabel. Sudah masuk waktu solat $prayerName';
 
     print(
       '🔧 Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',

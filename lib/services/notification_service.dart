@@ -159,7 +159,7 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
         );
 
         final bgTitle = 'Waktu Solat $prayerName';
-        final bgBody = 'Masa: $timeLabel. Sudah masuk waktu solat $prayerName';
+        final bgBody = 'Sudah masuk waktu solat $prayerName';
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',

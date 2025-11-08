@@ -454,6 +454,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     return Container(
       width: double.infinity,
       height: 350,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
           // SVG background (use SvgPicture for vector assets)

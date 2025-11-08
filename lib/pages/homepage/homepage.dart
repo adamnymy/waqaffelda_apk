@@ -307,7 +307,14 @@ class _HomepageState extends State<Homepage> {
             Container(
               height: screenHeight * 0.25 + statusBarHeight,
               decoration: const BoxDecoration(
-                color: Color(0xFF2C5F7C), // Softer navy blue color
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF80DEEA), // Light Cyan
+                    Colors.white, // Medium Cyan
+                  ],
+                ),
               ),
             ),
             // Main content with SafeArea

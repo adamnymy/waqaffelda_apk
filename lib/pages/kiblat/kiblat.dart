@@ -237,11 +237,33 @@ class _KiblatPageState extends State<KiblatPage> {
       );
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        locationName =
-            place.locality ??
-            place.subAdministrativeArea ??
-            place.administrativeArea ??
-            'Unknown Location';
+
+        // Priority: subLocality (kampung/kawasan) > locality (city) > subAdministrativeArea > administrativeArea
+        // FIRST: Try subLocality (kampung, taman, kawasan)
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+          locationName = place.subLocality!;
+        }
+        // SECOND: Try locality (city/town name)
+        else if (place.locality != null && place.locality!.isNotEmpty) {
+          locationName = place.locality!;
+        }
+        // THIRD: Try subAdministrativeArea (district)
+        else if (place.subAdministrativeArea != null &&
+            place.subAdministrativeArea!.isNotEmpty) {
+          locationName = place.subAdministrativeArea!;
+        }
+        // FOURTH: Try administrativeArea (state)
+        else if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          locationName = place.administrativeArea!;
+        } else {
+          locationName = 'Unknown Location';
+        }
+
+        // Limit to 40 characters for display
+        if (locationName.length > 40) {
+          locationName = locationName.substring(0, 37) + '...';
+        }
       }
     } catch (e) {
       // Ignore reverse geocoding errors, as we have a fallback.

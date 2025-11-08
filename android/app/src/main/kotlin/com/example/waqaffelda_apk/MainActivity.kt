@@ -1,4 +1,4 @@
-package com.example.waqaffelda_apk
+package com.example.waqafer
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

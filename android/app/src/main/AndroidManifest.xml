@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     
     <application
-        android:label="waqaffelda_apk"
+        android:label="Waqafer"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -59,7 +59,7 @@
              to ensure WorkManager is touched after device restarts. This does not replace
              Dart-side WorkManager persisted work, but helps on devices where WorkManager may
              need a nudge. -->
-        <receiver android:name="com.example.waqaffelda_apk.BootReceiver"
+        <receiver android:name="com.example.waqafer.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -70,11 +70,11 @@
 
         <!-- AlarmReceiver: handles exact alarms from AlarmManager for prayer notifications.
              This ensures notifications are shown EXACTLY at prayer times, even during Doze mode. -->
-        <receiver android:name="com.example.waqaffelda_apk.AlarmReceiver"
+        <receiver android:name="com.example.waqafer.AlarmReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.waqaffelda_apk.ACTION_PRAYER_ALARM" />
+                <action android:name="com.example.waqafer.ACTION_PRAYER_ALARM" />
             </intent-filter>
         </receiver>
     </application>

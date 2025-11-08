@@ -25,185 +25,252 @@ class OthersMenuPage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      height: screenHeight * 0.85, // 85% of screen height
+      height: screenHeight * 0.92,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.teal.shade50, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.teal.shade600, Colors.teal.shade400],
         ),
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
         ),
       ),
       child: Column(
         children: [
           // Drag handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            margin: const EdgeInsets.only(top: 12, bottom: 4),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Colors.white.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: 20,
+          // Header with gradient
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(
+              screenWidth * 0.05,
+              12,
+              screenWidth * 0.05,
+              20,
             ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.teal.shade400, Colors.teal.shade600],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.apps_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Semua Menu',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.055,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.dashboard_customize_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Menu Utama',
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.06,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Pilih menu untuk meneruskan',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.035,
-                          color: Colors.grey.shade600,
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.grey.shade600),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Akses pantas ke semua ciri aplikasi',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.035,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          // Menu list
+          // Content area with white background
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _buildMenuItem(
-                  context,
-                  'Waktu Solat',
-                  Icons.access_time_outlined,
-                  Colors.teal,
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const PrayerTimesPage()),
-                    );
-                  },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-                _buildMenuItem(
-                  context,
-                  'Arah Kiblat',
-                  Icons.explore_outlined,
-                  const Color(0xFFFBC02D),
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const KiblatPage()),
-                    );
-                  },
+              ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: 20,
                 ),
-                _buildMenuItem(
-                  context,
-                  'Al Qur\'an',
-                  Icons.menu_book_outlined,
-                  Colors.teal,
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const QuranPage()),
-                    );
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  'Tasbih',
-                  Icons.cable_outlined,
-                  const Color(0xFFFBC02D),
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const ZikirCounterPage()),
-                    );
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  'Hadith 40',
-                  Icons.book_outlined,
-                  Colors.teal,
-                  () {
-                    Navigator.pop(context);
-                    // TODO: Navigate to Hadith page
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  'Doa Harian',
-                  Icons.volunteer_activism_outlined,
-                  const Color(0xFFFBC02D),
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DoaHarianPage(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Featured section (top 2 items - larger)
+                    Text(
+                      'Kerap Digunakan',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
                       ),
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildFeaturedCard(
+                            context,
+                            'Waktu Solat',
+                            Icons.access_time_rounded,
+                            Colors.teal.shade700,
+                            Colors.teal.shade50,
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                SmoothPageRoute(page: const PrayerTimesPage()),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildFeaturedCard(
+                            context,
+                            'Al Qur\'an',
+                            Icons.menu_book_rounded,
+                            const Color(0xFF00695C),
+                            const Color(0xFFB2DFDB),
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                SmoothPageRoute(page: const QuranPage()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // All menus section
+                    Text(
+                      'Semua Menu',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildCompactMenuItem(
+                      context,
+                      'Arah Kiblat',
+                      'Cari arah kiblat dengan mudah',
+                      Icons.explore_rounded,
+                      const Color(0xFFFF6F00),
+                      () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const KiblatPage()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
+                      'Tasbih',
+                      'Kira zikir digital',
+                      Icons.cable_rounded,
+                      const Color(0xFF5E35B1),
+                      () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const ZikirCounterPage()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
+                      'Doa Harian',
+                      'Koleksi doa harian',
+                      Icons.volunteer_activism_rounded,
+                      const Color(0xFFE53935),
+                      () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DoaHarianPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
+                      'Hadith 40',
+                      'Hadith Nawawi',
+                      Icons.book_rounded,
+                      const Color(0xFF1976D2),
+                      () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to Hadith page
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
+                      'Tahlil',
+                      'Bacaan tahlil lengkap',
+                      Icons.auto_stories_rounded,
+                      const Color(0xFF00897B),
+                      () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to Tahlil page
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
+                      'Kalender Islam',
+                      'Kalendar Hijriah',
+                      Icons.calendar_month_rounded,
+                      const Color(0xFFFBC02D),
+                      () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to Islamic calendar page
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                _buildMenuItem(
-                  context,
-                  'Tahlil',
-                  Icons.auto_stories,
-                  Colors.teal,
-                  () {
-                    Navigator.pop(context);
-                    // TODO: Navigate to Tahlil page
-                  },
-                ),
-                _buildMenuItem(
-                  context,
-                  'Kalender Islam',
-                  Icons.calendar_month_outlined,
-                  Colors.teal,
-                  () {
-                    Navigator.pop(context);
-                    // TODO: Navigate to Islamic calendar page
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -211,59 +278,161 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(
+  // Featured card - larger, more prominent
+  Widget _buildFeaturedCard(
     BuildContext context,
     String title,
+    IconData icon,
+    Color primaryColor,
+    Color backgroundColor,
+    VoidCallback onTap,
+  ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 140,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryColor, primaryColor.withOpacity(0.8)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: primaryColor.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Decorative circle
+              Positioned(
+                right: -20,
+                top: -20,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: Colors.white, size: 32),
+                    ),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.042,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Compact menu item - list style with icon, title, subtitle
+  Widget _buildCompactMenuItem(
+    BuildContext context,
+    String title,
+    String subtitle,
     IconData icon,
     Color color,
     VoidCallback onTap,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.05,
-          vertical: 12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color.withOpacity(0.8), color],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.9), color],
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: Colors.white, size: 26),
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
-            ),
-            SizedBox(width: screenWidth * 0.04),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.042,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                  letterSpacing: 0.3,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.042,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.032,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey.shade400,
-              size: 18,
-            ),
-          ],
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey.shade400,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );

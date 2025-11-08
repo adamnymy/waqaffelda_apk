@@ -1,4 +1,4 @@
-package com.example.waqaffelda_apk
+package com.example.waqafer
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 class AlarmReceiver : BroadcastReceiver() {
 	companion object {
 		private const val TAG = "AlarmReceiver"
-		const val ACTION_ALARM = "com.example.waqaffelda_apk.ACTION_PRAYER_ALARM"
+		const val ACTION_ALARM = "com.example.waqafer.ACTION_PRAYER_ALARM"
 		const val EXTRA_PRAYER_NAME = "prayer_name"
 		const val EXTRA_NOTIFICATION_ID = "notification_id"
 		const val EXTRA_TITLE = "title"

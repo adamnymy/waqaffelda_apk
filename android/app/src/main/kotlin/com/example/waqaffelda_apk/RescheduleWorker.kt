@@ -1,4 +1,4 @@
-package com.example.waqaffelda_apk
+package com.example.waqafer
 
 import android.content.Context
 import android.util.Log

@@ -179,4 +179,114 @@
     "icon": "directions_car",
     "color": "brown"
   }
+  ,
+  {
+    "id": "21",
+    "title": "Doa Sebelum Tidur",
+    "category": "Doa Petang",
+    "arabic": "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+    "malay": "Dengan nama-Mu ya Allah, aku mati dan aku hidup kembali.",
+    "icon": "bedtime",
+    "color": "blueGrey"
+  },
+  {
+    "id": "22",
+    "title": "Doa Masuk Tandas",
+    "category": "Doa Lain-lain",
+    "arabic": "اللّٰهُمَّ إِنِّيْ أَعُوذُ بِكَ مِنَ الْخُبْثِ وَالْخَبَائِثِ",
+    "malay": "Ya Allah, aku berlindung kepada-Mu dari kekotoran dan makhluk yang jahat.",
+    "icon": "water_drop",
+    "color": "lightBlue"
+  },
+  {
+    "id": "23",
+    "title": "Doa Keluar Tandas",
+    "category": "Doa Lain-lain",
+    "arabic": "غُفْرَانَكَ",
+    "malay": "Aku memohon keampunan-Mu.",
+    "icon": "exit_to_app",
+    "color": "indigo"
+  },
+  {
+    "id": "24",
+    "title": "Doa Sebelum Wuduk",
+    "category": "Doa Lain-lain",
+    "arabic": "بِسْمِ اللَّهِ",
+    "malay": "Dengan nama Allah (saat berwuduk).",
+    "icon": "water_drop",
+    "color": "teal"
+  },
+  {
+    "id": "25",
+    "title": "Doa Selepas Wuduk",
+    "category": "Doa Lain-lain",
+    "arabic": "اللَّهُمَّ اجْعَلْنِيْ مِنَ التَّوَّابِيْنَ وَمِنَ الْمُتَطَهِّرِيْنَ",
+    "malay": "Ya Allah, jadikanlah aku termasuk orang yang sering bertaubat dan yang suci.",
+    "icon": "mosque",
+    "color": "teal"
+  },
+  {
+    "id": "26",
+    "title": "Doa Memohon Perlindungan",
+    "category": "Doa Lain-lain",
+    "arabic": "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+    "malay": "Aku berlindung kepada Allah dari syaitan yang direjam.",
+    "icon": "star",
+    "color": "pink"
+  }
+  ,
+  {
+    "id": "27",
+    "title": "Doa Memohon Rezeki",
+    "category": "Doa Lain-lain",
+    "arabic": "رَبِّ إِنِّي لِمَا أَنْزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ",
+    "malay": "Tuhanku, sesungguhnya aku sangat memerlukan kurniaan rezeki yang Engkau turunkan kepadaku.",
+    "icon": "star",
+    "color": "green"
+  },
+  {
+    "id": "28",
+    "title": "Doa Ketika Sedih",
+    "category": "Doa Lain-lain",
+    "arabic": "اللّهم إني أعوذ بك من الهم والحزن",
+    "malay": "Ya Allah, aku berlindung kepada-Mu dari kesusahan dan kesedihan.",
+    "icon": "lightbulb",
+    "color": "purple"
+  },
+  {
+    "id": "29",
+    "title": "Doa Dalam Perjalanan",
+    "category": "Doa Lain-lain",
+    "arabic": "اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ وَالْخَلِيفَةُ فِي الْأَهْلِ",
+    "malay": "Ya Allah, Engkaulah teman ketika perjalanan dan pemelihara bagi keluarga.",
+    "icon": "directions_car",
+    "color": "brown"
+  },
+  {
+    "id": "30",
+    "title": "Doa Untuk Anak Selamat",
+    "category": "Doa Keluarga",
+    "arabic": "رَبِّ احْفَظْهُمْ مِنْ كُلِّ سُوءٍ",
+    "malay": "Tuhanku, peliharalah mereka dari segala keburukan.",
+    "icon": "child_care",
+    "color": "purple"
+  },
+  {
+    "id": "31",
+    "title": "Doa Memohon Berkat Rumah",
+    "category": "Doa Lain-lain",
+    "arabic": "اللَّهُمَّ بَارِكْ لِهَذَا الْبَيْتِ وَأَهْلِهِ",
+    "malay": "Ya Allah, berkati rumah ini dan penghuni-penghuninya.",
+    "icon": "home",
+    "color": "blue"
+  },
+  {
+    "id": "32",
+    "title": "Doa Taubat (Memohon Ampun)",
+    "category": "Doa Lain-lain",
+    "arabic": "رَبِّ اغْفِرْ لِيْ ذُنُوبِيْ",
+    "malay": "Tuhanku, ampunilah dosa-dosaku.",
+    "icon": "star",
+    "color": "pink"
+  }
 ]

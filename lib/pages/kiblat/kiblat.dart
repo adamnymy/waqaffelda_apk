@@ -26,6 +26,11 @@ class _KiblatPageState extends State<KiblatPage> {
   String _locationName = 'Getting location...';
   double? _distanceToKaaba; // in km
 
+  // Smoothing variables for stable compass readings
+  final List<double> _headingHistory = [];
+  static const int _smoothingWindowSize = 5; // Average last 5 readings
+  static const double _minHeadingChange = 2.0; // Ignore changes < 2 degrees
+
   static const double _kaabaLat = 21.4225; // Masjid al-Haram
   static const double _kaabaLon = 39.8262;
   // Alignment threshold (degrees). Consider aligned when within ± this value.
@@ -35,6 +40,47 @@ class _KiblatPageState extends State<KiblatPage> {
   void initState() {
     super.initState();
     _init();
+  }
+
+  /// Smooth heading using moving average to reduce jitter
+  double _smoothHeading(double newHeading) {
+    // Add new reading to history
+    _headingHistory.add(newHeading);
+
+    // Keep only last N readings
+    if (_headingHistory.length > _smoothingWindowSize) {
+      _headingHistory.removeAt(0);
+    }
+
+    // If we don't have enough samples yet, return the raw value
+    if (_headingHistory.length < 3) {
+      return newHeading;
+    }
+
+    // Calculate circular mean (important for compass angles)
+    // We need to handle the 0°/360° boundary correctly
+    double sumSin = 0;
+    double sumCos = 0;
+
+    for (double heading in _headingHistory) {
+      final radians = heading * math.pi / 180;
+      sumSin += math.sin(radians);
+      sumCos += math.cos(radians);
+    }
+
+    final avgRadians = math.atan2(sumSin, sumCos);
+    final avgHeading = (avgRadians * 180 / math.pi + 360) % 360;
+
+    return avgHeading;
+  }
+
+  /// Check if heading change is significant enough to update UI
+  bool _isSignificantChange(double newHeading, double? oldHeading) {
+    if (oldHeading == null) return true;
+
+    // Calculate the smallest angle difference (handles 0°/360° boundary)
+    final diff = (newHeading - oldHeading + 180 + 360) % 360 - 180;
+    return diff.abs() >= _minHeadingChange;
   }
 
   // Start compass subscription only after location is obtained
@@ -77,10 +123,18 @@ class _KiblatPageState extends State<KiblatPage> {
         // Only process if we have a valid position
         if (_position == null) return;
 
+        // Apply smoothing to reduce jitter
+        final smoothedHeading = _smoothHeading(newHeading);
+
+        // Only update if the change is significant (reduces unnecessary redraws)
+        if (!_isSignificantChange(smoothedHeading, _heading)) {
+          return;
+        }
+
         // Compute qibla angle to check alignment for feedback
         final bearing = _bearingToKaabaDegrees();
         if (bearing != null) {
-          final qAngle = (bearing - newHeading + 360) % 360;
+          final qAngle = (bearing - smoothedHeading + 360) % 360;
           final off = qAngle.abs();
           final delta = off <= 180 ? off : (360 - off);
           // Consider aligned if within ±_alignmentThreshold degrees
@@ -108,7 +162,7 @@ class _KiblatPageState extends State<KiblatPage> {
         }
 
         setState(() {
-          _heading = newHeading;
+          _heading = smoothedHeading;
         });
       },
       onError: (e) {
@@ -484,6 +538,7 @@ class _KiblatPageState extends State<KiblatPage> {
                         _position = null;
                         _heading = null;
                         _wasAligned = false;
+                        _headingHistory.clear(); // Clear smoothing history
                       });
                       _compassSub?.cancel();
                       await _init();
@@ -548,6 +603,7 @@ class _KiblatPageState extends State<KiblatPage> {
                             _error = null;
                             _position = null;
                             _heading = null;
+                            _headingHistory.clear(); // Clear smoothing history
                           });
                           _compassSub?.cancel();
                           _init();

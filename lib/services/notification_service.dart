@@ -120,46 +120,63 @@ void _callbackDispatcher() {
 @pragma('vm:entry-point')
 Future<void> _scheduleFromCachedPrayerTimes() async {
   try {
+    print('🔄 [BG] Starting background reschedule from cached prayer times');
+    
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getString('cached_prayer_times');
     if (cached == null) {
-      print('ℹ️ No cached prayer times found for background reschedule');
+      print('❌ [BG] No cached prayer times found for background reschedule');
       return;
     }
 
     final List<dynamic> list = jsonDecode(cached);
     if (list.isEmpty) {
-      print('ℹ️ Cached prayer times empty');
+      print('❌ [BG] Cached prayer times list is empty');
       return;
     }
 
+    print('📋 [BG] Found ${list.length} cached prayer times');
+
+    // Parse times for tomorrow (since this runs at night after all today's prayers passed)
+    final now = DateTime.now();
+    final tomorrow = now.add(const Duration(days: 1));
+    
+    int scheduledCount = 0;
+    
     // Each item should be {name: '', time: ''}
     for (var item in list) {
       try {
         final prayerName = item['name'] as String;
         final timeString = item['time'] as String;
 
-        // Schedule via WorkManager similar to app-side scheduling
-        final now = DateTime.now();
-        // Parse using same parsing logic
-        final parsed = NotificationService().parseTimeString(timeString);
-        if (parsed == null) continue;
-
-        var scheduledTime = parsed;
-        if (scheduledTime.isBefore(now)) {
-          scheduledTime = scheduledTime.add(const Duration(days: 1));
+        // Skip Syuruk as it's not a prayer time
+        if (prayerName == 'Syuruk') {
+          print('⏭️ [BG] Skipping $prayerName (not a prayer time)');
+          continue;
         }
 
-        final delaySeconds = scheduledTime.difference(now).inSeconds;
-        // Build dynamic title/body including scheduled time
-        final timeLabel = DateFormat('HH:mm').format(scheduledTime);
+        print('🕐 [BG] Processing $prayerName: $timeString');
 
-        print(
-          '🔧 [BG] Scheduling $prayerName for ${scheduledTime.toString()} (delay: ${delaySeconds}s)',
-        );
+        // Parse time string manually (can't use instance method in isolate)
+        final parsedTime = _parseTimeStringStatic(timeString, tomorrow);
+        if (parsedTime == null) {
+          print('❌ [BG] Failed to parse time for $prayerName: $timeString');
+          continue;
+        }
+
+        // Calculate delay from now
+        final delaySeconds = parsedTime.difference(now).inSeconds;
+        
+        if (delaySeconds <= 0) {
+          print('⚠️ [BG] Skipping $prayerName - time already passed (delay: ${delaySeconds}s)');
+          continue;
+        }
+
+        print('✅ [BG] Scheduling $prayerName for $parsedTime (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)');
 
         final bgTitle = 'Waktu Solat $prayerName';
         final bgBody = 'Sudah masuk waktu solat $prayerName';
+        
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
@@ -169,7 +186,7 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
             'channelId':
                 NotificationService.prayerConfig[prayerName]?['channelId'] ??
                 'prayer_default',
-            'scheduledAt': scheduledTime.toUtc().toIso8601String(),
+            'scheduledAt': parsedTime.toUtc().toIso8601String(),
           },
           initialDelay: Duration(seconds: delaySeconds),
           constraints: Constraints(
@@ -183,14 +200,76 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
           backoffPolicyDelay: const Duration(seconds: 10),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );
+        
+        scheduledCount++;
       } catch (e) {
-        print('❌ Error scheduling from cache: $e');
+        print('❌ [BG] Error scheduling from cache: $e');
       }
     }
 
-    print('✅ Background scheduling from cached prayer times done');
+    // Update the last_scheduled_date to tomorrow's date
+    final tomorrowDate = DateFormat('yyyy-MM-dd').format(tomorrow);
+    await prefs.setString('last_scheduled_date', tomorrowDate);
+    print('💾 [BG] Updated last_scheduled_date to: $tomorrowDate');
+
+    print('✅ [BG] Background reschedule complete - scheduled $scheduledCount prayers for tomorrow');
   } catch (e) {
-    print('❌ _scheduleFromCachedPrayerTimes failed: $e');
+    print('❌ [BG] _scheduleFromCachedPrayerTimes failed: $e');
+  }
+}
+
+/// Static time parser for use in background isolate (can't access instance methods)
+DateTime? _parseTimeStringStatic(String timeStr, DateTime baseDate) {
+  try {
+    timeStr = timeStr.trim();
+    final parts = timeStr.split(' ');
+
+    if (parts.length == 2) {
+      // 12-hour format: "HH:MM AM/PM"
+      final timePart = parts[0];
+      final period = parts[1].toUpperCase();
+
+      final timeComponents = timePart.split(':');
+      if (timeComponents.length != 2) return null;
+
+      int hour = int.parse(timeComponents[0]);
+      final minute = int.parse(timeComponents[1]);
+
+      // Convert to 24-hour format
+      if (period == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (period == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      return DateTime(
+        baseDate.year,
+        baseDate.month,
+        baseDate.day,
+        hour,
+        minute,
+      );
+    } else if (parts.length == 1) {
+      // 24-hour format: "HH:MM"
+      final timeComponents = timeStr.split(':');
+      if (timeComponents.length != 2) return null;
+
+      final hour = int.parse(timeComponents[0]);
+      final minute = int.parse(timeComponents[1]);
+
+      return DateTime(
+        baseDate.year,
+        baseDate.month,
+        baseDate.day,
+        hour,
+        minute,
+      );
+    }
+
+    return null;
+  } catch (e) {
+    print('❌ [BG] Error parsing time string "$timeStr": $e');
+    return null;
   }
 }
 
@@ -890,7 +969,7 @@ class NotificationService {
             };
           }).toList();
       await prefs.setString('cached_prayer_times', jsonEncode(simple));
-      print('💾 Cached minimal prayer times for background reschedule');
+      print('💾 Cached ${simple.length} prayer times for background reschedule');
     } catch (e) {
       print('❌ Failed to cache prayer times: $e');
     }

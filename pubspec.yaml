@@ -102,6 +102,7 @@ flutter:
     - assets/images/IG1.png
     - assets/images/IG2.png
     - assets/images/IG3.png
+    - assets/images/infak-subuh.png
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

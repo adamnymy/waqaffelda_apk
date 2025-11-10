@@ -5,6 +5,7 @@ import '../quran/quranpage.dart';
 import '../zikircounter/zikircounter.dart';
 import '../../utils/page_transitions.dart';
 import '../doaharian/doa_harian_page.dart';
+import '../tahlil/tahlil.dart';
 
 class OthersMenuPage extends StatelessWidget {
   const OthersMenuPage({Key? key}) : super(key: key);
@@ -252,7 +253,10 @@ class OthersMenuPage extends StatelessWidget {
                       const Color(0xFF00897B),
                       () {
                         Navigator.pop(context);
-                        // TODO: Navigate to Tahlil page
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const TahlilPage()),
+                        );
                       },
                     ),
                     const SizedBox(height: 10),

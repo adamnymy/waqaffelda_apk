@@ -1,0 +1,611 @@
+{
+  "title": "Tahlil Ringkas",
+  "description": "Tahlil ringkas mengikut urutan YouTube Inteam",
+  "sections": [
+    {
+      "id": "1",
+      "title": "Tawasul",
+      "subtitle": "Pembukaan",
+      "icon": "📿",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ",
+          "transliteration": "Bismillahir-Rahmanir-Rahim",
+          "translation": "Dengan nama Allah Yang Maha Pemurah lagi Maha Penyayang"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِيْنَ، وَالصَّلَاةُ وَالسَّلَامُ عَلٰى اَشْرَفِ الْاَنْبِيَاۤءِ وَالْمُرْسَلِيْنَ، وَعَلٰٓى اٰلِهِ وَصَحْبِهِ اَجْمَعِيْنَ",
+          "transliteration": "Alhamdulillahi Rabbil-'alamin, wash-shalatu was-salamu 'ala ashrafil-anbiya'i wal-mursalin, wa 'ala alihi wa sahbihi ajma'in",
+          "translation": "Segala puji bagi Allah Tuhan semesta alam, selawat dan salam ke atas junjungan besar para nabi dan rasul, dan ke atas keluarga serta sahabat baginda semuanya"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ وَعَلٰٓى اٰلِ سَيِّدِنَا مُحَمَّدٍ",
+          "transliteration": "Allahumma shalli 'ala sayyidina Muhammad wa 'ala ali sayyidina Muhammad",
+          "translation": "Ya Allah, limpahkanlah selawat ke atas penghulu kami Nabi Muhammad dan ke atas keluarga penghulu kami Nabi Muhammad"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Al-Fatihah",
+      "subtitle": "Surah Pembuka",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ",
+          "transliteration": "Alḥamdu lillāhi Rabbil-'ālamīn",
+          "translation": "Segala puji tertentu bagi Allah, Tuhan yang memelihara dan mentadbirkan sekalian alam."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Ar-Raḥmānir-Raḥīm",
+          "translation": "Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "مَٰلِكِ يَوۡمِ ٱلدِّينِ",
+          "transliteration": "Māliki yawmid-dīn",
+          "translation": "Yang Menguasai pemerintahan hari Pembalasan (hari Akhirat)."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ",
+          "transliteration": "Iyyāka na'budu wa iyyāka nasta'īn",
+          "translation": "Engkaulah (Ya Allah) sahaja yang kami sembah, dan kepada Engkaulah sahaja kami memohon pertolongan."
+        },
+        {
+          "type": "verse",
+          "number": 6,
+          "arabic": "ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ",
+          "transliteration": "Ihdinaṣ-ṣirāṭal-mustaqīm",
+          "translation": "Tunjukilah kami jalan yang lurus."
+        },
+        {
+          "type": "verse",
+          "number": 7,
+          "arabic": "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
+          "transliteration": "Ṣirāṭal-lażīna an'amta 'alayhim ghayril-maghḍūbi 'alayhim wa laḍ-ḍāllīn",
+          "translation": "Iaitu jalan orang-orang yang Engkau telah kurniakan nikmat kepada mereka, bukan (jalan) orang-orang yang Engkau telah murkai, dan bukan (jalan) orang-orang yang sesat."
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Al-Ikhlas",
+      "subtitle": "3 kali",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "قُلۡ هُوَ ٱللَّهُ أَحَدٌ",
+          "transliteration": "Qul huwallāhu aḥad",
+          "translation": "Katakanlah (wahai Muhammad): \"(Tuhanku) ialah Allah Yang Maha Esa."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "ٱللَّهُ ٱلصَّمَدُ",
+          "transliteration": "Allāhuṣ-ṣamad",
+          "translation": "Allah Yang menjadi tumpuan sekalian makhluk untuk memohon sebarang hajat."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "لَمۡ يَلِدۡ وَلَمۡ يُولَدۡ",
+          "transliteration": "Lam yalid wa lam yūlad",
+          "translation": "Dia tidak beranak, dan Dia pula tidak diperanakkan."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "وَلَمۡ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+          "transliteration": "Wa lam yakul-lahu kufuwan aḥad",
+          "translation": "Dan tidak ada sesiapa pun yang serupa denganNya.\""
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Al-Falaq",
+      "subtitle": "Surah Fajar",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "قُلۡ أَعُوذُ بِرَبِّ ٱلۡفَلَقِ",
+          "transliteration": "Qul a'ūżu bi Rabbil-falaq",
+          "translation": "Katakanlah (wahai Muhammad): \"Aku berlindung kepada (Allah) Tuhan yang menguasai waktu subuh (dan sebagainya)."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "مِن شَرِّ مَا خَلَقَ",
+          "transliteration": "Min sharri mā khalaq",
+          "translation": "Dari kejahatan makhluk-makhluk yang diciptakanNya."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+          "transliteration": "Wa min sharri ghāsiqin iżā waqab",
+          "translation": "Dan dari kejahatan malam apabila ia menjadi gelap gelita."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِي ٱلۡعُقَدِ",
+          "transliteration": "Wa min sharrin-naffāthāti fil-'uqad",
+          "translation": "Dan dari kejahatan ahli-ahli sihir yang menjalankan sihir dengan meniup pada buhul-buhul (tali)."
+        },
+        {
+          "type": "verse",
+          "number": 6,
+          "arabic": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+          "transliteration": "Wa min sharri ḥāsidin iżā ḥasad",
+          "translation": "Dan dari kejahatan orang yang hasad dengki apabila ia melakukan hasad dengkinya.\""
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "title": "An-Nas",
+      "subtitle": "Surah Manusia",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "قُلۡ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+          "transliteration": "Qul a'ūżu bi Rabbin-nās",
+          "translation": "Katakanlah (wahai Muhammad): \"Aku berlindung kepada (Allah) Tuhan yang memelihara dan mentadbirkan sekalian manusia."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "مَلِكِ ٱلنَّاسِ",
+          "transliteration": "Malikin-nās",
+          "translation": "Raja yang berkuasa ke atas sekalian manusia."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "إِلَٰهِ ٱلنَّاسِ",
+          "transliteration": "Ilāhin-nās",
+          "translation": "Tuhan yang berhak disembah oleh sekalian manusia."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "مِن شَرِّ ٱلۡوَسۡوَاسِ ٱلۡخَنَّاسِ",
+          "transliteration": "Min sharril-waswāsil-khannās",
+          "translation": "Dari kejahatan (Syaitan) yang membisikkan fikiran-fikiran jahat, yang bersembunyi-sembunyi menjalankan tindakan jahatnya."
+        },
+        {
+          "type": "verse",
+          "number": 6,
+          "arabic": "ٱلَّذِي يُوَسۡوِسُ فِي صُدُورِ ٱلنَّاسِ",
+          "transliteration": "Allażī yuwaswisu fī ṣudūrin-nās",
+          "translation": "Yang membisikkan fikiran-fikiran jahat ke dalam hati manusia."
+        },
+        {
+          "type": "verse",
+          "number": 7,
+          "arabic": "مِنَ ٱلۡجِنَّةِ وَٱلنَّاسِ",
+          "transliteration": "Minal-jinnati wan-nās",
+          "translation": "Sama ada ia dari kalangan jin atau dari kalangan manusia.\""
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "title": "Al-Fatihah",
+      "subtitle": "Kali kedua",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ",
+          "transliteration": "Alḥamdu lillāhi Rabbil-'ālamīn",
+          "translation": "Segala puji tertentu bagi Allah, Tuhan yang memelihara dan mentadbirkan sekalian alam."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Ar-Raḥmānir-Raḥīm",
+          "translation": "Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "مَٰلِكِ يَوۡمِ ٱلدِّينِ",
+          "transliteration": "Māliki yawmid-dīn",
+          "translation": "Yang Menguasai pemerintahan hari Pembalasan (hari Akhirat)."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ",
+          "transliteration": "Iyyāka na'budu wa iyyāka nasta'īn",
+          "translation": "Engkaulah (Ya Allah) sahaja yang kami sembah, dan kepada Engkaulah sahaja kami memohon pertolongan."
+        },
+        {
+          "type": "verse",
+          "number": 6,
+          "arabic": "ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ",
+          "transliteration": "Ihdinaṣ-ṣirāṭal-mustaqīm",
+          "translation": "Tunjukilah kami jalan yang lurus."
+        },
+        {
+          "type": "verse",
+          "number": 7,
+          "arabic": "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
+          "transliteration": "Ṣirāṭal-lażīna an'amta 'alayhim ghayril-maghḍūbi 'alayhim wa laḍ-ḍāllīn",
+          "translation": "Iaitu jalan orang-orang yang Engkau telah kurniakan nikmat kepada mereka, bukan (jalan) orang-orang yang Engkau telah murkai, dan bukan (jalan) orang-orang yang sesat."
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "title": "Al-Baqarah",
+      "subtitle": "Ayat 1-5",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 1,
+          "arabic": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ",
+          "transliteration": "Bismillāhir-Raḥmānir-Raḥīm",
+          "translation": "Dengan nama Allah Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 2,
+          "arabic": "الٓمٓ",
+          "transliteration": "Alif Lām Mīm",
+          "translation": "Alif Lam Mim."
+        },
+        {
+          "type": "verse",
+          "number": 3,
+          "arabic": "ذَٰلِكَ ٱلۡكِتَٰبُ لَا رَيۡبَۛ فِيهِۛ هُدٗى لِّلۡمُتَّقِينَ",
+          "transliteration": "Żālikal-kitābu lā rayba fīh, hudal lil-muttaqīn",
+          "translation": "Kitab Al-Quran ini, tidak ada sebarang syak padanya (tentang datangnya dari Allah dan tentang sempurnanya); ia pula menjadi petunjuk bagi orang-orang yang bertakwa."
+        },
+        {
+          "type": "verse",
+          "number": 4,
+          "arabic": "ٱلَّذِينَ يُؤۡمِنُونَ بِٱلۡغَيۡبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقۡنَٰهُمۡ يُنفِقُونَ",
+          "transliteration": "Allażīna yu'minūna bil-ghaybi wa yuqīmūnaṣ-ṣalāta wa mimmā razaqnāhum yunfiqūn",
+          "translation": "Iaitu mereka yang beriman kepada perkara-perkara yang ghaib, dan mendirikan sembahyang serta membelanjakan (mendermakan) sebahagian dari rezeki yang Kami berikan kepada mereka."
+        },
+        {
+          "type": "verse",
+          "number": 5,
+          "arabic": "وَٱلَّذِينَ يُؤۡمِنُونَ بِمَآ أُنزِلَ إِلَيۡكَ وَمَآ أُنزِلَ مِن قَبۡلِكَ وَبِٱلۡأٓخِرَةِ هُمۡ يُوقِنُونَ",
+          "transliteration": "Wallażīna yu'minūna bimā unzila ilayka wa mā unzila min qablika wa bil-ākhirati hum yūqinūn",
+          "translation": "Dan juga mereka yang beriman kepada Kitab (Al-Quran) yang diturunkan kepadamu (wahai Muhammad), dan Kitab-kitab yang diturunkan dahulu daripadamu, serta mereka yakin akan (adanya) hari akhirat (dengan sepenuhnya)."
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "title": "Al-Baqarah",
+      "subtitle": "Ayat 163 & Ayat Kursi",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 163,
+          "arabic": "وَإِلَٰهُكُمۡ إِلَٰهٞ وَٰحِدٞۖ لَّآ إِلَٰهَ إِلَّا هُوَ ٱلرَّحۡمَٰنُ ٱلرَّحِيمُ",
+          "transliteration": "Wa ilāhukum ilāhuw wāḥid, lā ilāha illā huwar-Raḥmānur-Raḥīm",
+          "translation": "Dan Tuhan kamu ialah Tuhan Yang Maha Esa; tiada Tuhan (yang berhak disembah) melainkan Dia, Yang Maha Pemurah, lagi Maha Mengasihani."
+        },
+        {
+          "type": "verse",
+          "number": 255,
+          "arabic": "ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلۡحَيُّ ٱلۡقَيُّومُۚ لَا تَأۡخُذُهُۥ سِنَةٞ وَلَا نَوۡمٞۚ لَّهُۥ مَا فِي ٱلسَّمَٰوَٰتِ وَمَا فِي ٱلۡأَرۡضِۗ مَن ذَا ٱلَّذِي يَشۡفَعُ عِندَهُۥٓ إِلَّا بِإِذۡنِهِۦۚ يَعۡلَمُ مَا بَيۡنَ أَيۡدِيهِمۡ وَمَا خَلۡفَهُمۡۖ وَلَا يُحِيطُونَ بِشَيۡءٍ مِّنۡ عِلۡمِهِۦٓ إِلَّا بِمَا شَآءَۚ وَسِعَ كُرۡسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلۡأَرۡضَۖ وَلَا يَـُٔودُهُۥ حِفۡظُهُمَاۚ وَهُوَ ٱلۡعَلِيُّ ٱلۡعَظِيمُ",
+          "transliteration": "Allāhu lā ilāha illā huwal-Ḥayyul-Qayyūm, lā ta'khużuhū sinatuw wa lā nawm, lahū mā fis-samāwāti wa mā fil-arḍ, man żal-lażī yashfa'u 'indahū illā bi-iżnih, ya'lamu mā bayna aydīhim wa mā khalfahum, wa lā yuḥīṭūna bi-shay'im min 'ilmihī illā bimā shā', wasi'a kursiyyuhus-samāwāti wal-arḍ, wa lā ya'ūduhū ḥifẓuhumā, wa huwal-'Aliyyul-'Aẓīm",
+          "translation": "Allah, tiada Tuhan (yang berhak disembah) melainkan Dia, Yang Hidup kekal, Yang sentiasa mentadbirkan (makhluk-Nya). Dia tidak mengantuk dan tidak tidur. Kepunyaan-Nya apa yang ada di langit dan apa yang ada di bumi. Tiada yang dapat memberi syafaat di sisi-Nya melainkan dengan izin-Nya. Dia mengetahui apa yang ada di hadapan mereka dan apa yang ada di belakang mereka, sedang mereka tidak mengetahui sesuatu pun dari (kandungan) ilmu Allah melainkan apa yang dikehendaki-Nya. Kursi Allah meliputi langit dan bumi, dan Dia tidak merasa berat memelihara keduanya. Dia Yang Maha Tinggi, lagi Maha Besar."
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "title": "Al-Baqarah",
+      "subtitle": "Ayat 284-286",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 284,
+          "arabic": "لِلَّهِ مَا فِي ٱلسَّمَٰوَٰتِ وَمَا فِي ٱلۡأَرۡضِۗ وَإِن تُبۡدُواْ مَا فِيٓ أَنفُسِكُمۡ أَوۡ تُخۡفُوهُ يُحَاسِبۡكُم بِهِ ٱللَّهُۖ فَيَغۡفِرُ لِمَن يَشَآءُ وَيُعَذِّبُ مَن يَشَآءُۗ وَٱللَّهُ عَلَىٰ كُلِّ شَيۡءٖ قَدِيرٌ",
+          "transliteration": "Lillāhi mā fis-samāwāti wa mā fil-arḍ, wa in tubdū mā fī anfusikum aw tukhfūhu yuḥāsibkum bihillāh, fa-yaghfiru limay yashā'u wa yu'ażżibu may yashā', wallāhu 'alā kulli shay'in qadīr",
+          "translation": "Kepunyaan Allah segala apa yang ada di langit dan di bumi. Dan jika kamu melahirkan apa yang ada dalam hatimu atau kamu menyembunyikannya, nescaya Allah memperhitungkannya dengan kamu. Maka Allah mengampuni sesiapa yang dikehendaki-Nya, dan menyeksa sesiapa yang dikehendaki-Nya, dan Allah Maha Kuasa atas tiap-tiap sesuatu."
+        },
+        {
+          "type": "verse",
+          "number": 285,
+          "arabic": "ءَامَنَ ٱلرَّسُولُ بِمَآ أُنزِلَ إِلَيۡهِ مِن رَّبِّهِۦ وَٱلۡمُؤۡمِنُونَۚ كُلٌّ ءَامَنَ بِٱللَّهِ وَمَلَٰٓئِكَتِهِۦ وَكُتُبِهِۦ وَرُسُلِهِۦ لَا نُفَرِّقُ بَيۡنَ أَحَدٖ مِّن رُّسُلِهِۦۚ وَقَالُواْ سَمِعۡنَا وَأَطَعۡنَاۖ غُفۡرَانَكَ رَبَّنَا وَإِلَيۡكَ ٱلۡمَصِيرُ",
+          "transliteration": "Āmanar-Rasūlu bimā unzila ilayhi mir-Rabbihī wal-mu'minūn, kullun āmana billāhi wa malā'ikatihī wa kutubihī wa rusulih, lā nufarriqu bayna aḥadim mir-rusulih, wa qālū sami'nā wa aṭa'nā ghufranaka Rabbanā wa ilaykal-maṣīr",
+          "translation": "Rasul (Muhammad) telah beriman kepada apa yang diturunkan kepadanya dari Tuhannya, demikian juga orang-orang yang beriman. Semuanya beriman kepada Allah, malaikat-malaikat-Nya, kitab-kitab-Nya dan rasul-rasul-Nya. (Mereka berkata): \"Kami tidak membeza-bezakan seseorang pun (tentang keimanan kami) dari rasul-rasul-Nya\". Dan mereka berkata: \"Kami dengar dan kami taat. (Kami pohonkan) keampunan-Mu, ya Tuhan kami, dan kepada-Mu tempat kembali.\""
+        },
+        {
+          "type": "verse",
+          "number": 286,
+          "arabic": "لَا يُكَلِّفُ ٱللَّهُ نَفۡسًا إِلَّا وُسۡعَهَاۚ لَهَا مَا كَسَبَتۡ وَعَلَيۡهَا مَا ٱكۡتَسَبَتۡۗ رَبَّنَا لَا تُؤَاخِذۡنَآ إِن نَّسِينَآ أَوۡ أَخۡطَأۡنَاۚ رَبَّنَا وَلَا تَحۡمِلۡ عَلَيۡنَآ إِصۡرٗا كَمَا حَمَلۡتَهُۥ عَلَى ٱلَّذِينَ مِن قَبۡلِنَاۚ رَبَّنَا وَلَا تُحَمِّلۡنَا مَا لَا طَاقَةَ لَنَا بِهِۦۖ وَٱعۡفُ عَنَّا وَٱغۡفِرۡ لَنَا وَٱرۡحَمۡنَآۚ أَنتَ مَوۡلَىٰنَا فَٱنصُرۡنَا عَلَى ٱلۡقَوۡمِ ٱلۡكَٰفِرِينَ",
+          "transliteration": "Lā yukallifullāhu nafsan illā wus'ahā, lahā mā kasabat wa 'alayhā maktasabat, Rabbanā lā tu'ākhiżnā in nasīnā aw akhṭa'nā, Rabbanā wa lā taḥmil 'alaynā iṣran kamā ḥamaltahū 'alal-lażīna min qablinā, Rabbanā wa lā tuḥammilnā mā lā ṭāqata lanā bih, wa'fu 'annā waghfir lanā warḥamnā, anta mawlānā fanṣurnā 'alal-qawmil-kāfirīn",
+          "translation": "Allah tidak memberati seseorang itu melainkan apa yang terdaya dilakukannya. Ia mendapat (pahala) dari (kebajikan) yang diusahakannya, dan ia kena (hukuman) dari (kejahatan) yang diusahakannya. (Mereka berdoa): \"Ya Tuhan kami, janganlah Engkau hukum kami jika kami lupa atau kami tersalah. Ya Tuhan kami, janganlah Engkau bebankan kepada kami bebanan yang berat sebagaimana Engkau bebankan kepada orang-orang yang terdahulu daripada kami. Ya Tuhan kami, janganlah Engkau pikulkan kepada kami apa yang tidak terdaya kami memikulnya. Dan maafkanlah kesalahan kami, serta ampunkanlah dosa kami, dan berilah rahmat kepada kami. Engkaulah Penolong kami; oleh itu, tolonglah kami untuk mencapai kemenangan terhadap kaum yang kafir.\""
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "title": "Zikir",
+      "subtitle": "Ya Arhamar Rahimin",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "zikir",
+          "arabic": "يَا أَرْحَمَ الرَّاحِمِيْنَ",
+          "transliteration": "Yā Arḥamar-Rāḥimīn",
+          "translation": "Wahai Yang Maha Pengasih dari segala yang mengasihani",
+          "targetCount": 3
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "title": "Al-Ahzab",
+      "subtitle": "Ayat 33 & 56",
+      "icon": "📖",
+      "contents": [
+        {
+          "type": "verse",
+          "number": 33,
+          "arabic": "وَقَرۡنَ فِي بُيُوتِكُنَّ وَلَا تَبَرَّجۡنَ تَبَرُّجَ ٱلۡجَٰهِلِيَّةِ ٱلۡأُولَىٰۖ وَأَقِمۡنَ ٱلصَّلَوٰةَ وَءَاتِينَ ٱلزَّكَوٰةَ وَأَطِعۡنَ ٱللَّهَ وَرَسُولَهُۥٓۚ إِنَّمَا يُرِيدُ ٱللَّهُ لِيُذۡهِبَ عَنكُمُ ٱلرِّجۡسَ أَهۡلَ ٱلۡبَيۡتِ وَيُطَهِّرَكُمۡ تَطۡهِيرٗا",
+          "transliteration": "Wa qarna fī buyūtikunna wa lā tabarrajna tabarruјal-јāhiliyyatil-ūlā, wa aqimnaṣ-ṣalāta wa ātīnaz-zakāta wa aṭi'nallāha wa rasūlah, innamā yurīdullāhu liyużhiba 'ankumur-riјsa ahlal-bayti wa yuṭahhirakum taṭhīrā",
+          "translation": "Dan hendaklah kamu tetap di rumahmu dan janganlah kamu berhias serta (bertingkah laku) yang melampaui batas seperti orang-orang Jahiliyah dahulu, dan dirikanlah sembahyang serta berikanlah zakat, dan taatlah kepada Allah dan Rasul-Nya. Sesungguhnya Allah hanya hendak menghapuskan dosa dan kesalahan dari kamu wahai ahli keluarga (Nabi), dan hendak membersihkan kamu sebersih-bersihnya."
+        },
+        {
+          "type": "verse",
+          "number": 56,
+          "arabic": "إِنَّ ٱللَّهَ وَمَلَٰٓئِكَتَهُۥ يُصَلُّونَ عَلَى ٱلنَّبِيِّۚ يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُواْ صَلُّواْ عَلَيۡهِ وَسَلِّمُواْ تَسۡلِيمًا",
+          "transliteration": "Innallāha wa malā'ikatahū yuṣallūna 'alan-Nabiyy, yā ayyuhal-lażīna āmanū ṣallū 'alayhi wa sallimū taslīmā",
+          "translation": "Sesungguhnya Allah dan malaikat-malaikat-Nya berselawat (memberi segala penghormatan dan kebaikan) kepada Nabi (Muhammad). Wahai orang-orang yang beriman, berselawatlah kamu kepadanya serta ucapkanlah salam sejahtera dengan penghormatan yang sepenuhnya."
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "title": "Selawat Nabi",
+      "subtitle": "Selawat pertama",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ وَعَلٰٓى اٰلِ سَيِّدِنَا مُحَمَّدٍ",
+          "transliteration": "Allahumma shalli 'ala sayyidina Muhammad wa 'ala ali sayyidina Muhammad",
+          "translation": "Ya Allah, limpahkanlah selawat ke atas penghulu kami Nabi Muhammad dan ke atas keluarga penghulu kami Nabi Muhammad"
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "title": "Istighfar & Zikir",
+      "subtitle": "Tahlil",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "zikir",
+          "arabic": "لَا إِلٰهَ إِلَّا اللّٰهُ",
+          "transliteration": "Lā ilāha illallāh",
+          "translation": "Tiada Tuhan melainkan Allah",
+          "targetCount": 100
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "title": "Selawat Nabi",
+      "subtitle": "Selawat kedua",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ صَلِّ وَسَلِّمْ عَلٰى سَيِّدِنَا مُحَمَّدٍ وَعَلٰٓى اٰلِهِ وَصَحْبِهِ وَسَلِّمْ",
+          "transliteration": "Allahumma shalli wa sallim 'ala sayyidina Muhammad wa 'ala alihi wa sahbihi wa sallim",
+          "translation": "Ya Allah, limpahkanlah selawat dan kesejahteraan ke atas penghulu kami Nabi Muhammad, ke atas keluarganya dan para sahabatnya"
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "title": "Doa Selawat Munjiyat",
+      "subtitle": "Selawat penyelamat",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ صَلِّ عَلٰى سَيِّدِنَا مُحَمَّدٍ صَلَاةً تُنْجِيْنَا بِهَا مِنْ جَمِيْعِ الْاَهْوَالِ وَالْاٰفَاتِ، وَتَقْضِيْ لَنَا بِهَا جَمِيْعَ الْحَاجَاتِ، وَتُطَهِّرُنَا بِهَا مِنْ جَمِيْعِ السَّيِّئَاتِ، وَتَرْفَعُنَا بِهَا عِنْدَكَ اَعْلَى الدَّرَجَاتِ، وَتُبَلِّغُنَا بِهَا اَقْصَى الْغَايَاتِ مِنْ جَمِيْعِ الْخَيْرَاتِ فِى الْحَيَاةِ وَبَعْدَ الْمَمَاتِ",
+          "transliteration": "Allahumma shalli 'ala sayyidina Muhammadin shalatan tunjina biha min jami'il-ahwali wal-afat, wa taqdi lana biha jami'al-hajat, wa tutahhiruna biha min jami'is-sayyi'at, wa tarfa'una biha 'indaka a'lad-darajat, wa tuballighuna biha aqsal-ghayati min jami'il-khayrati fil-hayati wa ba'dal-mamat",
+          "translation": "Ya Allah, limpahkanlah selawat ke atas penghulu kami Nabi Muhammad, selawat yang menyelamatkan kami dengannya dari segala kengerian dan bencana, yang Engkau kabulkan dengan selawat itu segala hajat kami, yang Engkau sucikan kami dengannya dari segala kejahatan, yang Engkau angkatkan kami dengannya ke martabat yang tertinggi di sisi-Mu, dan yang Engkau sampaikan kami dengannya kepada segala yang kami hajati daripada kebaikan-kebaikan dalam hidup dan selepas mati"
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "title": "Doa Sampaikan Pahala",
+      "subtitle": "Pahala bacaan Al-Quran",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ اجْعَلْ ثَوَابَ مَا قَرَأْنَاهُ هَدِيَّةً وَاصِلَةً اِلٰى رُوْحِ نَبِيِّنَا مُحَمَّدٍ صَلَّى اللّٰهُ عَلَيْهِ وَسَلَّمَ",
+          "transliteration": "Allahumma-j'al tsawaba ma qara'nahu hadiyyatan wasilatan ila ruhi nabiyyina Muhammadin sallallahu 'alayhi wa sallam",
+          "translation": "Ya Allah, jadikanlah pahala bacaan kami ini sebagai hadiah yang sampai kepada roh Nabi kami Muhammad SAW"
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "title": "Doa Keampunan",
+      "subtitle": "Ampunan dan perlindungan",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ اغْفِرْ لَنَا وَارْحَمْنَا وَعَافِنَا وَاعْفُ عَنَّا فِى الدُّنْيَا وَالْاٰخِرَةِ يَا كَرِيْمُ، وَاجْمَعْ بَيْنَنَا وَبَيْنَ آبَائِنَا وَاُمَّهَاتِنَا وَاَزْوَاجِنَا وَذُرِّيَّاتِنَا فِى دَارِ كَرَامَتِكَ يَا اَرْحَمَ الرَّاحِمِيْنَ",
+          "transliteration": "Allahummaghfir lana warhamna wa 'afina wa'fu 'anna fid-dunya wal-akhirati ya Karim, wajma' baynana wa bayna aba'ina wa ummahatina wa azwajina wa dzurriyyatina fi dari karamatika ya Arhamar-Rahimin",
+          "translation": "Ya Allah, ampunilah kami dan rahmatilah kami, sejahterakanlah kami dan maafkanlah kami di dunia dan akhirat wahai Yang Maha Pemurah, dan kumpulkanlah kami bersama bapa-bapa kami, ibu-ibu kami, isteri-isteri/suami-suami kami dan zuriat kami di dalam darul karamah-Mu wahai Yang Maha Pengasih dari segala yang mengasihani"
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "title": "Doa Untuk Ibu Bapa",
+      "subtitle": "Keampunan dan rahmat",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "رَبَّنَا اغْفِرْ لِيْ وَلِوَالِدَيَّ وَلِلْمُؤْمِنِيْنَ يَوْمَ يَقُوْمُ الْحِسَابُ",
+          "transliteration": "Rabbanaghfir li wa liwalidayya wa lil-mu'minina yawma yaqumal-hisab",
+          "translation": "Ya Tuhan kami, ampunilah dosaku dan dosa ibu bapaku serta dosa orang-orang yang beriman pada hari berlakunya hisab"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "رَبِّ اغْفِرْ لِيْ وَلِوَالِدَيَّ وَلِمَنْ دَخَلَ بَيْتِيَ مُؤْمِنًا وَّلِلْمُؤْمِنِيْنَ وَالْمُؤْمِنٰتِ",
+          "transliteration": "Rabbighfir li wa liwalidayya wa liman dakhala bayti mu'minan wa lil-mu'minina wal-mu'minat",
+          "translation": "Ya Tuhanku, ampunilah dosaku, dosa kedua ibu bapaku dan dosa orang yang masuk ke rumahku dengan beriman serta dosa semua orang yang beriman lelaki dan perempuan"
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "title": "Doa Untuk Diri & Hadirin",
+      "subtitle": "Kebaikan dunia dan akhirat",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "رَبَّنَآ اٰتِنَا فِى الدُّنْيَا حَسَنَةً وَّفِى الْاٰخِرَةِ حَسَنَةً وَّقِنَا عَذَابَ النَّارِ",
+          "transliteration": "Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina 'adzaban-nar",
+          "translation": "Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari azab api neraka"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُوْنَ، وَسَلَامٌ عَلَى الْمُرْسَلِيْنَ، وَالْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِيْنَ",
+          "transliteration": "Subhana Rabbika Rabbil-'izzati 'amma yasifun, wa salamun 'alal-mursalin, wal-hamdulillahi Rabbil-'alamin",
+          "translation": "Maha Suci Tuhanmu Yang mempunyai keperkasaan dari apa yang mereka sifatkan, dan kesejahteraan bagi para rasul, dan segala puji bagi Allah Tuhan semesta alam"
+        }
+      ]
+    },
+    {
+      "id": "20",
+      "title": "Doa Kelapangan Kubur",
+      "subtitle": "Penghuni kubur",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ اجْعَلْ قُبُوْرَهُمْ رَوْضَةً مِنْ رِيَاضِ الْجَنَّةِ وَلَا تَجْعَلْهَا حُفْرَةً مِنْ حُفَرِ النَّارِ",
+          "transliteration": "Allahumma-j'al quburahum rawdatan min riyadil-jannati wa la taj'alha hufratan min hufarinnar",
+          "translation": "Ya Allah, jadikanlah kubur mereka taman dari taman-taman syurga dan jangan Engkau jadikan ia lubang dari lubang-lubang neraka"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ اَنِرْ قُبُوْرَهُمْ وَاَفْسِحْ لَهُمْ فِيْهَا",
+          "transliteration": "Allahumma anir quburahum wa afsih lahum fiha",
+          "translation": "Ya Allah, terangkanlah kubur mereka dan lapangkanlah bagi mereka di dalamnya"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ جَافِ الْاَرْضَ عَنْ جُنُوْبِهِمْ وَصَاعِدْ اَرْوَاحَهُمْ اِلَيْكَ وَلَقِّهِمْ مِنْكَ رِضْوَانًا",
+          "transliteration": "Allahumma jafil-arda 'an junubihim wa sa'id arwahahum ilayka wa laqqihim minka ridwana",
+          "translation": "Ya Allah, jauhkanlah bumi dari lambung mereka, naikkan roh mereka kepada-Mu dan berilah mereka keredhaan dari-Mu"
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "title": "Doa Penutup",
+      "subtitle": "Permohonan makbul",
+      "icon": "🤲",
+      "contents": [
+        {
+          "type": "simpleText",
+          "arabic": "اَللّٰهُمَّ تَقَبَّلْ مِنَّا هٰذِهِ الْقِرَاءَةَ وَاجْعَلْهَا خَالِصَةً لِوَجْهِكَ الْكَرِيْمِ",
+          "transliteration": "Allahumma taqabbal minna hadzihi al-qira'ata waj'alha khalisatan liwajhikal-karim",
+          "translation": "Ya Allah, terimalah daripada kami bacaan ini dan jadikanlah ia ikhlas kerana wajah-Mu yang mulia"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "رَبَّنَا تَقَبَّلْ مِنَّا اِنَّكَ اَنْتَ السَّمِيْعُ الْعَلِيْمُ، وَتُبْ عَلَيْنَا اِنَّكَ اَنْتَ التَّوَّابُ الرَّحِيْمُ",
+          "transliteration": "Rabbana taqabbal minna innaka antas-Sami'ul-'Alim, wa tub 'alayna innaka antat-Tawwabur-Rahim",
+          "translation": "Ya Tuhan kami, terimalah daripada kami, sesungguhnya Engkaulah Yang Maha Mendengar lagi Maha Mengetahui, dan terimalah taubat kami, sesungguhnya Engkaulah Yang Maha Penerima taubat lagi Maha Penyayang"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "سُبْحٰنَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُوْنَ، وَسَلٰمٌ عَلَى الْمُرْسَلِيْنَ، وَالْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِيْنَ",
+          "transliteration": "Subhana Rabbika Rabbil-'izzati 'amma yasifun, wa salamun 'alal-mursalin, wal-hamdulillahi Rabbil-'alamin",
+          "translation": "Maha Suci Tuhanmu yang mempunyai keperkasaan dari apa yang mereka sifatkan, dan kesejahteraan bagi para rasul, dan segala puji bagi Allah Tuhan semesta alam"
+        },
+        {
+          "type": "simpleText",
+          "arabic": "اَلْفَاتِحَة",
+          "transliteration": "Al-Fatihah",
+          "translation": "(Bacalah surah Al-Fatihah)"
+        }
+      ]
+    }
+  ]
+}
+

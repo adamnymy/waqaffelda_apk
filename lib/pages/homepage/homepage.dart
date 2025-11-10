@@ -31,7 +31,7 @@ class _HomepageState extends State<Homepage> {
   final ScrollController _scrollController = ScrollController();
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
-    'assets/images/IST2.png',
+    'assets/images/infak-subuh.png',
     'assets/images/waqaf_quran.png',
     'assets/images/infak_spa.png',
     'assets/images/kempen_potong_lima.png',

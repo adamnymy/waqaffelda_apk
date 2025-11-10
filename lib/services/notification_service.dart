@@ -121,7 +121,7 @@ void _callbackDispatcher() {
 Future<void> _scheduleFromCachedPrayerTimes() async {
   try {
     print('🔄 [BG] Starting background reschedule from cached prayer times');
-    
+
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getString('cached_prayer_times');
     if (cached == null) {
@@ -140,9 +140,9 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
     // Parse times for tomorrow (since this runs at night after all today's prayers passed)
     final now = DateTime.now();
     final tomorrow = now.add(const Duration(days: 1));
-    
+
     int scheduledCount = 0;
-    
+
     // Each item should be {name: '', time: ''}
     for (var item in list) {
       try {
@@ -166,17 +166,21 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
 
         // Calculate delay from now
         final delaySeconds = parsedTime.difference(now).inSeconds;
-        
+
         if (delaySeconds <= 0) {
-          print('⚠️ [BG] Skipping $prayerName - time already passed (delay: ${delaySeconds}s)');
+          print(
+            '⚠️ [BG] Skipping $prayerName - time already passed (delay: ${delaySeconds}s)',
+          );
           continue;
         }
 
-        print('✅ [BG] Scheduling $prayerName for $parsedTime (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)');
+        print(
+          '✅ [BG] Scheduling $prayerName for $parsedTime (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
+        );
 
         final bgTitle = 'Waktu Solat $prayerName';
         final bgBody = 'Sudah masuk waktu solat $prayerName';
-        
+
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
           'showPrayerNotification',
@@ -200,7 +204,7 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
           backoffPolicyDelay: const Duration(seconds: 10),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );
-        
+
         scheduledCount++;
       } catch (e) {
         print('❌ [BG] Error scheduling from cache: $e');
@@ -212,7 +216,9 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
     await prefs.setString('last_scheduled_date', tomorrowDate);
     print('💾 [BG] Updated last_scheduled_date to: $tomorrowDate');
 
-    print('✅ [BG] Background reschedule complete - scheduled $scheduledCount prayers for tomorrow');
+    print(
+      '✅ [BG] Background reschedule complete - scheduled $scheduledCount prayers for tomorrow',
+    );
   } catch (e) {
     print('❌ [BG] _scheduleFromCachedPrayerTimes failed: $e');
   }
@@ -969,7 +975,9 @@ class NotificationService {
             };
           }).toList();
       await prefs.setString('cached_prayer_times', jsonEncode(simple));
-      print('💾 Cached ${simple.length} prayer times for background reschedule');
+      print(
+        '💾 Cached ${simple.length} prayer times for background reschedule',
+      );
     } catch (e) {
       print('❌ Failed to cache prayer times: $e');
     }

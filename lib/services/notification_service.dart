@@ -284,6 +284,9 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
+  // Callback for navigation when notification is tapped
+  static void Function()? onNotificationTapped;
+
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
@@ -933,7 +936,13 @@ class NotificationService {
   /// Handle notification tap
   void _onNotificationTap(NotificationResponse response) {
     print('📱 Notification tapped: ${response.payload}');
-    // TODO: Navigate to prayer times page or specific prayer details
+
+    // Call the static callback if set
+    if (NotificationService.onNotificationTapped != null) {
+      NotificationService.onNotificationTapped!();
+    } else {
+      print('⚠️ No navigation callback set for notification tap');
+    }
   }
 
   // ============= PHASE 2: Auto-Reschedule =============

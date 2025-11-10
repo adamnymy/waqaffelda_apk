@@ -16,6 +16,7 @@ import 'others_menu_page.dart';
 import 'searchpage/search_page.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
+import '../tahlil/tahlil.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -389,17 +390,19 @@ class _HomepageState extends State<Homepage> {
                 ),
               ],
             ),
-            child: Image.asset(
-              'assets/images/LogoWaqafer.png',
+            child: SvgPicture.asset(
+              // Tukar kepada SvgPicture.asset
+              'assets/icons/logo3.svg',
               height: screenWidth * 0.08,
               width: screenWidth * 0.08,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
-                  Icons.mosque,
-                  color: Colors.teal,
-                  size: screenWidth * 0.08,
-                );
-              },
+              // errorBuilder tidak disokong secara langsung, tetapi jika fail tiada, ia akan beri ralat.
+              // Anda boleh menambah placeholder jika perlu.
+              placeholderBuilder:
+                  (BuildContext context) => Icon(
+                    Icons.mosque,
+                    color: Colors.teal,
+                    size: screenWidth * 0.08,
+                  ),
             ),
           ),
           SizedBox(width: screenWidth * 0.03),
@@ -783,7 +786,10 @@ class _HomepageState extends State<Homepage> {
         children: [
           _buildMenuItem(
             'Waktu Solat',
-            Icons.access_time_outlined,
+            SvgPicture.asset(
+              'assets/icons/waktu_solat.svg',
+              fit: BoxFit.contain,
+            ),
             Colors.teal,
             () {
               Navigator.push(
@@ -794,7 +800,7 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Arah Kiblat',
-            Icons.explore_outlined,
+            SvgPicture.asset('assets/icons/kiblat.svg', fit: BoxFit.contain),
             const Color(0xFFFBC02D),
             () {
               Navigator.push(
@@ -805,7 +811,7 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Al Qur\'an',
-            Icons.menu_book_outlined,
+            SvgPicture.asset('assets/icons/alquran.svg', fit: BoxFit.contain),
             Colors.teal,
             () {
               Navigator.push(context, SmoothPageRoute(page: const QuranPage()));
@@ -813,7 +819,7 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Tasbih',
-            Icons.cable_outlined, // Changed icon
+            SvgPicture.asset('assets/icons/tasbih.svg', fit: BoxFit.contain),
             const Color(0xFFFBC02D), // Changed color to green
             () {
               Navigator.push(
@@ -822,10 +828,15 @@ class _HomepageState extends State<Homepage> {
               );
             },
           ),
-          _buildMenuItem('Hadith 40', Icons.book_outlined, Colors.teal, () {}),
+          _buildMenuItem(
+            'Hadith 40',
+            SvgPicture.asset('assets/icons/hadis.svg', fit: BoxFit.contain),
+            Colors.teal,
+            () {},
+          ),
           _buildMenuItem(
             'Doa Harian',
-            Icons.volunteer_activism_outlined,
+            SvgPicture.asset('assets/icons/doa.svg', fit: BoxFit.contain),
             const Color(0xFFFBC02D),
             () {
               Navigator.push(
@@ -834,10 +845,21 @@ class _HomepageState extends State<Homepage> {
               );
             },
           ),
-          _buildMenuItem('Tahlil', Icons.auto_stories, Colors.teal, () {}),
+          _buildMenuItem(
+            'Tahlil',
+            SvgPicture.asset('assets/icons/tahlil.svg', fit: BoxFit.contain),
+            Colors.teal,
+            () {
+              Navigator.push(
+                context,
+                SmoothPageRoute(page: const TahlilPage()),
+              );
+            },
+          ),
+
           _buildMenuItem(
             'Lainnya',
-            Icons.apps_outlined,
+            SvgPicture.asset('assets/icons/lain_lain.svg', fit: BoxFit.contain),
             const Color(0xFFFBC02D),
             () {
               OthersMenuPage.show(context);
@@ -850,41 +872,42 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildMenuItem(
     String title,
-    IconData icon,
+    Widget iconWidget,
     Color color,
     VoidCallback onTap,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = MediaQuery.of(context).size.width;
-        final iconSize = constraints.maxWidth * 0.4; // 40% of available width
+        // adjust multiplier to change icon size inside grid cell
+        final iconSize = constraints.maxWidth * 0.7;
 
-        return GestureDetector(
-          onTap: onTap,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(constraints.maxWidth * 0.15),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.04),
-                ),
-                child: Icon(icon, color: color, size: iconSize),
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Only the image is clickable — no outer container/background
+            GestureDetector(
+              onTap: onTap,
+              child: SizedBox(
+                width: iconSize,
+                height: iconSize,
+                child: FittedBox(fit: BoxFit.contain, child: iconWidget),
               ),
-              SizedBox(height: constraints.maxHeight * 0.08),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.028,
-                  fontWeight: FontWeight.w500,
-                ),
+            ),
+
+            SizedBox(height: constraints.maxHeight * 0.06),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: screenWidth * 0.028,
+                fontWeight: FontWeight.w500,
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

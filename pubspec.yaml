@@ -94,6 +94,7 @@ flutter:
     - assets/quran/surah_metadata.json
     - assets/icons/arah_kiblat/kaaba-icon.svg
     - assets/data/doa_harian.json
+    - assets/data/tahlil_yasin.json
     - assets/images/KP5R3.png
     - assets/images/SPAT1.png
     - assets/images/WQT1.png
@@ -103,6 +104,15 @@ flutter:
     - assets/images/IG2.png
     - assets/images/IG3.png
     - assets/images/infak-subuh.png
+    - assets/icons/alquran.svg
+    - assets/icons/doa.svg
+    - assets/icons/hadis.svg
+    - assets/icons/kiblat.svg
+    - assets/icons/lain_lain.svg
+    - assets/icons/logo3.svg
+    - assets/icons/tahlil.svg
+    - assets/icons/tasbih.svg
+    - assets/icons/waktu_solat.svg
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

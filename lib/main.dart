@@ -4,10 +4,30 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import 'splash_screen.dart'; // Import SplashScreen
 import 'services/notification_service.dart'; // Import NotificationService
+import 'pages/prayertimes/prayertimes.dart'; // Import PrayerTimesPage
+
+// Global navigator key for notification navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Add this
   WebViewPlatform.instance; // Add this
+
+  // Set up notification tap handler before initializing
+  NotificationService.onNotificationTapped = () {
+    print('🔔 Notification tapped - navigating to Prayer Times page');
+    // Use a delay to ensure the app UI is ready
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const PrayerTimesPage()),
+        );
+      } else {
+        print('⚠️ Navigator context not available yet');
+      }
+    });
+  };
 
   // Initialize notification service on app startup
   try {
@@ -27,6 +47,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey, // Add global navigator key
       title: 'Waqafer',
       debugShowCheckedModeBanner: false, //remove debug banner
       localizationsDelegates: const [

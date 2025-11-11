@@ -277,7 +277,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Kalender Islam',
                       'Kalendar Hijriah',
-                      'assets/icons/lain_lain.svg',
+                      'assets/icons/kalendar_islam.svg',
                       const Color(0xFFFBC02D),
                       () {
                         Navigator.pop(context);

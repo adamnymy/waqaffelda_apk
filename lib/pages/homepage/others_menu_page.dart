@@ -6,6 +6,7 @@ import '../zikircounter/zikircounter.dart';
 import '../../utils/page_transitions.dart';
 import '../doaharian/doa_harian_page.dart';
 import '../tahlil/tahlil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class OthersMenuPage extends StatelessWidget {
   const OthersMenuPage({Key? key}) : super(key: key);
@@ -130,7 +131,7 @@ class OthersMenuPage extends StatelessWidget {
                   children: [
                     // Featured section (top 2 items - larger)
                     Text(
-                      'Kerap Digunakan',
+                      'Pintasan',
                       style: TextStyle(
                         fontSize: screenWidth * 0.04,
                         fontWeight: FontWeight.bold,
@@ -144,7 +145,7 @@ class OthersMenuPage extends StatelessWidget {
                           child: _buildFeaturedCard(
                             context,
                             'Waktu Solat',
-                            Icons.access_time_rounded,
+                            'assets/icons/waktu_solat.svg',
                             Colors.teal.shade700,
                             Colors.teal.shade50,
                             () {
@@ -161,7 +162,7 @@ class OthersMenuPage extends StatelessWidget {
                           child: _buildFeaturedCard(
                             context,
                             'Al Qur\'an',
-                            Icons.menu_book_rounded,
+                            'assets/icons/alquran.svg',
                             const Color(0xFF00695C),
                             const Color(0xFFB2DFDB),
                             () {
@@ -190,7 +191,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Arah Kiblat',
                       'Cari arah kiblat dengan mudah',
-                      Icons.explore_rounded,
+                      'assets/icons/kiblat.svg',
                       const Color(0xFFFF6F00),
                       () {
                         Navigator.pop(context);
@@ -205,7 +206,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Tasbih',
                       'Kira zikir digital',
-                      Icons.cable_rounded,
+                      'assets/icons/tasbih.svg',
                       const Color(0xFF5E35B1),
                       () {
                         Navigator.pop(context);
@@ -220,7 +221,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Doa Harian',
                       'Koleksi doa harian',
-                      Icons.volunteer_activism_rounded,
+                      'assets/icons/doa.svg',
                       const Color(0xFFE53935),
                       () {
                         Navigator.pop(context);
@@ -237,7 +238,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Hadith 40',
                       'Hadith Nawawi',
-                      Icons.book_rounded,
+                      'assets/icons/hadis.svg',
                       const Color(0xFF1976D2),
                       () {
                         Navigator.pop(context);
@@ -249,7 +250,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Tahlil',
                       'Bacaan tahlil lengkap',
-                      Icons.auto_stories_rounded,
+                      'assets/icons/tahlil.svg',
                       const Color(0xFF00897B),
                       () {
                         Navigator.pop(context);
@@ -262,9 +263,21 @@ class OthersMenuPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     _buildCompactMenuItem(
                       context,
+                      'Masjid Terdekat',
+                      'Cari masjid berhampiran',
+                      'assets/icons/masjid.svg',
+                      const Color(0xFF43A047),
+                      () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to Nearby Mosque page
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildCompactMenuItem(
+                      context,
                       'Kalender Islam',
                       'Kalendar Hijriah',
-                      Icons.calendar_month_rounded,
+                      'assets/icons/lain_lain.svg',
                       const Color(0xFFFBC02D),
                       () {
                         Navigator.pop(context);
@@ -286,7 +299,7 @@ class OthersMenuPage extends StatelessWidget {
   Widget _buildFeaturedCard(
     BuildContext context,
     String title,
-    IconData icon,
+    String iconPath,
     Color primaryColor,
     Color backgroundColor,
     VoidCallback onTap,
@@ -343,7 +356,7 @@ class OthersMenuPage extends StatelessWidget {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(icon, color: Colors.white, size: 32),
+                      child: SvgPicture.asset(iconPath, width: 48, height: 48),
                     ),
                     Text(
                       title,
@@ -369,7 +382,7 @@ class OthersMenuPage extends StatelessWidget {
     BuildContext context,
     String title,
     String subtitle,
-    IconData icon,
+    String iconPath,
     Color color,
     VoidCallback onTap,
   ) {
@@ -396,15 +409,10 @@ class OthersMenuPage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color.withOpacity(0.9), color],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(icon, color: Colors.white, size: 26),
+              SizedBox(
+                width: 50,
+                height: 50,
+                child: SvgPicture.asset(iconPath, fit: BoxFit.contain),
               ),
               const SizedBox(width: 16),
               Expanded(

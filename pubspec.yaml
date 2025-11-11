@@ -113,6 +113,8 @@ flutter:
     - assets/icons/tahlil.svg
     - assets/icons/tasbih.svg
     - assets/icons/waktu_solat.svg
+    - assets/icons/kalendar_islam.svg
+    - assets/icons/masjid.svg
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

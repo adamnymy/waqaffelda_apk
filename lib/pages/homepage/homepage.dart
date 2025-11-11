@@ -311,10 +311,7 @@ class _HomepageState extends State<Homepage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF80DEEA), // Light Cyan
-                    Colors.white, // Medium Cyan
-                  ],
+                  colors: [Color(0xFF6CBDB2), Colors.white],
                 ),
               ),
             ),

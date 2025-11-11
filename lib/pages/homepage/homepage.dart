@@ -679,27 +679,6 @@ class _HomepageState extends State<Homepage> {
                           ],
                         ),
                       ),
-                      // Action button
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.teal.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          tooltip: 'Lihat Waktu Solat',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              SmoothPageRoute(page: const PrayerTimesPage()),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.teal.shade600,
-                            size: 24,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   SizedBox(height: screenHeight * 0.015),

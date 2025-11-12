@@ -53,7 +53,6 @@ class _HomepageState extends State<Homepage> {
   Timer? _timer;
   Timer? _countdownTimer;
   Duration _countdown = Duration.zero;
-  Duration? _totalCountdown;
   List<Map<String, dynamic>> _prayerTimes = [];
 
   @override
@@ -149,7 +148,6 @@ class _HomepageState extends State<Homepage> {
       setState(() {
         _nextPrayerText = 'Solat Seterusnya: Maghrib - 18:30';
         _countdown = const Duration(hours: 1);
-        _totalCountdown = _countdown;
       });
     }
     DateTime target = DateTime.now().add(const Duration(hours: 1));
@@ -221,7 +219,6 @@ class _HomepageState extends State<Homepage> {
 
             setState(() {
               _countdown = initialCountdown;
-              _totalCountdown = initialCountdown;
             });
 
             _countdownTimer = Timer.periodic(const Duration(seconds: 1), (
@@ -327,15 +324,12 @@ class _HomepageState extends State<Homepage> {
         controller: _scrollController,
         child: Stack(
           children: [
-            // Solid navy blue background (extends to status bar)
-            Container(
-              height: screenHeight * 0.25 + statusBarHeight,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF6CBDB2), Colors.white],
-                ),
+            // Solid teal background with wavy bottom (extends to status bar)
+            ClipPath(
+              clipper: WaveClipper(),
+              child: Container(
+                height: screenHeight * 0.25 + statusBarHeight,
+                color: const Color(0xFF6FB0AC),
               ),
             ),
             // Main content with SafeArea
@@ -658,40 +652,18 @@ class _HomepageState extends State<Homepage> {
                   // Header with progress ring and prayer name
                   Row(
                     children: [
-                      // Progress ring with clock icon
-                      SizedBox(
+                      // Clock icon without progress ring
+                      Container(
                         width: 50,
                         height: 50,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (_totalCountdown != null &&
-                                _totalCountdown!.inSeconds > 0)
-                              CircularProgressIndicator(
-                                value:
-                                    (_totalCountdown!.inSeconds -
-                                        _countdown.inSeconds) /
-                                    _totalCountdown!.inSeconds,
-                                strokeWidth: 3,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Color(0xFFFBC02D),
-                                ),
-                                backgroundColor: Colors.grey.shade200,
-                              ),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF00897B).withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.access_time_rounded,
-                                color: const Color(0xFF00897B),
-                                size: 20,
-                              ),
-                            ),
-                          ],
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00897B).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.access_time_rounded,
+                          color: const Color(0xFF00897B),
+                          size: 24,
                         ),
                       ),
                       SizedBox(width: screenWidth * 0.04),
@@ -1006,4 +978,3 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
-

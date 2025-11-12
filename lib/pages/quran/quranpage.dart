@@ -1856,3 +1856,6 @@ class _QuranPageState extends State<QuranPage> {
     );
   }
 }
+
+
+

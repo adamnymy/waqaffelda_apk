@@ -511,3 +511,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     );
   }
 }
+
+
+

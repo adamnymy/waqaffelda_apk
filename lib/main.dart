@@ -67,8 +67,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         fontFamily: 'Inter',
         colorScheme: ColorScheme.light(
-          primary: Colors.teal,
-          secondary: const Color(0xFFFBC02D), // Golden Yellow
+          primary: const Color(0xFF00897B), // Deep Teal - PRIMARY
+          secondary: const Color(0xFFFBC02D), // Golden Yellow - SECONDARY
           background: Colors.white,
           surface: Colors.white,
           onPrimary: Colors.white,
@@ -81,11 +81,11 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
-          iconTheme: IconThemeData(color: Colors.teal),
+          iconTheme: IconThemeData(color: Color(0xFF00897B)), // Deep Teal
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.teal,
+            backgroundColor: const Color(0xFF00897B), // Deep Teal
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),

@@ -26,7 +26,10 @@ class _AkaunPageState extends State<AkaunPage> {
         Navigator.pushReplacement(context, _createPageRoute(const Homepage()));
         break;
       case 1:
-        Navigator.pushReplacement(context, _createPageRoute(const ProgramPage()));
+        Navigator.pushReplacement(
+          context,
+          _createPageRoute(const ProgramPage()),
+        );
         break;
       case 2:
         Navigator.pushReplacement(context, _createPageRoute(const WaqafPage()));
@@ -35,7 +38,7 @@ class _AkaunPageState extends State<AkaunPage> {
         Navigator.pushReplacement(context, _createPageRoute(const InboxPage()));
         break;
       case 4:
-      // Sudah berada di AkaunPage
+        // Sudah berada di AkaunPage
         break;
     }
   }
@@ -68,7 +71,7 @@ class _AkaunPageState extends State<AkaunPage> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.teal.shade400.withOpacity(0.3),
+                    const Color(0xFF00897B).withOpacity(0.3),
                     const Color(0xFFFBC02D).withOpacity(0.2),
                     Colors.white,
                   ],
@@ -123,18 +126,12 @@ class _AkaunPageState extends State<AkaunPage> {
           children: [
             const Text(
               'Guest', // Nama Pengguna
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               'guest@example.com', // Emel pengguna atau status
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -160,9 +157,16 @@ class _AkaunPageState extends State<AkaunPage> {
         children: [
           _buildSettingsItem(icon: Icons.edit_outlined, title: 'Edit Profil'),
           _buildSettingsItem(icon: Icons.favorite_border, title: 'Kegemaran'),
-          _buildSettingsItem(icon: Icons.download_outlined, title: 'Muat Turun'),
+          _buildSettingsItem(
+            icon: Icons.download_outlined,
+            title: 'Muat Turun',
+          ),
           _buildSettingsItem(icon: Icons.location_on_outlined, title: 'Lokasi'),
-          _buildSettingsItem(icon: Icons.brightness_6_outlined, title: 'Night Mode', isSwitch: true),
+          _buildSettingsItem(
+            icon: Icons.brightness_6_outlined,
+            title: 'Night Mode',
+            isSwitch: true,
+          ),
           _buildSettingsItem(icon: Icons.delete_outline, title: 'Padam Cache'),
           _buildSettingsItem(icon: Icons.history, title: 'Sejarah'),
         ],
@@ -171,7 +175,11 @@ class _AkaunPageState extends State<AkaunPage> {
   }
 
   // Widget untuk setiap item dalam senarai menu
-  Widget _buildSettingsItem({required IconData icon, required String title, bool isSwitch = false}) {
+  Widget _buildSettingsItem({
+    required IconData icon,
+    required String title,
+    bool isSwitch = false,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -189,7 +197,10 @@ class _AkaunPageState extends State<AkaunPage> {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               if (isSwitch)
@@ -198,10 +209,14 @@ class _AkaunPageState extends State<AkaunPage> {
                   onChanged: (value) {
                     // Logik untuk menukar night mode
                   },
-                  activeColor: Colors.teal,
+                  activeColor: const Color(0xFF00897B),
                 )
               else
-                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.grey,
+                ),
             ],
           ),
         ),
@@ -233,3 +248,6 @@ class _AkaunPageState extends State<AkaunPage> {
     );
   }
 }
+
+
+

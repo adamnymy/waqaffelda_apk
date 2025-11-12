@@ -230,7 +230,10 @@ class _TahlilPageState extends State<TahlilPage> {
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.teal.shade700, Colors.teal.shade500],
+                        colors: [
+                          const Color(0xFF00897B),
+                          const Color(0xFF4DB6AC),
+                        ],
                       ),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(20),
@@ -317,10 +320,10 @@ class _TahlilPageState extends State<TahlilPage> {
                                     decoration: BoxDecoration(
                                       gradient:
                                           isActive
-                                              ? LinearGradient(
+                                              ? const LinearGradient(
                                                 colors: [
-                                                  Colors.teal.shade600,
-                                                  Colors.teal.shade400,
+                                                  Color(0xFF00897B),
+                                                  Color(0xFF4DB6AC),
                                                 ],
                                               )
                                               : null,
@@ -411,13 +414,13 @@ class _TahlilPageState extends State<TahlilPage> {
       right: 16,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.teal.shade600, Colors.teal.shade400],
+          gradient: const LinearGradient(
+            colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.teal.withOpacity(0.4),
+              color: const Color(0xFF00897B).withOpacity(0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -520,7 +523,7 @@ class _TahlilPageState extends State<TahlilPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withOpacity(0.08),
+            color: const Color(0xFF00897B).withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -532,11 +535,11 @@ class _TahlilPageState extends State<TahlilPage> {
           // Modern gradient header - without numbering
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal.shade600, Colors.teal.shade400],
+                colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
               ),
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -826,7 +829,7 @@ class _TahlilPageState extends State<TahlilPage> {
                   value: target > 0 ? count / target : 0,
                   backgroundColor: colorScheme.surface.withOpacity(0.5),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    isComplete ? colorScheme.primary : Colors.teal.shade400,
+                    isComplete ? colorScheme.primary : const Color(0xFF00897B),
                   ),
                   minHeight: 8,
                 ),
@@ -842,13 +845,13 @@ class _TahlilPageState extends State<TahlilPage> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.teal.shade600, Colors.teal.shade400],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.teal.withOpacity(0.3),
+                      color: const Color(0xFF00897B).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -934,3 +937,6 @@ class _TahlilPageState extends State<TahlilPage> {
     );
   }
 }
+
+
+

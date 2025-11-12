@@ -63,19 +63,12 @@ class _AkaunPageState extends State<AkaunPage> {
         controller: _scrollController,
         child: Stack(
           children: [
-            // Latar belakang bergradien yang sama seperti Homepage
-            Container(
-              height: screenHeight * 0.25 + statusBarHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF00897B).withOpacity(0.3),
-                    const Color(0xFFFBC02D).withOpacity(0.2),
-                    Colors.white,
-                  ],
-                ),
+            // Solid teal background with wavy bottom (same as Homepage)
+            ClipPath(
+              clipper: WaveClipper(),
+              child: Container(
+                height: screenHeight * 0.25 + statusBarHeight,
+                color: const Color(0xFF6FB0AC),
               ),
             ),
             // Kandungan utama dengan SafeArea
@@ -249,5 +242,25 @@ class _AkaunPageState extends State<AkaunPage> {
   }
 }
 
+// WaveClipper for wavy bottom design (same as Homepage)
+class WaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - 50); // Start path
+    var controlPoint = Offset(size.width / 2, size.height);
+    var endPoint = Offset(size.width, size.height - 50);
+    path.quadraticBezierTo(
+      controlPoint.dx,
+      controlPoint.dy,
+      endPoint.dx,
+      endPoint.dy,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
 
-
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}

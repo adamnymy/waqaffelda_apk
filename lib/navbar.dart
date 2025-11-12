@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui'; // Required for ImageFilter
+import 'pages/prayertimes/prayertimes.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -45,8 +46,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavItem(0, Icons.home_filled, 'Menu'),
-                  _buildNavItem(1, Icons.calendar_today, 'Program'),
+                  _buildNavItem(0, Icons.home_rounded, 'Menu'),
+                  _buildNavItem(1, Icons.menu_book, 'Program'),
+                  _buildNavItem(2, Icons.access_time_filled_sharp, 'Waktu Solat'),
                   _buildNavItem(3, Icons.mail, 'Inbox'),
                   _buildNavItem(4, Icons.person, 'Akaun'),
                 ],
@@ -64,7 +66,21 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
     return Expanded(
       child: InkWell(
-        onTap: () => widget.onTap(index),
+        onTap: () {
+          widget.onTap(index);
+          
+          // If user tapped Waktu Solat (index 2), navigate to PrayerTimesPage
+          if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
+          }
+        },
         borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

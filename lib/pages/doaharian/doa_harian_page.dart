@@ -117,7 +117,7 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
       case 'purple':
         return Colors.purple;
       case 'teal':
-        return Colors.teal;
+        return const Color(0xFF00897B);
       case 'indigo':
         return Colors.indigo;
       case 'deepPurple':
@@ -197,7 +197,7 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
           _isLoading
               ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00897B)),
                 ),
               )
               : _errorMessage.isNotEmpty
@@ -232,7 +232,7 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
                     ElevatedButton(
                       onPressed: _loadDoaData,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: const Color(0xFF00897B),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 12,
@@ -317,12 +317,15 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
                               vertical: 12,
                             ),
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.teal : Colors.white,
+                              color:
+                                  isSelected
+                                      ? const Color(0xFF00897B)
+                                      : Colors.white,
                               borderRadius: BorderRadius.circular(25),
                               border: Border.all(
                                 color:
                                     isSelected
-                                        ? Colors.teal
+                                        ? const Color(0xFF00897B)
                                         : Colors.grey.shade300,
                                 width: 1,
                               ),
@@ -478,7 +481,7 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
                                               'Arab',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.teal,
+                                                color: const Color(0xFF00897B),
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
@@ -499,7 +502,7 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
                                               'Melayu',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.teal,
+                                                color: const Color(0xFF00897B),
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
@@ -526,3 +529,6 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     );
   }
 }
+
+
+

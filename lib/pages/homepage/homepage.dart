@@ -25,6 +25,17 @@ class Homepage extends StatefulWidget {
   _HomepageState createState() => _HomepageState();
 }
 
+int _searchTextIndex = 0;
+Timer? _searchTextTimer;
+final List<String> _searchSuggestions = [
+  'Beramal Quran',
+  'Waktu Solat',
+  'Arah Kiblat',
+  'Al Quran',
+  'Doa Harian',
+  'Hadith',
+];
+
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   int _carouselIndex = 0;
@@ -51,6 +62,7 @@ class _HomepageState extends State<Homepage> {
     _loadPrayerTimes();
     _startTimer();
     _startCarouselTimer();
+    _startSearchTextAnimation(); // Tambah ini untuk mulakan animasi teks
   }
 
   @override
@@ -58,9 +70,20 @@ class _HomepageState extends State<Homepage> {
     _timer?.cancel();
     _carouselTimer?.cancel();
     _countdownTimer?.cancel();
+    _searchTextTimer?.cancel(); // Tambah ini untuk batalkan timer teks
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _startSearchTextAnimation() {
+    _searchTextTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          _searchTextIndex = (_searchTextIndex + 1) % _searchSuggestions.length;
+        });
+      }
+    });
   }
 
   void _startCarouselTimer() {
@@ -397,7 +420,7 @@ class _HomepageState extends State<Homepage> {
               placeholderBuilder:
                   (BuildContext context) => Icon(
                     Icons.mosque,
-                    color: Colors.teal,
+                    color: const Color(0xFF00897B),
                     size: screenWidth * 0.08,
                   ),
             ),
@@ -431,12 +454,36 @@ class _HomepageState extends State<Homepage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Icon(Icons.search, color: Colors.grey.shade600),
                     ),
-                    Text(
-                      'Search',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 500),
+                        transitionBuilder: (
+                          Widget child,
+                          Animation<double> animation,
+                        ) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.5),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _searchSuggestions[_searchTextIndex],
+                            key: ValueKey<int>(_searchTextIndex),
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: screenWidth * 0.030,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -533,7 +580,7 @@ class _HomepageState extends State<Homepage> {
           height: double.infinity,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.teal.withOpacity(0.3),
+              color: const Color(0xFF00897B).withOpacity(0.3),
               child: Center(
                 child: Icon(
                   Icons.image_not_supported,
@@ -635,12 +682,12 @@ class _HomepageState extends State<Homepage> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.teal.shade50,
+                                color: const Color(0xFF00897B).withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.access_time_rounded,
-                                color: Colors.teal.shade600,
+                                color: const Color(0xFF00897B),
                                 size: 20,
                               ),
                             ),
@@ -729,7 +776,7 @@ class _HomepageState extends State<Homepage> {
                                   ? _formatDuration(_countdown)
                                   : 'Loading...',
                               style: TextStyle(
-                                color: Colors.teal.shade600,
+                                color: const Color(0xFF00897B),
                                 fontSize: screenWidth * 0.05,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -766,7 +813,7 @@ class _HomepageState extends State<Homepage> {
               'assets/icons/waktu_solat.svg',
               fit: BoxFit.contain,
             ),
-            Colors.teal,
+            const Color(0xFF00897B),
             () {
               Navigator.push(
                 context,
@@ -788,7 +835,7 @@ class _HomepageState extends State<Homepage> {
           _buildMenuItem(
             'Al Qur\'an',
             SvgPicture.asset('assets/icons/alquran.svg', fit: BoxFit.contain),
-            Colors.teal,
+            const Color(0xFF00897B),
             () {
               Navigator.push(context, SmoothPageRoute(page: const QuranPage()));
             },
@@ -807,7 +854,7 @@ class _HomepageState extends State<Homepage> {
           _buildMenuItem(
             'Hadith 40',
             SvgPicture.asset('assets/icons/hadis.svg', fit: BoxFit.contain),
-            Colors.teal,
+            const Color(0xFF00897B),
             () {},
           ),
           _buildMenuItem(
@@ -824,7 +871,7 @@ class _HomepageState extends State<Homepage> {
           _buildMenuItem(
             'Tahlil',
             SvgPicture.asset('assets/icons/tahlil.svg', fit: BoxFit.contain),
-            Colors.teal,
+            const Color(0xFF00897B),
             () {
               Navigator.push(
                 context,
@@ -913,7 +960,7 @@ class _HomepageState extends State<Homepage> {
           Text(
             'Ayat Hari Ini',
             style: TextStyle(
-              color: Colors.teal,
+              color: const Color(0xFF00897B),
               fontSize: screenWidth * 0.045,
               fontWeight: FontWeight.bold,
             ),
@@ -959,3 +1006,4 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
+

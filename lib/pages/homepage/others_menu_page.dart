@@ -32,7 +32,7 @@ class OthersMenuPage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.teal.shade600, Colors.teal.shade400],
+          colors: [const Color(0xFF00897B), const Color(0xFF4DB6AC)],
         ),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
@@ -146,8 +146,8 @@ class OthersMenuPage extends StatelessWidget {
                             context,
                             'Waktu Solat',
                             'assets/icons/waktu_solat.svg',
-                            Colors.teal.shade700,
-                            Colors.teal.shade50,
+                            const Color(0xFF00897B),
+                            const Color(0xFF00897B).withOpacity(0.1),
                             () {
                               Navigator.pop(context);
                               Navigator.push(
@@ -163,8 +163,8 @@ class OthersMenuPage extends StatelessWidget {
                             context,
                             'Al Qur\'an',
                             'assets/icons/alquran.svg',
-                            const Color(0xFF00695C),
-                            const Color(0xFFB2DFDB),
+                            const Color(0xFF00897B),
+                            const Color(0xFF00897B).withOpacity(0.1),
                             () {
                               Navigator.pop(context);
                               Navigator.push(
@@ -450,3 +450,6 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 }
+
+
+

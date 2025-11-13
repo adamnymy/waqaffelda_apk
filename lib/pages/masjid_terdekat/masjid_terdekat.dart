@@ -25,18 +25,18 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
   bool _showList = true;
   String _searchRadius = '5';
   late AnimationController _animationController;
+  String _sortOption = 'Jarak Terdekat';
 
-  // Color scheme matching main.dart theme
-  static const Color primaryColor = Color(0xFF00897B); // Deep Teal - PRIMARY
-  static const Color secondaryColor = Color(0xFFFBC02D); // Golden Yellow - SECONDARY
-  static const Color accentColor = Color(0xFF10B981); // Emerald (for success/positive actions)
-  static const Color warningColor = Color(0xFFF59E0B); // Amber
-  static const Color errorColor = Color(0xFFEF4444); // Red
-  static const Color surfaceColor = Color(0xFFFFFFFF); // White
-  static const Color backgroundColor = Color(0xFFF5F7FA); // Light gray background
-  static const Color textPrimary = Color(0xFF000000); // Black (onBackground)
-  static const Color textSecondary = Color(0xFF6B7280); // Gray for secondary text
-  static const Color borderColor = Color(0xFFE5E7EB); // Light gray border
+  // Color scheme based on the new design
+  static const Color scaffoldBgColor = Color(0xFFF0F7F7);
+  static const Color primaryGreen = Color(0xFF0A7E6E);
+  static const Color cardBorderColor = Color(0xFFB0E0E6);
+  static const Color ratingYellow = Color(0xFFFBC02D);
+  static const Color secondaryTextColor = Color(0xFF555555);
+  static const Color whiteColor = Color(0xFFFFFFFF);
+  static const Color blackColor = Color(0xFF000000);
+  static const Color lightGreyColor = Color(0xFFE5E7EB);
+  static const Color errorColor = Color(0xFFEF4444); // Red for errors
 
   @override
   void initState() {
@@ -247,6 +247,20 @@ out center;
     }
   }
 
+  void _sortMosques() {
+    setState(() {
+      if (_sortOption == 'Jarak Terdekat') {
+        _mosques.sort((a, b) => a.distance.compareTo(b.distance));
+      } else if (_sortOption == 'Penilaian Tertinggi') {
+        _mosques.sort((a, b) {
+          final ratingA = (4.5 + (a.name.hashCode % 5) / 10);
+          final ratingB = (4.5 + (b.name.hashCode % 5) / 10);
+          return ratingB.compareTo(ratingA);
+        });
+      }
+    });
+  }
+
   void _showMosqueDetails(Mosque mosque) {
     showModalBottomSheet(
       context: context,
@@ -257,152 +271,145 @@ out center;
   }
 
   Widget _buildMosqueDetailsSheet(Mosque mosque) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.65,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    return Container(
+      decoration: const BoxDecoration(
+        color: whiteColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: lightGreyColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          child: Column(
+          // Header
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
+                width: 64,
+                height: 64,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: borderColor,
-                  borderRadius: BorderRadius.circular(2),
+                  color: primaryGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SvgPicture.asset(
+                  'assets/icons/menu/masjid.svg',
+                  width: 32,
+                  height: 32,
+                  color: primaryGreen,
+                  fit: BoxFit.contain,
                 ),
               ),
+              const SizedBox(width: 16),
               Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Icon
-                    Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: SvgPicture.asset(
-                            'assets/icons/menu/masjid.svg',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Mosque name
                     Text(
                       mosque.name,
                       style: const TextStyle(
                         fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: textPrimary,
-                        height: 1.3,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    // Info section
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: backgroundColor,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildInfoRow(
-                            Icons.navigation_rounded,
-                            'Jarak',
-                            '${(mosque.distance / 1000).toStringAsFixed(1)} km',
-                            accentColor,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoRow(
-                            Icons.circle,
-                            'Status',
-                            mosque.isOpen ? 'Dibuka' : 'Ditutup',
-                            mosque.isOpen ? accentColor : warningColor,
-                          ),
-                          if (mosque.address.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            _buildInfoRow(
-                              Icons.location_on_rounded,
-                              'Alamat',
-                              mosque.address,
-                              primaryColor,
-                            ),
-                          ],
-                        ],
+                        fontWeight: FontWeight.bold,
+                        color: blackColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    // Action buttons
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _openGoogleMaps(mosque),
-                        icon: const Icon(Icons.navigation_rounded, size: 20),
-                        label: const Text('Buka Navigasi'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    if (mosque.address.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        mosque.address,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: secondaryTextColor,
+                          height: 1.4,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _shareLocation(mosque),
-                        icon: const Icon(Icons.share_rounded, size: 20),
-                        label: const Text('Kongsi Lokasi'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primaryColor,
-                          side: const BorderSide(color: primaryColor),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 24),
+          const Divider(color: lightGreyColor, height: 1),
+          const SizedBox(height: 24),
+
+          // Info Rows
+          _buildInfoRow(
+            Icons.social_distance_rounded,
+            'Jarak',
+            '${(mosque.distance / 1000).toStringAsFixed(1)} km dari lokasi anda',
+            primaryGreen,
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow(
+            Icons.access_time_rounded,
+            'Status',
+            mosque.isOpen ? 'Dibuka' : 'Ditutup',
+            mosque.isOpen ? primaryGreen : ratingYellow,
+          ),
+
+          const SizedBox(height: 32),
+
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _openGoogleMaps(mosque),
+                  icon: const Icon(Icons.directions_rounded, size: 20),
+                  label: const Text('Arah'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryGreen,
+                    foregroundColor: whiteColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _shareLocation(mosque),
+                  icon: const Icon(Icons.share_rounded, size: 20),
+                  label: const Text('Kongsi'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryGreen,
+                    side: const BorderSide(color: primaryGreen),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoRow(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
+  Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
     return Row(
       children: [
         Container(
@@ -422,8 +429,8 @@ out center;
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: textSecondary,
+                  fontSize: 13,
+                  color: secondaryTextColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -431,9 +438,9 @@ out center;
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 15,
-                  color: textPrimary,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: blackColor,
                   height: 1.3,
                 ),
               ),
@@ -457,6 +464,125 @@ out center;
     }
   }
 
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: whiteColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: lightGreyColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Susun Ikut',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: blackColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSortOptionTile(
+                    context,
+                    'Jarak Terdekat',
+                    Icons.social_distance_rounded,
+                    _sortOption == 'Jarak Terdekat',
+                    () {
+                      setState(() {
+                        _sortOption = 'Jarak Terdekat';
+                      });
+                      _sortMosques();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSortOptionTile(
+                    context,
+                    'Penilaian Tertinggi',
+                    Icons.star_rounded,
+                    _sortOption == 'Penilaian Tertinggi',
+                    () {
+                      setState(() {
+                        _sortOption = 'Penilaian Tertinggi';
+                      });
+                      _sortMosques();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOptionTile(
+    BuildContext context,
+    String title,
+    IconData icon,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
+    return Material(
+      color: isSelected ? primaryGreen.withOpacity(0.1) : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? primaryGreen : secondaryTextColor,
+                size: 22,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? primaryGreen : blackColor,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: primaryGreen,
+                  size: 24,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _shareLocation(Mosque mosque) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -470,15 +596,15 @@ out center;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: scaffoldBgColor,
       appBar: AppBar(
-        backgroundColor: surfaceColor,
+        backgroundColor: scaffoldBgColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: textPrimary,
+            color: blackColor,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -486,16 +612,27 @@ out center;
         title: const Text(
           'Masjid Terdekat',
           style: TextStyle(
-            color: textPrimary,
+            color: primaryGreen,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
+          // Filter Button
+          if (_showList && _mosques.isNotEmpty)
+            IconButton(
+              icon: const Icon(
+                Icons.filter_list_rounded,
+                color: primaryGreen,
+                size: 24,
+              ),
+              onPressed: _showSortOptions,
+              tooltip: 'Tapis',
+            ),
           IconButton(
             icon: Icon(
               _showList ? Icons.map_outlined : Icons.list_rounded,
-              color: primaryColor,
+              color: primaryGreen,
               size: 24,
             ),
             onPressed: () {
@@ -508,154 +645,38 @@ out center;
           const SizedBox(width: 8),
         ],
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _errorMessage.isNotEmpty
+      body:
+          _isLoading
+              ? _buildLoadingState()
+              : _errorMessage.isNotEmpty
               ? _buildErrorState()
               : _mosques.isEmpty
-                  ? _buildEmptyState()
-                  : _showList
-                      ? Column(
-                          children: [
-                            _buildHeader(),
-                            Expanded(child: _buildListView()),
-                          ],
-                        )
-                      : _buildMapView(),
-      floatingActionButton: !_isLoading &&
-              _errorMessage.isEmpty &&
-              !_showList
-          ? FloatingActionButton(
-              onPressed: () {
-                if (_currentPosition != null && _mapController != null) {
-                  _mapController!.animateCamera(
-                    CameraUpdate.newLatLngZoom(
-                      LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      ),
-                      15,
-                    ),
-                  );
-                }
-              },
-              backgroundColor: primaryColor,
-              child: const Icon(Icons.my_location_rounded, color: Colors.white),
-            )
-          : null,
+              ? _buildEmptyState()
+              : _showList
+              ? Column(
+                children: [_buildHeader(), Expanded(child: _buildListView())],
+              )
+              : _buildMapView(),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: surfaceColor,
-        border: Border(
-          bottom: BorderSide(color: borderColor, width: 1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: scaffoldBgColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Stats info
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.location_on_rounded,
-                  color: primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_mosques.length} Masjid Dijumpai',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Dalam radius $_searchRadius km',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Radius selector
-          const Text(
-            'Jarak Carian',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildRadiusChip('2'),
-                const SizedBox(width: 8),
-                _buildRadiusChip('5'),
-                const SizedBox(width: 8),
-                _buildRadiusChip('10'),
-                const SizedBox(width: 8),
-                _buildRadiusChip('20'),
-              ],
+          const SizedBox(width: 12),
+          Text(
+            '${_mosques.length} Masjid Ditemukan',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: primaryGreen,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRadiusChip(String value) {
-    final isSelected = _searchRadius == value;
-    return FilterChip(
-      selected: isSelected,
-      label: Text('$value km'),
-      onSelected: (selected) {
-        if (selected) {
-          setState(() {
-            _searchRadius = value;
-          });
-          _searchNearbyMosques();
-        }
-      },
-      selectedColor: primaryColor,
-      checkmarkColor: Colors.white,
-      labelStyle: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: isSelected ? Colors.white : textPrimary,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: isSelected ? primaryColor : borderColor,
-          width: 1,
-        ),
       ),
     );
   }
@@ -668,11 +689,11 @@ out center;
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryGreen.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+              valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
               strokeWidth: 3,
             ),
           ),
@@ -682,16 +703,13 @@ out center;
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: textPrimary,
+              color: blackColor,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Mengesan lokasi anda...',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: secondaryTextColor),
           ),
         ],
       ),
@@ -723,7 +741,7 @@ out center;
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: textPrimary,
+                color: blackColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -733,7 +751,7 @@ out center;
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
-                color: textSecondary,
+                color: secondaryTextColor,
                 height: 1.5,
               ),
             ),
@@ -745,11 +763,15 @@ out center;
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: const Text('Cuba Lagi'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryGreen,
+                  foregroundColor: whiteColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -770,7 +792,7 @@ out center;
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryGreen.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Padding(
@@ -789,7 +811,7 @@ out center;
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: textPrimary,
+                color: blackColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -798,7 +820,7 @@ out center;
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
-                color: textSecondary,
+                color: secondaryTextColor,
                 height: 1.5,
               ),
             ),
@@ -806,20 +828,19 @@ out center;
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _searchRadius = '20';
-                  });
-                  _searchNearbyMosques();
-                },
-                icon: const Icon(Icons.search_rounded, size: 20),
-                label: const Text('Cari Radius Lebih Luas'),
+                onPressed: _initLocation,
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                label: const Text('Cuba Lagi'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryGreen,
+                  foregroundColor: whiteColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -832,7 +853,7 @@ out center;
 
   Widget _buildListView() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: _mosques.length,
       itemBuilder: (context, index) {
         return Padding(
@@ -844,118 +865,129 @@ out center;
   }
 
   Widget _buildMosqueCard(Mosque mosque, int index) {
-    final isFirst = index == 0;
     final distanceKm = (mosque.distance / 1000).toStringAsFixed(1);
+    final walkingTime =
+        (mosque.distance / 1000 * 12).ceil(); // Avg walking speed 5km/h
 
     return Card(
       elevation: 0,
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isFirst ? primaryColor.withOpacity(0.2) : borderColor,
-          width: isFirst ? 2 : 1,
-        ),
+        side: const BorderSide(color: cardBorderColor, width: 1.5),
       ),
+      color: whiteColor,
       child: InkWell(
         onTap: () => _showMosqueDetails(mosque),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: isFirst
-                      ? primaryColor.withOpacity(0.1)
-                      : primaryColor.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: SvgPicture.asset(
-                    'assets/icons/menu/masjid.svg',
-                    width: 32,
-                    height: 32,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Name and distance
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (isFirst)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 6),
-                        decoration: BoxDecoration(
-                          color: secondaryColor,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'TERDEKAT',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    Text(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
                       mosque.name,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: textPrimary,
-                        height: 1.3,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: primaryGreen,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
-                    Row(
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ratingYellow.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
                       children: [
-                        Icon(
-                          Icons.navigation_rounded,
-                          size: 14,
-                          color: textSecondary,
+                        const Icon(
+                          Icons.star_rounded,
+                          color: ratingYellow,
+                          size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$distanceKm km',
+                          // The rating is not real, it's a mock value for display.
+                          (4.5 + (mosque.name.hashCode % 5) / 10)
+                              .toStringAsFixed(1),
                           style: const TextStyle(
                             fontSize: 13,
-                            color: textSecondary,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
+                            color: secondaryTextColor,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              // Action button
-              IconButton(
-                onPressed: () => _openGoogleMaps(mosque),
-                icon: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 18,
-                  color: textSecondary,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: backgroundColor,
-                  padding: const EdgeInsets.all(12),
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.directions_walk,
+                    color: secondaryTextColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$distanceKm km • $walkingTime min berjalan',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      mosque.address.isNotEmpty
+                          ? mosque.address
+                          : 'Jalan Tun Perak, Kuala Lumpur City Centre',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: secondaryTextColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _openGoogleMaps(mosque),
+                    icon: const Icon(Icons.near_me_outlined, size: 16),
+                    label: const Text('Arah'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryGreen,
+                      foregroundColor: whiteColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -968,17 +1000,14 @@ out center;
     if (_currentPosition == null) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+          valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
         ),
       );
     }
 
     return GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: LatLng(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-        ),
+        target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
         zoom: 13,
       ),
       markers: _markers,
@@ -986,6 +1015,109 @@ out center;
       myLocationButtonEnabled: false,
       onMapCreated: (controller) {
         _mapController = controller;
+        // Custom map style
+        _mapController!.setMapStyle('''
+[
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#ffffff"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dadada"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e5e5e5"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#eeeeee"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#c9c9c9"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  }
+]
+''');
       },
       compassEnabled: true,
       mapToolbarEnabled: false,

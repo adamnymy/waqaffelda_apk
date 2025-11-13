@@ -68,7 +68,7 @@ class _AkaunPageState extends State<AkaunPage> {
               clipper: WaveClipper(),
               child: Container(
                 height: screenHeight * 0.25 + statusBarHeight,
-                color: const Color(0xFF6FB0AC),
+                color: const Color(0xFF69A7BA),
               ),
             ),
             // Kandungan utama dengan SafeArea

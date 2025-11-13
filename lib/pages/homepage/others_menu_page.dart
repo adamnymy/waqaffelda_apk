@@ -6,6 +6,7 @@ import '../zikircounter/zikircounter.dart';
 import '../../utils/page_transitions.dart';
 import '../doaharian/doa_harian_page.dart';
 import '../tahlil/tahlil.dart';
+import '../masjid_terdekat/masjid_terdekat.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OthersMenuPage extends StatelessWidget {
@@ -269,7 +270,10 @@ class OthersMenuPage extends StatelessWidget {
                       const Color(0xFF43A047),
                       () {
                         Navigator.pop(context);
-                        // TODO: Navigate to Nearby Mosque page
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const MasjidTerdekatPage()),
+                        );
                       },
                     ),
                     const SizedBox(height: 10),

@@ -145,7 +145,7 @@ class OthersMenuPage extends StatelessWidget {
                           child: _buildFeaturedCard(
                             context,
                             'Waktu Solat',
-                            'assets/icons/waktu_solat.svg',
+                            'assets/icons/menu/waktu_solat.svg',
                             const Color(0xFF00897B),
                             const Color(0xFF00897B).withOpacity(0.1),
                             () {
@@ -162,7 +162,7 @@ class OthersMenuPage extends StatelessWidget {
                           child: _buildFeaturedCard(
                             context,
                             'Al Qur\'an',
-                            'assets/icons/alquran.svg',
+                            'assets/icons/menu/alquran.svg',
                             const Color(0xFF00897B),
                             const Color(0xFF00897B).withOpacity(0.1),
                             () {
@@ -191,7 +191,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Arah Kiblat',
                       'Cari arah kiblat dengan mudah',
-                      'assets/icons/kiblat.svg',
+                      'assets/icons/menu/kiblat.svg',
                       const Color(0xFFFF6F00),
                       () {
                         Navigator.pop(context);
@@ -206,7 +206,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Tasbih',
                       'Kira zikir digital',
-                      'assets/icons/tasbih.svg',
+                      'assets/icons/menu/tasbih.svg',
                       const Color(0xFF5E35B1),
                       () {
                         Navigator.pop(context);
@@ -221,7 +221,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Doa Harian',
                       'Koleksi doa harian',
-                      'assets/icons/doa.svg',
+                      'assets/icons/menu/doa.svg',
                       const Color(0xFFE53935),
                       () {
                         Navigator.pop(context);
@@ -238,7 +238,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Hadith 40',
                       'Hadith Nawawi',
-                      'assets/icons/hadis.svg',
+                      'assets/icons/menu/hadis.svg',
                       const Color(0xFF1976D2),
                       () {
                         Navigator.pop(context);
@@ -250,7 +250,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Tahlil',
                       'Bacaan tahlil lengkap',
-                      'assets/icons/tahlil.svg',
+                      'assets/icons/menu/tahlil.svg',
                       const Color(0xFF00897B),
                       () {
                         Navigator.pop(context);
@@ -450,6 +450,3 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 }
-
-
-

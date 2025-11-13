@@ -104,17 +104,19 @@ flutter:
     - assets/images/IG2.png
     - assets/images/IG3.png
     - assets/images/infak-subuh.png
-    - assets/icons/alquran.svg
-    - assets/icons/doa.svg
-    - assets/icons/hadis.svg
-    - assets/icons/kiblat.svg
-    - assets/icons/lain_lain.svg
-    - assets/icons/logo3.svg
-    - assets/icons/tahlil.svg
-    - assets/icons/tasbih.svg
-    - assets/icons/waktu_solat.svg
-    - assets/icons/kalendar_islam.svg
-    - assets/icons/masjid.svg
+    
+    # Menu icons (moved to menu folder)
+    - assets/icons/menu/alquran.svg
+    - assets/icons/menu/doa.svg
+    - assets/icons/menu/hadis.svg
+    - assets/icons/menu/kiblat.svg
+    - assets/icons/menu/lain_lain.svg
+    - assets/icons/menu/logo3.svg
+    - assets/icons/menu/tahlil.svg
+    - assets/icons/menu/tasbih.svg
+    - assets/icons/menu/waktu_solat.svg
+    - assets/icons/menu/kalendar_islam.svg
+    - assets/icons/menu/masjid.svg
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

@@ -406,7 +406,7 @@ class _HomepageState extends State<Homepage> {
             ),
             child: SvgPicture.asset(
               // Tukar kepada SvgPicture.asset
-              'assets/icons/logo3.svg',
+              'assets/icons/menu/logo3.svg',
               height: screenWidth * 0.08,
               width: screenWidth * 0.08,
               // errorBuilder tidak disokong secara langsung, tetapi jika fail tiada, ia akan beri ralat.
@@ -782,7 +782,7 @@ class _HomepageState extends State<Homepage> {
           _buildMenuItem(
             'Waktu Solat',
             SvgPicture.asset(
-              'assets/icons/waktu_solat.svg',
+              'assets/icons/menu/waktu_solat.svg',
               fit: BoxFit.contain,
             ),
             const Color(0xFF00897B),
@@ -795,7 +795,10 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Arah Kiblat',
-            SvgPicture.asset('assets/icons/kiblat.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/kiblat.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFFFBC02D),
             () {
               Navigator.push(
@@ -806,7 +809,10 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Al Qur\'an',
-            SvgPicture.asset('assets/icons/alquran.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/alquran.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFF00897B),
             () {
               Navigator.push(context, SmoothPageRoute(page: const QuranPage()));
@@ -814,7 +820,10 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Tasbih',
-            SvgPicture.asset('assets/icons/tasbih.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/tasbih.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFFFBC02D), // Changed color to green
             () {
               Navigator.push(
@@ -825,13 +834,16 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Hadith 40',
-            SvgPicture.asset('assets/icons/hadis.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/hadis.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFF00897B),
             () {},
           ),
           _buildMenuItem(
             'Doa Harian',
-            SvgPicture.asset('assets/icons/doa.svg', fit: BoxFit.contain),
+            SvgPicture.asset('assets/icons/menu/doa.svg', fit: BoxFit.contain),
             const Color(0xFFFBC02D),
             () {
               Navigator.push(
@@ -842,7 +854,10 @@ class _HomepageState extends State<Homepage> {
           ),
           _buildMenuItem(
             'Tahlil',
-            SvgPicture.asset('assets/icons/tahlil.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/tahlil.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFF00897B),
             () {
               Navigator.push(
@@ -854,7 +869,10 @@ class _HomepageState extends State<Homepage> {
 
           _buildMenuItem(
             'Lainnya',
-            SvgPicture.asset('assets/icons/lain_lain.svg', fit: BoxFit.contain),
+            SvgPicture.asset(
+              'assets/icons/menu/lain_lain.svg',
+              fit: BoxFit.contain,
+            ),
             const Color(0xFFFBC02D),
             () {
               OthersMenuPage.show(context);

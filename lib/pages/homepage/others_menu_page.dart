@@ -318,35 +318,49 @@ class OthersMenuPage extends StatelessWidget {
         child: Container(
           height: 140,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [primaryColor, primaryColor.withOpacity(0.8)],
-            ),
+            color:
+                (title == 'Waktu Solat' || title == 'Al Qur\'an')
+                    ? Colors.transparent
+                    : primaryColor,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: primaryColor.withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
           ),
           child: Stack(
             children: [
-              // Decorative circle
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
+              // Background SVG (for Waktu Solat and Al Qur'an)
+              if (title == 'Waktu Solat')
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: SvgPicture.asset(
+                      'assets/icons/menu/waktu_solat-bg.svg',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
+              if (title == 'Al Qur\'an')
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: SvgPicture.asset(
+                      'assets/icons/menu/alquran-bg.svg',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              // Decorative circle (for cards without background)
+              if (title != 'Waktu Solat' && title != 'Al Qur\'an')
+                Positioned(
+                  right: -20,
+                  top: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                ),
               // Content
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -354,14 +368,19 @@ class OthersMenuPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                    if (title != 'Waktu Solat' && title != 'Al Qur\'an')
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: SvgPicture.asset(
+                          iconPath,
+                          width: 48,
+                          height: 48,
+                        ),
                       ),
-                      child: SvgPicture.asset(iconPath, width: 48, height: 48),
-                    ),
                     Text(
                       title,
                       style: TextStyle(

@@ -640,9 +640,10 @@ class _TahlilPageState extends State<TahlilPage> {
             Text(
               content.arabic!,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-                height: 2.0,
+                fontSize: 18,
+                fontFamily: 'Amiri',
+                color: Colors.black87,
+                height: 1.6,
               ),
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
@@ -661,7 +662,11 @@ class _TahlilPageState extends State<TahlilPage> {
           if (content.translation != null) ...[
             Text(
               content.translation!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.5,
+              ),
             ),
           ],
         ],
@@ -706,9 +711,10 @@ class _TahlilPageState extends State<TahlilPage> {
                   Text(
                     content.arabic!,
                     style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                      height: 2.0,
+                      fontSize: 18,
+                      fontFamily: 'Amiri',
+                      color: Colors.black87,
+                      height: 1.6,
                     ),
                     textAlign: TextAlign.right,
                     textDirection: TextDirection.rtl,
@@ -727,7 +733,11 @@ class _TahlilPageState extends State<TahlilPage> {
                 if (content.translation != null) ...[
                   Text(
                     content.translation!,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
                   ),
                 ],
               ],
@@ -751,9 +761,10 @@ class _TahlilPageState extends State<TahlilPage> {
           Text(
             content.arabic!,
             style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              height: 2.0,
+              fontSize: 18,
+              fontFamily: 'Amiri',
+              color: Colors.black87,
+              height: 1.6,
             ),
             textAlign: TextAlign.center,
             textDirection: TextDirection.rtl,
@@ -773,7 +784,11 @@ class _TahlilPageState extends State<TahlilPage> {
         if (content.translation != null) ...[
           Text(
             content.translation!,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+              height: 1.5,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),

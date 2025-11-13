@@ -119,6 +119,9 @@ flutter:
     - assets/icons/menu/kalendar_islam.svg
     - assets/icons/menu/masjid.svg
 
+    - assets/icons/menu/waktu_solat-bg.svg
+    - assets/icons/menu/alquran-bg.svg
+
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 

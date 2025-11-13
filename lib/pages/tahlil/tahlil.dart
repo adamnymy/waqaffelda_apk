@@ -101,8 +101,22 @@ class _TahlilPageState extends State<TahlilPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahlil Ringkas'),
         backgroundColor: colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Tahlil Ringkas',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           if (_tahlilData != null) ...[
             IconButton(
@@ -406,8 +420,6 @@ class _TahlilPageState extends State<TahlilPage> {
   }
 
   Widget _buildNavigationButtons() {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Positioned(
       bottom: 16,
       left: 16,
@@ -937,6 +949,3 @@ class _TahlilPageState extends State<TahlilPage> {
     );
   }
 }
-
-
-

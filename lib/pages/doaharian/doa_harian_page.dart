@@ -157,25 +157,27 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Doa Harian',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: screenWidth * 0.05,
+            color: colorScheme.onSurface,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
@@ -529,6 +531,3 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     );
   }
 }
-
-
-

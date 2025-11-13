@@ -595,28 +595,27 @@ out center;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: scaffoldBgColor,
       appBar: AppBar(
-        backgroundColor: scaffoldBgColor,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: blackColor,
-            size: 20,
-          ),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Masjid Terdekat',
           style: TextStyle(
-            color: primaryGreen,
+            color: colorScheme.onSurface,
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         actions: [
           // Filter Button
           if (_showList && _mosques.isNotEmpty)

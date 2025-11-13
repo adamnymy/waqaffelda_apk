@@ -265,7 +265,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Masjid Terdekat',
                       'Cari masjid berhampiran',
-                      'assets/icons/masjid.svg',
+                      'assets/icons/menu/masjid.svg',
                       const Color(0xFF43A047),
                       () {
                         Navigator.pop(context);
@@ -277,7 +277,7 @@ class OthersMenuPage extends StatelessWidget {
                       context,
                       'Kalender Islam',
                       'Kalendar Hijriah',
-                      'assets/icons/kalendar_islam.svg',
+                      'assets/icons/menu/kalendar_islam.svg',
                       const Color(0xFFFBC02D),
                       () {
                         Navigator.pop(context);

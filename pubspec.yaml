@@ -121,6 +121,7 @@ flutter:
 
     - assets/icons/menu/waktu_solat-bg.svg
     - assets/icons/menu/alquran-bg.svg
+    - assets/icons/logoNg.svg
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

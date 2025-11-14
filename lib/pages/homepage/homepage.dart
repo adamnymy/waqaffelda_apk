@@ -319,54 +319,50 @@ class _HomepageState extends State<Homepage> {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: Stack(
-          children: [
-            // Solid teal background with wavy bottom (extends to status bar)
-            ClipPath(
-              clipper: WaveClipper(),
-              child: Container(
-                height: screenHeight * 0.25 + statusBarHeight,
-                color: const Color(0xFF69A7BA),
-              ),
-            ),
-            // Main content with SafeArea
+        backgroundColor: const Color(0xFFFFFFFF),
+        body: SingleChildScrollView(
+          controller: _scrollController,
+          child: Stack(
+            children: [
+              // SMOOTH GRADIENT - No more petak!
+              Container(
+                height: screenHeight * 0.30 + statusBarHeight,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+
+              Color(0xFF66B2B2), // Base Teal (#66b2b2)
+              Color(0xFF99C8C8), // Light Teal
+              Color(0xFFCCDFDF), // Very Light Teal
+              Color(0xFFE6F0F0), // Foggy Teal
+              Color(0xFFFFFFFF), // Pure White
+
+                  ],
+                  stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+          ),
+        ),
+      ),
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: screenHeight * 0.02),
-
-                  // App Bar with Search
                   _buildAppBar(context),
-
                   SizedBox(height: screenHeight * 0.02),
-
-                  // Step 1: Compact Prayer Time Card (at the top)
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: MediaQuery.of(context).size.width * 0.03,
                     ),
                     child: _buildCompactPrayerCard(context),
                   ),
-
                   SizedBox(height: screenHeight * 0.03),
-
-                  // Step 2: Icon Menu
                   _buildIconMenu(context),
-
                   SizedBox(height: screenHeight * 0.03),
-
-                  // Step 3: Main Carousel (moved below menu)
                   _buildMainCarousel(context),
-
                   SizedBox(height: screenHeight * 0.03),
-
-                  // Step 6: Ayat Hari Ini
                   _buildAyatHariIni(context),
-
                   SizedBox(height: screenHeight * 0.03),
                 ],
               ),
@@ -391,96 +387,77 @@ class _HomepageState extends State<Homepage> {
       child: Row(
         children: [
           // Logo/Icon
-          Container(
-            padding: EdgeInsets.all(screenWidth * 0.025),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(screenWidth * 0.03),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: SvgPicture.asset(
-              // Tukar kepada SvgPicture.asset
-              'assets/icons/menu/logo3.svg',
-              height: screenWidth * 0.08,
-              width: screenWidth * 0.08,
-              // errorBuilder tidak disokong secara langsung, tetapi jika fail tiada, ia akan beri ralat.
-              // Anda boleh menambah placeholder jika perlu.
-              placeholderBuilder:
-                  (BuildContext context) => Icon(
-                    Icons.mosque,
-                    color: const Color(0xFF00897B),
-                    size: screenWidth * 0.08,
-                  ),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
+          SvgPicture.asset(
+            'assets/icons/logoNg.svg',
+            width: screenWidth * 0.12,
+            height: screenWidth * 0.12,
+            fit: BoxFit.contain,
+          ),    
+          SizedBox(width: screenWidth * 0.005),
           // Search Bar
           Expanded(
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchPage()),
-                );
-              },
-              child: Container(
-                height: screenHeight * 0.05,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Icon(Icons.search, color: Colors.grey.shade600),
-                    ),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 500),
-                        transitionBuilder: (
-                          Widget child,
-                          Animation<double> animation,
-                        ) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.5),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _searchSuggestions[_searchTextIndex],
-                            key: ValueKey<int>(_searchTextIndex),
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: screenWidth * 0.030,
-                              fontWeight: FontWeight.w500,
+            child: SizedBox(
+              width: screenWidth * 0.8, // Adjust this value to make it narrower/wider
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchPage()),
+                  );
+                },
+                child: Container(
+                  height: screenHeight * 0.045,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.45),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Icon(Icons.search, color: Colors.grey.shade600),
+                      ),
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          transitionBuilder: (
+                            Widget child,
+                            Animation<double> animation,
+                          ) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.5),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _searchSuggestions[_searchTextIndex],
+                              key: ValueKey<int>(_searchTextIndex),
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: screenWidth * 0.032,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

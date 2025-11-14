@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../navbar.dart';
-import '../../homepage/homepage.dart';
+import '../../navbar.dart';
+import '../homepage/homepage.dart';
 import '../waqaf/waqafpage.dart';
 import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
 
-
 class ProgramPage extends StatefulWidget {
   const ProgramPage({Key? key}) : super(key: key);
-
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
 }
 
-
 class _ProgramPageState extends State<ProgramPage> {
   int _currentIndex = 1;
   final ScrollController _scrollController = ScrollController();
- 
+
   final List<Map<String, dynamic>> programs = [
     {
       'title': 'Kempen Potong Lima',
@@ -72,7 +69,6 @@ class _ProgramPageState extends State<ProgramPage> {
     },
   ];
 
-
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
     try {
@@ -98,12 +94,11 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-
   Future<void> _shareProgram(Map<String, dynamic> program) async {
     final String title = program['title'] as String;
     final String url = program['url'] as String;
     final String date = program['date'] as String;
-   
+
     final String shareText = '''
 🌟 *${title}*
 
@@ -121,12 +116,8 @@ ${url}
 #WaqafFELDA #Sedekah #Kebajikan
 ''';
 
-
     try {
-      await Share.share(
-        shareText,
-        subject: title,
-      );
+      await Share.share(shareText, subject: title);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,15 +130,12 @@ ${url}
     }
   }
 
-
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
-
 
     setState(() {
       _currentIndex = index;
     });
-
 
     switch (index) {
       case 0:
@@ -199,13 +187,11 @@ ${url}
     }
   }
 
-
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +317,6 @@ ${url}
             ),
           ),
 
-
           // Program Cards
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -346,7 +331,6 @@ ${url}
             ),
           ),
 
-
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
@@ -358,7 +342,6 @@ ${url}
     );
   }
 
-
   Widget _buildProgramCard(Map<String, dynamic> program) {
     final List<Color> gradient = List<Color>.from(program['gradient']);
     final IconData icon = program['icon'] as IconData;
@@ -366,7 +349,6 @@ ${url}
     final String title = program['title'] as String;
     final String description = program['description'] as String;
     final String image = program['image'] as String;
-
 
     return Material(
       color: Colors.transparent,
@@ -455,15 +437,24 @@ ${url}
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: gradient[0].withOpacity(0.12),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: gradient[0].withOpacity(0.18)),
+                        border: Border.all(
+                          color: gradient[0].withOpacity(0.18),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today_rounded, size: 14, color: gradient[0]),
+                          Icon(
+                            Icons.calendar_today_rounded,
+                            size: 14,
+                            color: gradient[0],
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             date,
@@ -489,7 +480,11 @@ ${url}
                       description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -510,7 +505,11 @@ ${url}
                             gradient: LinearGradient(colors: gradient),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                          child: const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ],
                     ),
@@ -524,335 +523,359 @@ ${url}
     );
   }
 
-
   void _showProgramDetails(Map<String, dynamic> program) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) {
-          final List<Color> gradient = List<Color>.from(program['gradient']);
-          final IconData icon = program['icon'] as IconData;
-          final String title = program['title'] as String;
-          final String date = program['date'] as String;
-          final String description = program['description'] as String;
-          final String url = program['url'] as String;
-          final String image = program['image'] as String;
-         
-          return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) {
+              final List<Color> gradient = List<Color>.from(
+                program['gradient'],
+              );
+              final IconData icon = program['icon'] as IconData;
+              final String title = program['title'] as String;
+              final String date = program['date'] as String;
+              final String description = program['description'] as String;
+              final String url = program['url'] as String;
+              final String image = program['image'] as String;
+
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                 ),
-                Expanded(
-                  child: ListView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(0),
-                    children: [
-                      Container(
-                        height: 250,
-                        child: Stack(
-                          children: [
-                            Image.asset(
-                              image,
-                              height: 250,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(0),
+                        children: [
+                          Container(
+                            height: 250,
+                            child: Stack(
+                              children: [
+                                Image.asset(
+                                  image,
+                                  height: 250,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: gradient,
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          icon,
+                                          size: 100,
+                                          color: Colors.white.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: gradient,
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      icon,
-                                      size: 100,
-                                      color: Colors.white.withOpacity(0.5),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.18),
-                                    Colors.black.withOpacity(0.45),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.25),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: Colors.white.withOpacity(0.3),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            icon,
-                                            color: Colors.white,
-                                            size: 32,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          icon: Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.25),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: const Icon(
-                                              Icons.close_rounded,
-                                              color: Colors.white,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.black.withOpacity(0.18),
+                                        Colors.black.withOpacity(0.45),
                                       ],
                                     ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  ),
+                                ),
+                                SafeArea(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          title,
-                                          style: const TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            letterSpacing: 0.5,
-                                            shadows: [
-                                              Shadow(
-                                                color: Colors.black26,
-                                                offset: Offset(0, 2),
-                                                blurRadius: 4,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.25),
-                                            borderRadius: BorderRadius.circular(20),
-                                            border: Border.all(
-                                              color: Colors.white.withOpacity(0.3),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.calendar_today_rounded,
-                                                color: Colors.white,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                date,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(
+                                                  0.25,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.3),
+                                                  width: 1,
                                                 ),
                                               ),
-                                            ],
-                                          ),
+                                              child: Icon(
+                                                icon,
+                                                color: Colors.white,
+                                                size: 32,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed:
+                                                  () => Navigator.pop(context),
+                                              icon: Container(
+                                                padding: const EdgeInsets.all(
+                                                  8,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withOpacity(0.25),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close_rounded,
+                                                  color: Colors.white,
+                                                  size: 24,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              title,
+                                              style: const TextStyle(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                letterSpacing: 0.5,
+                                                shadows: [
+                                                  Shadow(
+                                                    color: Colors.black26,
+                                                    offset: Offset(0, 2),
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(
+                                                  0.25,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.3),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons
+                                                        .calendar_today_rounded,
+                                                    color: Colors.white,
+                                                    size: 14,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    date,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Maklumat Program',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              description,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[700],
-                                height: 1.6,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    gradient[0].withOpacity(0.1),
-                                    gradient[1].withOpacity(0.05),
-                                  ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Maklumat Program',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      _launchURL(url);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: gradient[0],
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Icon(Icons.how_to_reg_rounded),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Sertai Program',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey[700],
+                                    height: 1.6,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        gradient[0].withOpacity(0.1),
+                                        gradient[1].withOpacity(0.05),
                                       ],
                                     ),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  const SizedBox(height: 12),
-                                  OutlinedButton(
-                                    onPressed: () {
-                                      _shareProgram(program);
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: gradient[0],
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
+                                  child: Column(
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _launchURL(url);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: gradient[0],
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.how_to_reg_rounded),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Sertai Program',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      side: BorderSide(
-                                        color: gradient[0],
-                                        width: 2,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Icon(Icons.share_rounded),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Kongsi Program',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                      const SizedBox(height: 12),
+                                      OutlinedButton(
+                                        onPressed: () {
+                                          _shareProgram(program);
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: gradient[0],
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                          side: BorderSide(
+                                            color: gradient[0],
+                                            width: 2,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline_rounded,
-                                    color: Colors.grey[600],
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      'Untuk maklumat lanjut, sila hubungi pihak Waqaf FELDA',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey[700],
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.share_rounded),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Kongsi Program',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline_rounded,
+                                        color: Colors.grey[600],
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'Untuk maklumat lanjut, sila hubungi pihak Waqaf FELDA',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
     );
   }
 }
-
-
-
-

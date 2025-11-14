@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Required for ImageFilter
 import 'pages/prayertimes/prayertimes.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -21,39 +20,33 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(
-              0.05, //nak tukau transparency
-            ), // Reduced opacity for more transparency
-            border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.3), width: 1.5),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), //adjust heigth
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(0, Icons.home_rounded, 'Menu'),
-                  _buildNavItem(1, Icons.menu_book, 'Program'),
-                  _buildNavItem(2, Icons.access_time_filled_sharp, 'Waktu Solat'),
-                  _buildNavItem(3, Icons.mail, 'Inbox'),
-                  _buildNavItem(4, Icons.person, 'Akaun'),
-                ],
-              ),
-            ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 4,
+          ), //adjust heigth
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.home_rounded, 'Menu'),
+              _buildNavItem(1, Icons.menu_book, 'Program'),
+              _buildNavItem(2, Icons.access_time_filled_sharp, 'Waktu Solat'),
+              _buildNavItem(3, Icons.mail, 'Inbox'),
+              _buildNavItem(4, Icons.person, 'Akaun'),
+            ],
           ),
         ),
       ),
@@ -68,13 +61,15 @@ class _BottomNavBarState extends State<BottomNavBar> {
       child: InkWell(
         onTap: () {
           widget.onTap(index);
-          
+
           // If user tapped Waktu Solat (index 2), navigate to PrayerTimesPage
           if (index == 2) {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const PrayerTimesPage(),
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const PrayerTimesPage(),
                 transitionDuration: Duration.zero,
                 reverseTransitionDuration: Duration.zero,
               ),

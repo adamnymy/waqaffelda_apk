@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../navbar.dart';
-import '../../homepage/homepage.dart';
+import '../../navbar.dart';
+import '../homepage/homepage.dart';
 import '../program/program_page.dart';
 import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
@@ -117,6 +117,3 @@ class _WaqafPageState extends State<WaqafPage> {
     );
   }
 }
-
-
-

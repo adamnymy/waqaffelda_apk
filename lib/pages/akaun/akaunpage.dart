@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../navbar.dart'; // Pastikan import ini betul
-import '../../homepage/homepage.dart'; // Import untuk navigasi
-import '../program/program_page.dart'; // Import untuk navigasi
-import '../waqaf/waqafpage.dart'; // Import untuk navigasi
-import '../inbox/inboxpage.dart'; // Import untuk navigasi
+import '../../navbar.dart';
+import '../homepage/homepage.dart';
+import '../program/program_page.dart';
+import '../waqaf/waqafpage.dart';
+import '../inbox/inboxpage.dart';
 
 //test
 class AkaunPage extends StatefulWidget {

@@ -44,7 +44,7 @@ class _HomepageState extends State<Homepage> {
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
     'assets/images/KP5R3.png', //Kempen Potong Lima
-    'assets/images/IST2.png', //Infak Subuh
+    'assets/images/infak-subuh.png', //Infak Subuh
     'assets/images/SPAT1.png', //Ifak Set Persalihan Akhir
     'assets/images/WQT1.png', //Waqaf Quran
   ];
@@ -489,7 +489,7 @@ class _HomepageState extends State<Homepage> {
           ),
           SizedBox(height: screenWidth * 0.03),
           SizedBox(
-            height: screenHeight * 0.21, // Adjusted for 1600x900 aspect ratio
+            height: screenHeight * 0.2, // Adjusted for 1600x900 aspect ratio
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {

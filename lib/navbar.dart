@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/prayertimes/prayertimes.dart';
+import 'pages/waqaf/waqafpage.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -23,14 +23,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        border: Border(top: BorderSide(color: const Color.fromARGB(255, 247, 247, 247), width: 1)),
       ),
       child: SafeArea(
         child: Padding(
@@ -43,7 +36,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             children: [
               _buildNavItem(0, Icons.home_rounded, 'Menu'),
               _buildNavItem(1, Icons.menu_book, 'Program'),
-              _buildNavItem(2, Icons.access_time_filled_sharp, 'Waktu Solat'),
+              _buildNavItem(2, Icons.volunteer_activism_rounded, 'Waqaf'),
               _buildNavItem(3, Icons.mail, 'Inbox'),
               _buildNavItem(4, Icons.person, 'Akaun'),
             ],
@@ -55,21 +48,21 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = widget.currentIndex == index;
-    final color = isSelected ? Colors.teal : Colors.grey[800];
+    final color = isSelected ? Colors.teal : Colors.grey[400];
 
     return Expanded(
       child: InkWell(
         onTap: () {
           widget.onTap(index);
 
-          // If user tapped Waktu Solat (index 2), navigate to PrayerTimesPage
+          // If user tapped Waqaf Saya (index 2), navigate to WaqafPage
           if (index == 2) {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
                 pageBuilder:
                     (context, animation, secondaryAnimation) =>
-                        const PrayerTimesPage(),
+                        const WaqafPage(),
                 transitionDuration: Duration.zero,
                 reverseTransitionDuration: Duration.zero,
               ),

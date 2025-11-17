@@ -38,7 +38,7 @@ class _ProgramPageState extends State<ProgramPage> {
       'date': '01/09/2025',
       'icon': Icons.wb_sunny,
       'gradient': [Color(0xFF6A11CB), Color(0xFF2575FC)],
-      'image': 'assets/images/infak-subuh.png',
+      'image': 'assets/images/IST2.png',
       'url': 'https://waqaffelda.waqafer.com.my/order/form/40',
     },
     {

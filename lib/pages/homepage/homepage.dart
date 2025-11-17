@@ -45,7 +45,7 @@ class _HomepageState extends State<Homepage> {
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
     'assets/images/KP5R3.png', //Kempen Potong Lima
-    'assets/images/infak-subuh.png', //Infak Subuh
+    'assets/images/IST2.png', //Infak Subuh
     'assets/images/SPAT1.png', //Ifak Set Persalihan Akhir
     'assets/images/WQT1.png', //Waqaf Quran
   ];

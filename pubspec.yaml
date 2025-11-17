@@ -96,6 +96,7 @@ flutter:
     - assets/icons/arah_kiblat/kaaba-icon.svg
     - assets/data/doa_harian.json
     - assets/data/tahlil_yasin.json
+    - assets/data/hadis_40_nawawi.json
     - assets/images/KP5R3.png
     - assets/images/SPAT1.png
     - assets/images/WQT1.png

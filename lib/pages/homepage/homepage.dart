@@ -17,6 +17,7 @@ import 'searchpage/search_page.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
 import '../tahlil/tahlil.dart';
+import '../hadis40/hadis40.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -770,7 +771,7 @@ class _HomepageState extends State<Homepage> {
             style: TextStyle(
               fontSize: screenWidth * 0.05,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Colors.teal,
             ),
           ),
           SizedBox(height: screenWidth * 0.03),
@@ -844,7 +845,12 @@ class _HomepageState extends State<Homepage> {
                   fit: BoxFit.contain,
                 ),
                 const Color(0xFF00897B),
-                () {},
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const Hadis40Page()),
+                  );
+                },
               ),
               _buildMenuItem(
                 'Doa Harian',

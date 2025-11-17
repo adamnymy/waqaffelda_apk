@@ -379,12 +379,12 @@ ${url}
                   children: [
                     Image.asset(
                       image,
-                      height: 200,
+                      height: 168,
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          height: 200,
+                          height: 168,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: gradient,
@@ -396,7 +396,7 @@ ${url}
                       },
                     ),
                     Container(
-                      height: 200,
+                      height: 168,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -566,12 +566,12 @@ ${url}
                         padding: const EdgeInsets.all(0),
                         children: [
                           Container(
-                            height: 250,
+                            height: 210,
                             child: Stack(
                               children: [
                                 Image.asset(
                                   image,
-                                  height: 250,
+                                  height: 210,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {

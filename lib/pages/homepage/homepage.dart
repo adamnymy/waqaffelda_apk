@@ -43,10 +43,10 @@ class _HomepageState extends State<Homepage> {
   final ScrollController _scrollController = ScrollController();
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
-    'assets/images/kempen_potong_lima.png',
-    'assets/images/infak-subuh.png',
-    'assets/images/infak_spa.png',
-    'assets/images/waqaf_quran.png',
+    'assets/images/KP5R3.png', //Kempen Potong Lima
+    'assets/images/IST2.png', //Infak Subuh
+    'assets/images/SPAT1.png', //Ifak Set Persalihan Akhir
+    'assets/images/WQT1.png', //Waqaf Quran
   ];
   Timer? _carouselTimer; // Auto-scroll timer for the carousel
   String _nextPrayerText = 'Loading...';
@@ -319,31 +319,29 @@ class _HomepageState extends State<Homepage> {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-        backgroundColor: const Color(0xFFFFFFFF),
-        body: SingleChildScrollView(
-          controller: _scrollController,
-          child: Stack(
-            children: [
-              // SMOOTH GRADIENT - No more petak!
-              Container(
-                height: screenHeight * 0.30 + statusBarHeight,
+      backgroundColor: const Color(0xFFFFFFFF),
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Stack(
+          children: [
+            // SMOOTH GRADIENT - No more petak!
+            Container(
+              height: screenHeight * 0.30 + statusBarHeight,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-
-              Color(0xFF66B2B2), // Base Teal (#66b2b2)
-              Color(0xFF99C8C8), // Light Teal
-              Color(0xFFCCDFDF), // Very Light Teal
-              Color(0xFFE6F0F0), // Foggy Teal
-              Color(0xFFFFFFFF), // Pure White
-
+                    Color(0xFF66B2B2), // Base Teal (#66b2b2)
+                    Color(0xFF99C8C8), // Light Teal
+                    Color(0xFFCCDFDF), // Very Light Teal
+                    Color(0xFFE6F0F0), // Foggy Teal
+                    Color(0xFFFFFFFF), // Pure White
                   ],
                   stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-          ),
-        ),
-      ),
+                ),
+              ),
+            ),
             SafeArea(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,12 +390,14 @@ class _HomepageState extends State<Homepage> {
             width: screenWidth * 0.12,
             height: screenWidth * 0.12,
             fit: BoxFit.contain,
-          ),    
+          ),
           SizedBox(width: screenWidth * 0.005),
           // Search Bar
           Expanded(
             child: SizedBox(
-              width: screenWidth * 0.8, // Adjust this value to make it narrower/wider
+              width:
+                  screenWidth *
+                  0.8, // Adjust this value to make it narrower/wider
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -469,61 +469,74 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildMainCarousel(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // screenWidth not needed here
+    final screenWidth = MediaQuery.of(context).size.width;
 
     // Use class-level _carouselImages so timers and other methods can access
     final List<String> carouselImages = _carouselImages;
 
-    return Column(
-      children: [
-        SizedBox(
-          height: screenHeight * 0.25, // 25% of screen height
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _carouselIndex = index;
-              });
-              // reset timer when user swipes manually
-              _resetCarouselTimer();
-            },
-            itemCount: carouselImages.length,
-            itemBuilder: (context, index) {
-              return _buildCarouselCard(carouselImages[index], context);
-            },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Peluang Beramal',
+            style: TextStyle(
+              fontSize: screenWidth * 0.05,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
-        ),
-        SizedBox(height: screenHeight * 0.015),
-        Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(carouselImages.length, (index) {
-              // fixed pixel sizes avoid tiny overflow on small widths
-              const double activeWidth = 18.0;
-              const double inactiveWidth = 6.0;
-              const double dotHeight = 6.0;
-              const double horizontalGap = 6.0;
+          SizedBox(height: screenWidth * 0.03),
+          SizedBox(
+            height: screenHeight * 0.21, // Adjusted for 1600x900 aspect ratio
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _carouselIndex = index;
+                });
+                // reset timer when user swipes manually
+                _resetCarouselTimer();
+              },
+              itemCount: carouselImages.length,
+              itemBuilder: (context, index) {
+                return _buildCarouselCard(carouselImages[index], context);
+              },
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.015),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(carouselImages.length, (index) {
+                // fixed pixel sizes avoid tiny overflow on small widths
+                const double activeWidth = 18.0;
+                const double inactiveWidth = 6.0;
+                const double dotHeight = 6.0;
+                const double horizontalGap = 6.0;
 
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: horizontalGap / 2,
-                ),
-                width: _carouselIndex == index ? activeWidth : inactiveWidth,
-                height: dotHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  color:
-                      _carouselIndex == index
-                          ? const Color(0xFFFBC02D)
-                          : Colors.grey.withOpacity(0.3),
-                ),
-              );
-            }),
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: horizontalGap / 2,
+                  ),
+                  width: _carouselIndex == index ? activeWidth : inactiveWidth,
+                  height: dotHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color:
+                        _carouselIndex == index
+                            ? const Color(0xFFFBC02D)
+                            : Colors.grey.withOpacity(0.3),
+                  ),
+                );
+              }),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -749,111 +762,133 @@ class _HomepageState extends State<Homepage> {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: GridView.count(
-        crossAxisCount: 4,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: screenWidth * 0.03,
-        crossAxisSpacing: screenWidth * 0.03,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildMenuItem(
-            'Waktu Solat',
-            SvgPicture.asset(
-              'assets/icons/menu/waktu_solat.svg',
-              fit: BoxFit.contain,
+          Text(
+            'Menu',
+            style: TextStyle(
+              fontSize: screenWidth * 0.05,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-            const Color(0xFF00897B),
-            () {
-              Navigator.push(
-                context,
-                SmoothPageRoute(page: const PrayerTimesPage()),
-              );
-            },
           ),
-          _buildMenuItem(
-            'Arah Kiblat',
-            SvgPicture.asset(
-              'assets/icons/menu/kiblat.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFFFBC02D),
-            () {
-              Navigator.push(
-                context,
-                SmoothPageRoute(page: const KiblatPage()),
-              );
-            },
-          ),
-          _buildMenuItem(
-            'Al Qur\'an',
-            SvgPicture.asset(
-              'assets/icons/menu/alquran.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFF00897B),
-            () {
-              Navigator.push(context, SmoothPageRoute(page: const QuranPage()));
-            },
-          ),
-          _buildMenuItem(
-            'Tasbih',
-            SvgPicture.asset(
-              'assets/icons/menu/tasbih.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFFFBC02D), // Changed color to green
-            () {
-              Navigator.push(
-                context,
-                SmoothPageRoute(page: const ZikirCounterPage()),
-              );
-            },
-          ),
-          _buildMenuItem(
-            'Hadith 40',
-            SvgPicture.asset(
-              'assets/icons/menu/hadis.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFF00897B),
-            () {},
-          ),
-          _buildMenuItem(
-            'Doa Harian',
-            SvgPicture.asset('assets/icons/menu/doa.svg', fit: BoxFit.contain),
-            const Color(0xFFFBC02D),
-            () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DoaHarianPage()),
-              );
-            },
-          ),
-          _buildMenuItem(
-            'Tahlil',
-            SvgPicture.asset(
-              'assets/icons/menu/tahlil.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFF00897B),
-            () {
-              Navigator.push(
-                context,
-                SmoothPageRoute(page: const TahlilPage()),
-              );
-            },
-          ),
+          SizedBox(height: screenWidth * 0.03),
+          GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: screenWidth * 0.03,
+            crossAxisSpacing: screenWidth * 0.03,
+            children: [
+              _buildMenuItem(
+                'Waktu Solat',
+                SvgPicture.asset(
+                  'assets/icons/menu/waktu_solat.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFF00897B),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const PrayerTimesPage()),
+                  );
+                },
+              ),
+              _buildMenuItem(
+                'Arah Kiblat',
+                SvgPicture.asset(
+                  'assets/icons/menu/kiblat.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFFFBC02D),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const KiblatPage()),
+                  );
+                },
+              ),
+              _buildMenuItem(
+                'Al Qur\'an',
+                SvgPicture.asset(
+                  'assets/icons/menu/alquran.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFF00897B),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const QuranPage()),
+                  );
+                },
+              ),
+              _buildMenuItem(
+                'Tasbih',
+                SvgPicture.asset(
+                  'assets/icons/menu/tasbih.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFFFBC02D), // Changed color to green
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const ZikirCounterPage()),
+                  );
+                },
+              ),
+              _buildMenuItem(
+                'Hadith 40',
+                SvgPicture.asset(
+                  'assets/icons/menu/hadis.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFF00897B),
+                () {},
+              ),
+              _buildMenuItem(
+                'Doa Harian',
+                SvgPicture.asset(
+                  'assets/icons/menu/doa.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFFFBC02D),
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DoaHarianPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildMenuItem(
+                'Tahlil',
+                SvgPicture.asset(
+                  'assets/icons/menu/tahlil.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFF00897B),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const TahlilPage()),
+                  );
+                },
+              ),
 
-          _buildMenuItem(
-            'Lainnya',
-            SvgPicture.asset(
-              'assets/icons/menu/lain_lain.svg',
-              fit: BoxFit.contain,
-            ),
-            const Color(0xFFFBC02D),
-            () {
-              OthersMenuPage.show(context);
-            },
+              _buildMenuItem(
+                'Lainnya',
+                SvgPicture.asset(
+                  'assets/icons/menu/lain_lain.svg',
+                  fit: BoxFit.contain,
+                ),
+                const Color(0xFFFBC02D),
+                () {
+                  OthersMenuPage.show(context);
+                },
+              ),
+            ],
           ),
         ],
       ),

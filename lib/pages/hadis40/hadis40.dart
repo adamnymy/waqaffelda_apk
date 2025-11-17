@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'hadis40_detail.dart';
 
 class Hadis40Page extends StatefulWidget {
   const Hadis40Page({Key? key}) : super(key: key);
@@ -15,6 +16,8 @@ class _Hadis40PageState extends State<Hadis40Page>
   bool isLoading = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  String selectedFilter = 'Semua';
+  double fontSize = 1.0; // Font size multiplier
 
   @override
   void initState() {
@@ -56,297 +59,196 @@ class _Hadis40PageState extends State<Hadis40Page>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A237E), // Deep Indigo
-              Color(0xFF283593),
-              Color(0xFF3949AB),
-            ],
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          '40 Hadis',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Animated Header
-              _buildAnimatedHeader(size),
-
-              // Main Content
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(35),
-                      topRight: Radius.circular(35),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, -5),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.text_fields_rounded, color: colorScheme.onSurface),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Saiz Teks'),
+                      content: StatefulBuilder(
+                        builder:
+                            (context, setState) => Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'A',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    const Text(
+                                      'A',
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                                Slider(
+                                  value: fontSize,
+                                  min: 0.8,
+                                  max: 1.5,
+                                  divisions: 14,
+                                  activeColor: const Color(0xFF00897B),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      this.setState(() {
+                                        fontSize = value;
+                                      });
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(35),
-                      topRight: Radius.circular(35),
-                    ),
-                    child:
-                        isLoading
-                            ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(
-                                            0xFF1A237E,
-                                          ).withOpacity(0.2),
-                                          blurRadius: 20,
-                                        ),
-                                      ],
-                                    ),
-                                    child: const CircularProgressIndicator(
-                                      color: Color(0xFF1A237E),
-                                      strokeWidth: 3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    'Memuatkan hadis...',
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                            : FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 20),
-                                  // Stats Cards
-                                  _buildStatsSection(),
-                                  const SizedBox(height: 16),
-                                  // Hadis List
-                                  Expanded(
-                                    child: ListView.builder(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        20,
-                                        0,
-                                        20,
-                                        20,
-                                      ),
-                                      itemCount: hadisList.length,
-                                      itemBuilder: (context, index) {
-                                        return _buildModernHadisCard(
-                                          hadisList[index],
-                                          index,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedHeader(Size size) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Back Button
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Title
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFBC02D),
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFBC02D).withOpacity(0.4),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Text(
-                            'KOLEKSI PILIHAN',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Tutup'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Hadis 40+',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        height: 1.1,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Imam An-Nawawi & Tambahan',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
+              );
+            },
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFBC02D), Color(0xFFFDD835)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              '42',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Filter Chips
+          _buildFilterChips(),
+
+          // Main Content
+          Expanded(child: isLoading ? _buildLoadingState() : _buildHadisList()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    final filters = ['Semua', '1-10', '11-20', '21-30', '31-42'];
+
+    return Container(
+      height: 50,
+      margin: const EdgeInsets.only(bottom: 8, top: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final isSelected = selectedFilter == filter;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              selected: isSelected,
+              label: Text(
+                filter,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF00897B),
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
                 ),
               ),
-            ],
-          ),
-        ],
+              backgroundColor: Colors.grey[100],
+              selectedColor: const Color(0xFF00897B),
+              checkmarkColor: Colors.white,
+              side: BorderSide(
+                color:
+                    isSelected ? const Color(0xFF00897B) : Colors.grey.shade300,
+                width: 1.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              onSelected: (selected) {
+                setState(() {
+                  selectedFilter = filter;
+                });
+              },
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.library_books_rounded,
-              value: '${hadisList.length}',
-              label: 'Hadis',
-              color: const Color(0xFF1A237E),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.verified_rounded,
-              value: 'Sahih',
-              label: 'Status',
-              color: const Color(0xFF2E7D32),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.stars_rounded,
-              value: '100%',
-              label: 'Lengkap',
-              color: const Color(0xFFF57C00),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, color.withOpacity(0.05)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+  Widget _buildLoadingState() {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF00897B).withOpacity(0.3),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00897B).withOpacity(0.1),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(
+              color: Color(0xFF00897B),
+              strokeWidth: 3,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 20),
           Text(
-            label,
+            'Memuatkan hadis...',
             style: TextStyle(
-              fontSize: 11,
               color: Colors.grey[600],
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -354,50 +256,93 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
-  Widget _buildModernHadisCard(Map<String, dynamic> hadis, int index) {
+  Widget _buildHadisList() {
+    final filteredList = _getFilteredHadis();
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        itemCount: filteredList.length,
+        itemBuilder: (context, index) {
+          return _buildGlassMorphicCard(filteredList[index], index);
+        },
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getFilteredHadis() {
+    if (selectedFilter == 'Semua') return hadisList;
+
+    final ranges = {
+      '1-10': [1, 10],
+      '11-20': [11, 20],
+      '21-30': [21, 30],
+      '31-42': [31, 42],
+    };
+
+    final range = ranges[selectedFilter];
+    if (range == null) return hadisList;
+
+    return hadisList.where((hadis) {
+      final num = hadis['number'] as int;
+      return num >= range[0] && num <= range[1];
+    }).toList();
+  }
+
+  Widget _buildGlassMorphicCard(Map<String, dynamic> hadis, int index) {
     final colors = [
-      [const Color(0xFF1A237E), const Color(0xFF3949AB)],
-      [const Color(0xFF2E7D32), const Color(0xFF66BB6A)],
+      [const Color(0xFF00897B), const Color(0xFF4DB6AC)],
+      [const Color(0xFFFBC02D), const Color(0xFFFDD835)],
+      [const Color(0xFF00695C), const Color(0xFF00897B)],
       [const Color(0xFFF57C00), const Color(0xFFFFB74D)],
-      [const Color(0xFFC62828), const Color(0xFFEF5350)],
-      [const Color(0xFF6A1B9A), const Color(0xFFAB47BC)],
+      [const Color(0xFF00897B), const Color(0xFF80CBC4)],
     ];
     final colorSet = colors[index % colors.length];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: colorSet[0].withOpacity(0.15),
+            color: colorSet[0].withOpacity(0.1),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _showModernHadisDetail(hadis, colorSet),
+          onTap:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          HadisDetailPage(hadis: hadis, colorSet: colorSet),
+                ),
+              ),
           borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.all(18),
+          splashColor: colorSet[0].withOpacity(0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left side - Number Badge
+                // Arabic Number Badge
                 Container(
-                  width: 70,
-                  height: 70,
+                  width: 65,
+                  height: 65,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: colorSet,
                     ),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: colorSet[0].withOpacity(0.3),
@@ -406,42 +351,20 @@ class _Hadis40PageState extends State<Hadis40Page>
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${hadis['number']}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Center(
+                    child: Text(
+                      _toArabicNumber(hadis['number']),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Amiri',
                       ),
-                      const SizedBox(height: 2),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'HADIS',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Right side - Content
+                // Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,8 +372,10 @@ class _Hadis40PageState extends State<Hadis40Page>
                       // Title
                       Text(
                         hadis['title'],
-                        style: const TextStyle(
-                          fontSize: 18,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17 * fontSize,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                           letterSpacing: 0.3,
@@ -461,99 +386,82 @@ class _Hadis40PageState extends State<Hadis40Page>
                       // Narrator
                       Row(
                         children: [
-                          Icon(
-                            Icons.account_circle_outlined,
-                            size: 16,
-                            color: colorSet[0].withOpacity(0.7),
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: colorSet[0].withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              Icons.person_outline_rounded,
+                              size: 14,
+                              color: colorSet[0],
+                            ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               hadis['narrator'],
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[700],
+                                fontSize: 12 * fontSize,
+                                color: Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      // Preview Text
-                      Text(
-                        hadis['translation'],
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                          height: 1.5,
+                      const SizedBox(height: 8),
+                      // Reference Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Bottom Row
-                      Row(
-                        children: [
-                          // Reference Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  colorSet[0].withOpacity(0.1),
-                                  colorSet[1].withOpacity(0.1),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: colorSet[0].withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  size: 14,
-                                  color: colorSet[0],
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  hadis['reference'],
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: colorSet[0],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colorSet[0].withOpacity(0.1),
+                              colorSet[1].withOpacity(0.1),
+                            ],
                           ),
-                          const Spacer(),
-                          // Arrow Icon
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: colorSet[0].withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 18,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colorSet[0].withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.menu_book_rounded,
+                              size: 12,
                               color: colorSet[0],
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              hadis['reference'],
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colorSet[0],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(width: 12),
+                // Arrow
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: colorSet[0].withOpacity(0.5),
                 ),
               ],
             ),
@@ -563,281 +471,12 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
-  void _showModernHadisDetail(
-    Map<String, dynamic> hadis,
-    List<Color> colorSet,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) => DraggableScrollableSheet(
-            initialChildSize: 0.92,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 20,
-                      offset: Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Drag Handle
-                    Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: colorSet),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.all(24),
-                        children: [
-                          // Header
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: colorSet,
-                              ),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorSet[0].withOpacity(0.3),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.3),
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${hadis['number']}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            hadis['title'],
-                                            style: const TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(
-                                                0.25,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              hadis['reference'],
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Narrator
-                          Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: colorSet[0].withOpacity(0.2),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: colorSet),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person_rounded,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Perawi Hadis',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: colorSet[0],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        hadis['narrator'],
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Arabic Text
-                          _buildSectionHeader('Teks Arab', colorSet[0]),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFF8E1), Color(0xFFFFF9C4)],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFFBC02D).withOpacity(0.3),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              hadis['arabic'],
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                height: 2.2,
-                                color: Colors.black87,
-                                fontFamily: 'Amiri',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Translation
-                          _buildSectionHeader('Terjemahan', colorSet[0]),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: colorSet[0].withOpacity(0.2),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              hadis['translation'],
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[800],
-                                height: 1.8,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 24,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ],
-    );
+  String _toArabicNumber(int number) {
+    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return number
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[int.parse(digit)])
+        .join();
   }
 }

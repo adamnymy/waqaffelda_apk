@@ -7,6 +7,7 @@ import '../../utils/page_transitions.dart';
 import '../doaharian/doa_harian_page.dart';
 import '../tahlil/tahlil.dart';
 import '../masjid_terdekat/masjid_terdekat.dart';
+import '../hadis40/hadis40.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OthersMenuPage extends StatelessWidget {
@@ -243,7 +244,10 @@ class OthersMenuPage extends StatelessWidget {
                       const Color(0xFF1976D2),
                       () {
                         Navigator.pop(context);
-                        // TODO: Navigate to Hadith page
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const Hadis40Page()),
+                        );
                       },
                     ),
                     const SizedBox(height: 10),

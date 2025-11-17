@@ -479,15 +479,48 @@ class _HomepageState extends State<Homepage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Peluang Beramal',
-            style: TextStyle(
-              fontSize: screenWidth * 0.05,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00897B), Color(0xFF26A69A)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.favorite_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Peluang Beramal',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.048,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  Text(
+                    'Program Terkini',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.03,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: screenWidth * 0.03),
+          SizedBox(height: screenWidth * 0.045),
           SizedBox(
             height: screenHeight * 0.2, // Adjusted for 1600x900 aspect ratio
             child: PageView.builder(
@@ -765,21 +798,58 @@ class _HomepageState extends State<Homepage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Menu',
-            style: TextStyle(
-              fontSize: screenWidth * 0.05,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFBC02D), Color(0xFFFFA726)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.dashboard_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Menu Utama',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.048,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFBC02D).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '8',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.03,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFF57C00),
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: screenWidth * 0.03),
+          SizedBox(height: screenWidth * 0.04),
           GridView.count(
             crossAxisCount: 4,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: screenWidth * 0.03,
-            crossAxisSpacing: screenWidth * 0.03,
+            mainAxisSpacing: screenWidth * 0.04,
+            crossAxisSpacing: screenWidth * 0.04,
+            childAspectRatio: 0.85,
             children: [
               _buildMenuItem(
                 'Waktu Solat',
@@ -904,13 +974,11 @@ class _HomepageState extends State<Homepage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = MediaQuery.of(context).size.width;
-        // adjust multiplier to change icon size inside grid cell
         final iconSize = constraints.maxWidth * 0.7;
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Only the image is clickable — no outer container/background
             GestureDetector(
               onTap: onTap,
               child: SizedBox(
@@ -919,9 +987,7 @@ class _HomepageState extends State<Homepage> {
                 child: FittedBox(fit: BoxFit.contain, child: iconWidget),
               ),
             ),
-
             SizedBox(height: constraints.maxHeight * 0.06),
-
             Text(
               title,
               textAlign: TextAlign.center,

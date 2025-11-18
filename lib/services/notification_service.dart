@@ -864,7 +864,7 @@ class NotificationService {
     ).format(scheduledTime); // e.g., "6:58 PM"
     final dynamicTitle = 'Waktu Solat $prayerName';
     final locationName = await _getCurrentLocationName();
-    final locationText = locationName != null ? ' ($locationName)' : '';
+    final locationText = locationName != null ? '($locationName)' : '';
     final dynamicBody =
         'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h $locationText';
 

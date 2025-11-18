@@ -863,8 +863,10 @@ class NotificationService {
       'h:mm a',
     ).format(scheduledTime); // e.g., "6:58 PM"
     final dynamicTitle = 'Waktu Solat $prayerName';
+    final locationName = await _getCurrentLocationName();
+    final locationText = locationName != null ? ' ($locationName)' : '';
     final dynamicBody =
-        'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h';
+        'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h$locationText';
 
     print(
       '🔧 Scheduling $prayerName (ID:$notificationId) for ${scheduledTime.toString()} (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
@@ -991,6 +993,17 @@ class NotificationService {
   Future<String?> getLastScheduledDate() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('last_scheduled_date');
+  }
+
+  /// Get current location name from SharedPreferences
+  Future<String?> _getCurrentLocationName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('current_location_name');
+    } catch (e) {
+      print('❌ Failed to get current location name: $e');
+      return null;
+    }
   }
 
   /// Force clear schedule and reschedule (for testing)

@@ -179,7 +179,8 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
         );
 
         final bgTitle = 'Waktu Solat $prayerName';
-        final bgBody = 'Telah masuk waktu solat fardhu $prayerName pada $timeString';
+        final bgBody =
+            'Telah masuk waktu solat fardhu $prayerName pada $timeString';
 
         await Workmanager().registerOneOffTask(
           'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
@@ -372,27 +373,12 @@ class NotificationService {
     // Initialize WorkManager for background tasks
     await Workmanager().initialize(
       _callbackDispatcher,
-      isInDebugMode: true, // Set to false in production
+      isInDebugMode: false, // Production mode - no debug notifications
     );
 
-    // Register a daily periodic rescheduler so background can re-register
-    // notifications (uses the cached prayer times saved by the app).
-    try {
-      await Workmanager().registerPeriodicTask(
-        'daily_rescheduler_unique',
-        'daily_rescheduler',
-        frequency: const Duration(hours: 24),
-        initialDelay: const Duration(hours: 1),
-        constraints: Constraints(
-          networkType: NetworkType.not_required,
-          requiresCharging: false,
-        ),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
-      );
-      print('🔁 Registered daily rescheduler task');
-    } catch (e) {
-      print('⚠️ Failed to register daily rescheduler: $e');
-    }
+    // Daily rescheduler disabled - app will reschedule on next launch
+    // Users should open app daily to ensure notifications are scheduled
+    print('ℹ️ Daily auto-reschedule disabled - app will reschedule on launch');
 
     _isInitialized = true;
     print('✅ Notification service initialized');
@@ -799,6 +785,15 @@ class NotificationService {
 
     print('🔧 Scheduling prayer notifications with WorkManager for $today');
 
+    // Cancel ALL existing alarms first to prevent duplicates
+    try {
+      await cancelAllNativeExactAlarms();
+      await Workmanager().cancelAll();
+      print('🗑️ Cancelled all existing alarms (native + WorkManager)');
+    } catch (e) {
+      print('⚠️ Error cancelling existing alarms: $e');
+    }
+
     int successCount = 0;
     int skippedCount = 0;
 
@@ -863,9 +858,13 @@ class NotificationService {
     final delaySeconds = scheduledTime.difference(now).inSeconds;
     final notificationId = _getNotificationId(prayerName);
 
-    final timeLabel = DateFormat('HH:mm').format(scheduledTime);
+    // Format time in 12-hour format for display
+    final timeLabel12h = DateFormat(
+      'h:mm a',
+    ).format(scheduledTime); // e.g., "6:58 PM"
     final dynamicTitle = 'Waktu Solat $prayerName';
-    final dynamicBody = 'Telah masuk waktu solat fardhu $prayerName pada $timeLabel';
+    final dynamicBody =
+        'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h';
 
     print(
       '🔧 Scheduling $prayerName (ID:$notificationId) for ${scheduledTime.toString()} (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
@@ -897,39 +896,12 @@ class NotificationService {
       print('❌ Failed to schedule native exact alarm for $prayerName: $e');
     }
 
-    // BACKUP METHOD: Only use WorkManager as fallback if native scheduling failed
-    // WorkManager is less precise but better than nothing.
+    // Only native alarms are used - no WorkManager fallback to prevent duplicates
     if (!nativeScheduleSuccess) {
-      try {
-        await Workmanager().registerOneOffTask(
-          'prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
-          'showPrayerNotification',
-          inputData: {
-            'title': dynamicTitle,
-            'body': dynamicBody,
-            'channelId': config['channelId'],
-            'scheduledAt': scheduledTime.toUtc().toIso8601String(),
-          },
-          initialDelay: Duration(seconds: delaySeconds),
-          constraints: Constraints(
-            networkType: NetworkType.not_required,
-            requiresCharging: false,
-            requiresDeviceIdle: false,
-            requiresBatteryNotLow: false,
-            requiresStorageNotLow: false,
-          ),
-          backoffPolicy: BackoffPolicy.linear,
-          backoffPolicyDelay: const Duration(seconds: 10),
-          existingWorkPolicy: ExistingWorkPolicy.replace,
-        );
-        print('📦 WorkManager backup scheduled for $prayerName');
-      } catch (e) {
-        print('⚠️ Failed to schedule WorkManager backup for $prayerName: $e');
-      }
-    } else {
       print(
-        '⏭️ Skipping WorkManager backup for $prayerName (native alarm succeeded)',
+        '⚠️ Failed to schedule $prayerName - native alarm scheduling failed. User may need to grant exact alarm permission.',
       );
+      throw Exception('Native alarm scheduling failed for $prayerName');
     }
   }
 

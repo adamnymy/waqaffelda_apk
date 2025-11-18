@@ -866,7 +866,7 @@ class NotificationService {
     final locationName = await _getCurrentLocationName();
     final locationText = locationName != null ? ' ($locationName)' : '';
     final dynamicBody =
-        'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h$locationText';
+        'Telah masuk waktu solat fardhu $prayerName pada $timeLabel12h $locationText';
 
     print(
       '🔧 Scheduling $prayerName (ID:$notificationId) for ${scheduledTime.toString()} (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
@@ -968,8 +968,16 @@ class NotificationService {
 
   /// Enhanced schedule with date tracking (WorkManager version)
   Future<void> schedulePrayerNotificationsWithTracking(
-    List<Map<String, dynamic>> prayerTimes,
-  ) async {
+    List<Map<String, dynamic>> prayerTimes, {
+    String? locationName,
+  }) async {
+    // Save location name if provided
+    if (locationName != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_location_name', locationName);
+      print('💾 Saved location name: $locationName');
+    }
+
     // Schedule notifications using WorkManager
     await schedulePrayerNotificationsWorkManager(prayerTimes);
 
@@ -979,11 +987,15 @@ class NotificationService {
 
   /// Auto-reschedule if needed (call this on app start/resume)
   Future<bool> autoRescheduleIfNeeded(
-    List<Map<String, dynamic>> prayerTimes,
-  ) async {
+    List<Map<String, dynamic>> prayerTimes, {
+    String? locationName,
+  }) async {
     if (await shouldReschedule()) {
       print('🔄 Auto-rescheduling notifications for new day...');
-      await schedulePrayerNotificationsWithTracking(prayerTimes);
+      await schedulePrayerNotificationsWithTracking(
+        prayerTimes,
+        locationName: locationName,
+      );
       return true;
     }
     return false;
@@ -1007,7 +1019,10 @@ class NotificationService {
   }
 
   /// Force clear schedule and reschedule (for testing)
-  Future<void> forceReschedule(List<Map<String, dynamic>> prayerTimes) async {
+  Future<void> forceReschedule(
+    List<Map<String, dynamic>> prayerTimes, {
+    String? locationName,
+  }) async {
     print('🔄 Force rescheduling notifications...');
 
     // Clear last scheduled date
@@ -1028,7 +1043,10 @@ class NotificationService {
     print('🗑️ Cancelled all WorkManager tasks');
 
     // Reschedule
-    await schedulePrayerNotificationsWithTracking(prayerTimes);
+    await schedulePrayerNotificationsWithTracking(
+      prayerTimes,
+      locationName: locationName,
+    );
     print('✅ Force reschedule complete');
   }
 

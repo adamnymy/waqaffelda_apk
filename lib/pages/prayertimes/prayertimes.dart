@@ -78,6 +78,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         print('🔄 Date changed, rescheduling...');
         await notificationService.schedulePrayerNotificationsWithTracking(
           prayerTimes,
+          locationName: locationName,
         );
         // SnackBar removed per user request. Keep function but suppress UI toast.
         if (mounted) {
@@ -314,6 +315,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       // Use enhanced method with date tracking
       final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
         prayerTimes,
+        locationName: locationName,
       );
 
       if (!wasRescheduled) {
@@ -836,6 +838,3 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     );
   }
 }
-
-
-

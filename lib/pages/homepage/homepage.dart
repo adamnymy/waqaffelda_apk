@@ -825,22 +825,6 @@ class _HomepageState extends State<Homepage> {
                   letterSpacing: 0.3,
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFBC02D).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '8',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.03,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFF57C00),
-                  ),
-                ),
-              ),
             ],
           ),
           SizedBox(height: screenWidth * 0.04),

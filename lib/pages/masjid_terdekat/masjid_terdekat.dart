@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geocoding/geocoding.dart';
 
 class MasjidTerdekatPage extends StatefulWidget {
   const MasjidTerdekatPage({Key? key}) : super(key: key);
@@ -21,8 +22,6 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
   bool _isLoading = true;
   String _errorMessage = '';
   List<Mosque> _mosques = [];
-  Set<Marker> _markers = {};
-  bool _showList = true;
   String _searchRadius = '5';
   late AnimationController _animationController;
   String _sortOption = 'Jarak Terdekat';
@@ -97,6 +96,37 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
     }
   }
 
+  Future<String> _getAddressFromCoordinates(double lat, double lng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        List<String> addressParts = [];
+
+        if (place.street != null && place.street!.isNotEmpty) {
+          addressParts.add(place.street!);
+        }
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+          addressParts.add(place.subLocality!);
+        }
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          addressParts.add(place.locality!);
+        }
+        if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          addressParts.add(place.administrativeArea!);
+        }
+
+        return addressParts.isNotEmpty
+            ? addressParts.join(', ')
+            : 'Alamat tidak tersedia';
+      }
+    } catch (e) {
+      print('Error getting address: $e');
+    }
+    return 'Alamat tidak tersedia';
+  }
+
   Future<void> _searchNearbyMosques() async {
     if (_currentPosition == null) return;
 
@@ -130,21 +160,6 @@ out center;
 
         if (data['elements'] != null) {
           List<Mosque> mosques = [];
-          Set<Marker> markers = {};
-
-          markers.add(
-            Marker(
-              markerId: const MarkerId('current_location'),
-              position: LatLng(
-                _currentPosition!.latitude,
-                _currentPosition!.longitude,
-              ),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueBlue,
-              ),
-              infoWindow: const InfoWindow(title: 'Lokasi Anda'),
-            ),
-          );
 
           for (var element in data['elements']) {
             double? lat;
@@ -184,12 +199,18 @@ out center;
               }
             }
 
+            // Try to get address from OSM tags first, then use geocoding
             String address =
                 tags['addr:full'] ??
                 tags['addr:street'] ??
                 tags['addr:city'] ??
                 tags['addr:state'] ??
                 '';
+
+            // If no address from OSM, fetch using geocoding
+            if (address.isEmpty) {
+              address = await _getAddressFromCoordinates(lat, lng);
+            }
 
             final mosque = Mosque(
               name: name,
@@ -203,28 +224,12 @@ out center;
             );
 
             mosques.add(mosque);
-
-            markers.add(
-              Marker(
-                markerId: MarkerId(element['id'].toString()),
-                position: LatLng(lat, lng),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                  BitmapDescriptor.hueRose,
-                ),
-                infoWindow: InfoWindow(
-                  title: name,
-                  snippet: '${(distance / 1000).toStringAsFixed(1)} km',
-                ),
-                onTap: () => _showMosqueDetails(mosque),
-              ),
-            );
           }
 
           mosques.sort((a, b) => a.distance.compareTo(b.distance));
 
           setState(() {
             _mosques = mosques;
-            _markers = markers;
             _isLoading = false;
           });
 
@@ -618,7 +623,7 @@ out center;
         centerTitle: true,
         actions: [
           // Filter Button
-          if (_showList && _mosques.isNotEmpty)
+          if (_mosques.isNotEmpty)
             IconButton(
               icon: const Icon(
                 Icons.filter_list_rounded,
@@ -628,19 +633,6 @@ out center;
               onPressed: _showSortOptions,
               tooltip: 'Tapis',
             ),
-          IconButton(
-            icon: Icon(
-              _showList ? Icons.map_outlined : Icons.list_rounded,
-              color: primaryGreen,
-              size: 24,
-            ),
-            onPressed: () {
-              setState(() {
-                _showList = !_showList;
-              });
-            },
-            tooltip: _showList ? 'Tunjukkan Peta' : 'Tunjukkan Senarai',
-          ),
           const SizedBox(width: 8),
         ],
       ),
@@ -651,11 +643,9 @@ out center;
               ? _buildErrorState()
               : _mosques.isEmpty
               ? _buildEmptyState()
-              : _showList
-              ? Column(
+              : Column(
                 children: [_buildHeader(), Expanded(child: _buildListView())],
-              )
-              : _buildMapView(),
+              ),
     );
   }
 
@@ -853,13 +843,202 @@ out center;
   Widget _buildListView() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: _mosques.length,
+      itemCount: _mosques.length + 1, // +1 for top recommendation header
       itemBuilder: (context, index) {
+        // Top Recommendation Section
+        if (index == 0 && _mosques.isNotEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.star_rounded, color: ratingYellow, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Top Recommendation',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: primaryGreen,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _buildTopRecommendationCard(_mosques[0]),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Text(
+                  'Masjid Lain Berdekatan',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: primaryGreen,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Regular mosque cards (skip first mosque as it's in top recommendation)
+        final mosqueIndex = index - 1;
+        if (mosqueIndex < 0 || mosqueIndex >= _mosques.length) {
+          return const SizedBox.shrink();
+        }
+
+        // Skip the first mosque in regular list
+        if (mosqueIndex == 0) {
+          return const SizedBox.shrink();
+        }
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: _buildMosqueCard(_mosques[index], index),
+          child: _buildMosqueCard(_mosques[mosqueIndex], mosqueIndex),
         );
       },
+    );
+  }
+
+  Widget _buildTopRecommendationCard(Mosque mosque) {
+    final distanceKm = (mosque.distance / 1000).toStringAsFixed(1);
+    final walkingTime = (mosque.distance / 1000 * 12).ceil();
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: primaryGreen, width: 2),
+      ),
+      color: whiteColor,
+      child: InkWell(
+        onTap: () => _showMosqueDetails(mosque),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      mosque.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: primaryGreen,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ratingYellow.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: ratingYellow,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          (4.5 + (mosque.name.hashCode % 5) / 10)
+                              .toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.directions_walk,
+                    color: secondaryTextColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$distanceKm km • $walkingTime min berjalan',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.location_on_outlined,
+                    color: secondaryTextColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      mosque.address,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: secondaryTextColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _openGoogleMaps(mosque),
+                  icon: const Icon(Icons.near_me_outlined, size: 16),
+                  label: const Text('Arah'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryGreen,
+                    foregroundColor: whiteColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -955,14 +1134,13 @@ out center;
                 children: [
                   Expanded(
                     child: Text(
-                      mosque.address.isNotEmpty
-                          ? mosque.address
-                          : 'Jalan Tun Perak, Kuala Lumpur City Centre',
+                      mosque.address,
                       style: const TextStyle(
                         fontSize: 13,
                         color: secondaryTextColor,
                       ),
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -992,135 +1170,6 @@ out center;
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildMapView() {
-    if (_currentPosition == null) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
-        ),
-      );
-    }
-
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        zoom: 13,
-      ),
-      markers: _markers,
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      onMapCreated: (controller) {
-        _mapController = controller;
-        // Custom map style
-        _mapController!.setMapStyle('''
-[
-  {
-    "featureType": "poi.business",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "labels.text",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#ffffff"
-      }
-    ]
-  },
-  {
-    "featureType": "road.arterial",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#dadada"
-      }
-    ]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#616161"
-      }
-    ]
-  },
-  {
-    "featureType": "road.local",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#9e9e9e"
-      }
-    ]
-  },
-  {
-    "featureType": "transit.line",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#e5e5e5"
-      }
-    ]
-  },
-  {
-    "featureType": "transit.station",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#eeeeee"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#c9c9c9"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#9e9e9e"
-      }
-    ]
-  }
-]
-''');
-      },
-      compassEnabled: true,
-      mapToolbarEnabled: false,
-      mapType: MapType.normal,
     );
   }
 }

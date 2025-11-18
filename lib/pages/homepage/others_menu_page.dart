@@ -29,7 +29,7 @@ class OthersMenuPage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      height: screenHeight * 0.92,
+      height: screenHeight * 0.78,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,

@@ -216,7 +216,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         final previousLocation = prefs.getString('current_location_name');
         // Always save location to SharedPreferences so notifications use latest location
         await prefs.setString('current_location_name', locationName);
-        print('💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}');
+        print(
+          '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
+        );
       } else {
         // Fallback to Kuala Lumpur if location permission denied
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
@@ -232,7 +234,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         final previousLocation = prefs.getString('current_location_name');
         // Always save location to SharedPreferences so notifications use latest location
         await prefs.setString('current_location_name', locationName);
-        print('💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}');
+        print(
+          '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
+        );
       }
 
       if (apiData != null) {
@@ -318,118 +322,177 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
         final colorScheme = Theme.of(context).colorScheme;
+
         return Container(
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
             ),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               // Title
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
+              Text(
+                prayerName,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tetapan Notifikasi',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Notification Toggle
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.notifications_outlined,
-                      color: colorScheme.primary,
-                      size: 24,
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.notifications_active_rounded,
+                        color: colorScheme.primary,
+                        size: 24,
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Notifikasi $prayerName',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Notifikasi',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            notificationStatus[prayerName] ?? true
+                                ? 'Aktif'
+                                : 'Tidak Aktif',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Transform.scale(
+                      scale: 0.9,
+                      child: Switch(
+                        value: notificationStatus[prayerName] ?? true,
+                        onChanged: (value) {
+                          setState(() {
+                            notificationStatus[prayerName] = value;
+                          });
+                          Navigator.pop(context);
+                          // TODO: Update notification scheduling
+                        },
+                        activeColor: colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1),
-              // Notification options
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.notifications_active,
-                    color: colorScheme.primary,
-                    size: 20,
-                  ),
+              const SizedBox(height: 12),
+              // Azan Toggle (Disabled)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200, width: 1),
                 ),
-                title: const Text(
-                  'Notifikasi',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  notificationStatus[prayerName] ?? true
-                      ? 'Aktif'
-                      : 'Tidak Aktif',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                trailing: Switch(
-                  value: notificationStatus[prayerName] ?? true,
-                  onChanged: (value) {
-                    setState(() {
-                      notificationStatus[prayerName] = value;
-                    });
-                    Navigator.pop(context);
-                    // TODO: Update notification scheduling
-                  },
-                  activeColor: colorScheme.primary,
-                ),
-              ),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.volume_up,
-                    color: Colors.grey.shade400,
-                    size: 20,
-                  ),
-                ),
-                title: const Text(
-                  'Azan',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  'Akan datang',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                trailing: Switch(
-                  value: false,
-                  onChanged: null, // Disabled for now
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.volume_up_rounded,
+                        color: Colors.grey.shade400,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Azan',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Akan datang',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Transform.scale(
+                      scale: 0.9,
+                      child: Switch(value: false, onChanged: null),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
             ],
           ),
         );
@@ -453,7 +516,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       // But we need to detect if it changed from a previous session
       // We'll store a separate "last_scheduled_location" to track what location was used for scheduling
       final lastScheduledLocation = prefs.getString('last_scheduled_location');
-      final locationChanged = lastScheduledLocation != null && lastScheduledLocation != locationName;
+      final locationChanged =
+          lastScheduledLocation != null &&
+          lastScheduledLocation != locationName;
 
       // Use enhanced method with date tracking
       final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
@@ -463,7 +528,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       // If location changed but date hasn't, force reschedule to update location in notifications
       if (!wasRescheduled && locationChanged) {
-        print('📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule');
+        print(
+          '📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule',
+        );
         await notificationService.forceReschedule(
           prayerTimes,
           locationName: locationName,
@@ -487,7 +554,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       if (!wasRescheduled) {
         // Not rescheduled, means already scheduled for today and location hasn't changed
-        print('ℹ️ Notifications already scheduled for today with same location');
+        print(
+          'ℹ️ Notifications already scheduled for today with same location',
+        );
         return;
       }
 

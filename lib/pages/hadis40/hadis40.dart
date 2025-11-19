@@ -135,24 +135,6 @@ class _Hadis40PageState extends State<Hadis40Page>
               );
             },
           ),
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFBC02D), Color(0xFFFDD835)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              '42',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ],
       ),
       body: Column(

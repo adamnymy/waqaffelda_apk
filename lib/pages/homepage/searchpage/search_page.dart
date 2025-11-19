@@ -15,27 +15,27 @@ class _SearchPageState extends State<SearchPage> {
       title: 'Kempen Potong Lima Ringgit',
       organization: 'WAQAF FELDA',
       isVerified: true,
-      collected: 'RM 30,000.00',
+      collected: 'RM 4,325.00',
       daysLeft: 'Baki hari ∞',
-      imageUrl: 'sedekah_jariyah',
+      imageUrl: 'assets/images/KP5R3.png',
       color: Colors.teal.shade800,
     ),
     Program(
       title: 'Infak Set Persalinan Akhir',
       organization: 'WAQAF FELDA',
       isVerified: true,
-      collected: 'RM 5,000.00',
+      collected: '',
       daysLeft: 'Baki hari ∞',
-      imageUrl: 'kebutuhan_beras',
+      imageUrl: 'assets/images/SPAT1.png',
       color: Colors.green.shade700,
     ),
     Program(
       title: 'Wakaf Al-Qur\'an untuk Pelajar',
       organization: "WAQAF FELDA",
       isVerified: true,
-      collected: 'RM 20,000.00',
+      collected: 'RM 13,520.00',
       daysLeft: 'Baki hari ∞',
-      imageUrl: 'bangun_masjid',
+      imageUrl: 'assets/images/WQT1.png',
       color: Colors.orange.shade400,
     ),
   ];
@@ -132,19 +132,28 @@ class _SearchPageState extends State<SearchPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image placeholder
-              Container(
-                width: 120,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: program.color,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.mosque,
-                    size: 40,
-                    color: Colors.white.withOpacity(0.7),
+              // Image placeholder -> use Image.asset with fallback
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 120,
+                  height: 90,
+                  child: Image.asset(
+                    program.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) {
+                      // fallback if asset not found or fails to load
+                      return Container(
+                        color: program.color,
+                        child: Center(
+                          child: Icon(
+                            Icons.mosque,
+                            size: 40,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

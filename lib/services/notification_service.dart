@@ -975,6 +975,8 @@ class NotificationService {
     if (locationName != null) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('current_location_name', locationName);
+      // Also save as last scheduled location to track changes
+      await prefs.setString('last_scheduled_location', locationName);
       print('💾 Saved location name: $locationName');
     }
 
@@ -1041,6 +1043,13 @@ class NotificationService {
     // Cancel all existing WorkManager tasks
     await Workmanager().cancelAll();
     print('🗑️ Cancelled all WorkManager tasks');
+
+    // Save location if provided
+    if (locationName != null) {
+      await prefs.setString('current_location_name', locationName);
+      await prefs.setString('last_scheduled_location', locationName);
+      print('💾 Saved location name: $locationName');
+    }
 
     // Reschedule
     await schedulePrayerNotificationsWithTracking(

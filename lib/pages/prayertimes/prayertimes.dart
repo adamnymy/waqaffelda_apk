@@ -211,6 +211,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           position.latitude,
           position.longitude,
         );
+        // Check previous location before saving new one
+        final prefs = await SharedPreferences.getInstance();
+        final previousLocation = prefs.getString('current_location_name');
+        // Always save location to SharedPreferences so notifications use latest location
+        await prefs.setString('current_location_name', locationName);
+        print('💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}');
       } else {
         // Fallback to Kuala Lumpur if location permission denied
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
@@ -221,6 +227,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           3.139,
           101.6869,
         );
+        // Check previous location before saving new one
+        final prefs = await SharedPreferences.getInstance();
+        final previousLocation = prefs.getString('current_location_name');
+        // Always save location to SharedPreferences so notifications use latest location
+        await prefs.setString('current_location_name', locationName);
+        print('💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}');
       }
 
       if (apiData != null) {
@@ -312,15 +324,46 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       final prefs = await SharedPreferences.getInstance();
       final isFirstTime = !prefs.containsKey('last_scheduled_date');
 
+      // Check if location has changed by comparing stored location with current
+      // (Location was just saved in _loadPrayerTimes, so stored should match current)
+      // But we need to detect if it changed from a previous session
+      // We'll store a separate "last_scheduled_location" to track what location was used for scheduling
+      final lastScheduledLocation = prefs.getString('last_scheduled_location');
+      final locationChanged = lastScheduledLocation != null && lastScheduledLocation != locationName;
+
       // Use enhanced method with date tracking
       final wasRescheduled = await notificationService.autoRescheduleIfNeeded(
         prayerTimes,
         locationName: locationName,
       );
 
+      // If location changed but date hasn't, force reschedule to update location in notifications
+      if (!wasRescheduled && locationChanged) {
+        print('📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule');
+        await notificationService.forceReschedule(
+          prayerTimes,
+          locationName: locationName,
+        );
+        // Save the location that was used for scheduling
+        await prefs.setString('last_scheduled_location', locationName);
+        // Cache minimal prayer times so background rescheduler can re-register
+        try {
+          await NotificationService().cachePrayerTimesMinimal(prayerTimes);
+        } catch (e) {
+          print('⚠️ Failed to cache prayer times: $e');
+        }
+        print('✅ Notifications rescheduled with new location: $locationName');
+        return;
+      }
+
+      // If rescheduled (date changed), also save the location that was used
+      if (wasRescheduled) {
+        await prefs.setString('last_scheduled_location', locationName);
+      }
+
       if (!wasRescheduled) {
-        // Not rescheduled, means already scheduled for today
-        print('ℹ️ Notifications already scheduled for today');
+        // Not rescheduled, means already scheduled for today and location hasn't changed
+        print('ℹ️ Notifications already scheduled for today with same location');
         return;
       }
 

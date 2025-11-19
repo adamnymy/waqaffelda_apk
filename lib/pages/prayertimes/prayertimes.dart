@@ -598,7 +598,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: Color(0xFFFFFFFF), // Light grey background to match cards
       // FloatingActionButton removed
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -924,60 +924,59 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
               return Container(
                 margin: EdgeInsets.only(bottom: screenHeight * 0.012),
+                decoration: BoxDecoration(
+                  gradient:
+                      isNextPrayer
+                          ? LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Colors.orange.shade400,
+                              Colors.orange.shade500,
+                            ],
+                          )
+                          : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              isPassed
+                                  ? Colors.grey.shade100
+                                  : colorScheme.surface,
+                              isPassed
+                                  ? Colors.grey.shade50
+                                  : colorScheme.surface,
+                            ],
+                          ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          isNextPrayer
+                              ? Colors.orange.withOpacity(0.3)
+                              : Colors.black.withOpacity(0.06),
+                      blurRadius: isNextPrayer ? 12 : 8,
+                      offset: Offset(0, isNextPrayer ? 4 : 2),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                  border: Border.all(
+                    color:
+                        isNextPrayer
+                            ? Colors.orange.shade300.withOpacity(0.5)
+                            : isPassed
+                            ? Colors.grey.shade200
+                            : colorScheme.primary.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap:
                         () => _showNotificationSettings(prayer['name'] ?? ''),
                     borderRadius: BorderRadius.circular(20),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient:
-                            isNextPrayer
-                                ? LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    Colors.orange.shade400,
-                                    Colors.orange.shade500,
-                                  ],
-                                )
-                                : LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    isPassed
-                                        ? Colors.grey.shade100
-                                        : colorScheme.surface,
-                                    isPassed
-                                        ? Colors.grey.shade50
-                                        : colorScheme.surface,
-                                  ],
-                                ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                isNextPrayer
-                                    ? Colors.orange.withOpacity(0.3)
-                                    : Colors.black.withOpacity(0.06),
-                            blurRadius: isNextPrayer ? 12 : 8,
-                            offset: Offset(0, isNextPrayer ? 4 : 2),
-                            spreadRadius: 0,
-                          ),
-                        ],
-                        border: Border.all(
-                          color:
-                              isNextPrayer
-                                  ? Colors.orange.shade300.withOpacity(0.5)
-                                  : isPassed
-                                  ? Colors.grey.shade200
-                                  : colorScheme.primary.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.045,
                           vertical: screenHeight * 0.018,
                         ),
@@ -1132,8 +1131,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                       ),
                     ),
                   ),
-                ),
-              );
+                );
             }).toList(),
       ),
     );

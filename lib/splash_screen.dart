@@ -201,8 +201,8 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Text(
                           'Kejayaan Dalam Keberkatan',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
                             color: isWhiteBg ? Color(0xFF0F766E) : Colors.white,
                             letterSpacing: 2.0,
                           ),

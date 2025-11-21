@@ -202,6 +202,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       Position? position = await PrayerTimesService.getCurrentLocation();
 
       if (position != null) {
+        print(
+          '📍 GPS coordinates: ${position.latitude}, ${position.longitude}',
+        );
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
           position.latitude,
           position.longitude,
@@ -221,14 +224,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         );
       } else {
         // Fallback to Kuala Lumpur if location permission denied
+        print(
+          '⚠️ GPS not available, using fallback coordinates: 3.139, 101.6869',
+        );
         apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
           3.139,
           101.6869,
         );
-        locationName = await PrayerTimesService.getLocationName(
-          3.139,
-          101.6869,
-        );
+        locationName = 'Lokasi tidak dapat dikesan';
         // Check previous location before saving new one
         final prefs = await SharedPreferences.getInstance();
         final previousLocation = prefs.getString('current_location_name');

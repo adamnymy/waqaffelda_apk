@@ -29,12 +29,10 @@ class Homepage extends StatefulWidget {
 int _searchTextIndex = 0;
 Timer? _searchTextTimer;
 final List<String> _searchSuggestions = [
-  'Beramal Quran',
-  'Waktu Solat',
-  'Arah Kiblat',
-  'Al Quran',
-  'Doa Harian',
-  'Hadith',
+  'Kempen Potong Lima...',
+  'Waqaf Quran...',
+  'Set Persalinan Akhir...',
+  'Infak Subuh...',
 ];
 
 class _HomepageState extends State<Homepage> {

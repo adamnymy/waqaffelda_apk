@@ -1,4 +1,4 @@
-package com.example.waqafer
+package app.waqaffelda.waqafer
 
 import android.content.BroadcastReceiver
 import android.content.Context

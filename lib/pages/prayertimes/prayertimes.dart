@@ -280,7 +280,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         if (mounted) {
           setState(() {
             errorMessage =
-                'Gagal memuatkan waktu solat. Sila semak sambungan internet anda.';
+                'Tidak dapat memuatkan waktu solat.\n\n'
+                'Server JAKIM e-solat.gov.my tidak dapat dihubungi. '
+                'Sila semak sambungan internet anda atau cuba lagi sebentar lagi.';
             isLoading = false;
           });
         }

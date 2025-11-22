@@ -44,7 +44,7 @@
             android:value="2" />
         <!-- Google Maps API Key -->
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE"/>
+               android:value="AIzaSyADIYvQfURracgIFFp0EbHelsIPNLH1Bag"/>
         
         <!-- Notification receiver for boot completed -->
         <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
@@ -59,7 +59,7 @@
              to ensure WorkManager is touched after device restarts. This does not replace
              Dart-side WorkManager persisted work, but helps on devices where WorkManager may
              need a nudge. -->
-        <receiver android:name="com.example.waqafer.BootReceiver"
+        <receiver android:name="app.waqaffelda.waqafer.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -70,11 +70,11 @@
 
         <!-- AlarmReceiver: handles exact alarms from AlarmManager for prayer notifications.
              This ensures notifications are shown EXACTLY at prayer times, even during Doze mode. -->
-        <receiver android:name="com.example.waqafer.AlarmReceiver"
+        <receiver android:name="app.waqaffelda.waqafer.AlarmReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.waqafer.ACTION_PRAYER_ALARM" />
+                <action android:name="app.waqaffelda.waqafer.ACTION_PRAYER_ALARM" />
             </intent-filter>
         </receiver>
     </application>

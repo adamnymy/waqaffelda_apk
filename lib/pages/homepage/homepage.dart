@@ -145,25 +145,12 @@ class _HomepageState extends State<Homepage> {
   void _setDefaultCountdown() {
     if (mounted) {
       setState(() {
-        _nextPrayerText = 'Solat Seterusnya: Maghrib - 18:30';
-        _countdown = const Duration(hours: 1);
+        _nextPrayerText = 'Tidak dapat memuatkan waktu solat';
+        _countdown = Duration.zero;
       });
     }
-    DateTime target = DateTime.now().add(const Duration(hours: 1));
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-      final remaining = target.difference(DateTime.now());
-      if (remaining.inSeconds <= 0) {
-        timer.cancel();
-        _loadPrayerTimes(); // Try to reload real prayer times
-        return;
-      }
-      if (mounted) {
-        setState(() {
-          _countdown = remaining;
-        });
-      }
-    });
+    // Stop any existing countdown timer
+    _countdownTimer?.cancel();
   }
 
   void _updateNextPrayer() {
@@ -706,9 +693,15 @@ class _HomepageState extends State<Homepage> {
                             Text(
                               nextPrayerName.isNotEmpty
                                   ? nextPrayerName.toUpperCase()
-                                  : 'MEMUAT...',
+                                  : _nextPrayerText == 'Loading...'
+                                  ? 'MEMUAT...'
+                                  : 'TIDAK TERSEDIA',
                               style: TextStyle(
-                                color: Colors.black87,
+                                color:
+                                    _nextPrayerText ==
+                                            'Tidak dapat memuatkan waktu solat'
+                                        ? Colors.red.shade400
+                                        : Colors.black87,
                                 fontSize: screenWidth * 0.052,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.5,
@@ -741,9 +734,16 @@ class _HomepageState extends State<Homepage> {
                             Text(
                               nextPrayerTime.isNotEmpty
                                   ? nextPrayerTime
+                                  : _nextPrayerText ==
+                                      'Tidak dapat memuatkan waktu solat'
+                                  ? 'Ralat API'
                                   : '--:--',
                               style: TextStyle(
-                                color: Colors.black,
+                                color:
+                                    _nextPrayerText ==
+                                            'Tidak dapat memuatkan waktu solat'
+                                        ? Colors.red.shade400
+                                        : Colors.black,
                                 fontSize: screenWidth * 0.06,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -766,11 +766,20 @@ class _HomepageState extends State<Homepage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              _countdown.inSeconds >= 0
+                              _nextPrayerText ==
+                                      'Tidak dapat memuatkan waktu solat'
+                                  ? 'Cuba lagi'
+                                  : _countdown.inSeconds > 0
                                   ? _formatDuration(_countdown)
-                                  : 'Loading...',
+                                  : _nextPrayerText == 'Loading...'
+                                  ? 'Memuat...'
+                                  : '--:--:--',
                               style: TextStyle(
-                                color: const Color(0xFF00897B),
+                                color:
+                                    _nextPrayerText ==
+                                            'Tidak dapat memuatkan waktu solat'
+                                        ? Colors.red.shade400
+                                        : const Color(0xFF00897B),
                                 fontSize: screenWidth * 0.05,
                                 fontWeight: FontWeight.w800,
                               ),

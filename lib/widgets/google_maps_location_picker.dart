@@ -139,7 +139,7 @@ class _OpenStreetMapLocationPickerState
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.waqafer',
+                    userAgentPackageName: 'app.waqaffelda.waqafer',
                   ),
                   MarkerLayer(
                     markers: [

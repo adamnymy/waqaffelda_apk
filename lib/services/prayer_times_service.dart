@@ -32,18 +32,28 @@ class PrayerTimesService {
       final url =
           'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=today&zone=$zoneName';
 
-      final response = await http.get(Uri.parse(url));
+      print('🌐 Fetching from e-solat.gov.my for zone: $zoneName');
+
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              print('⏱️ e-solat.gov.my timed out after 10 seconds');
+              throw Exception('Connection timeout');
+            },
+          );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Successfully fetched from e-solat.gov.my');
         return _formatEsolatResponse(data, zoneName);
       } else {
-        print('Failed to load e-solat prayer times: ${response.statusCode}');
-        print('URL attempted: $url');
+        print('❌ e-solat.gov.my returned ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error fetching e-solat prayer times: $e');
+      print('❌ e-solat.gov.my failed: $e');
       return null;
     }
   }

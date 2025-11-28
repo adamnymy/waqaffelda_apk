@@ -162,57 +162,51 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
           ),
           const SizedBox(height: 16),
           // Reference and Narrator
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.menu_book_rounded,
-                      size: 15,
-                      color: const Color(0xFFFBC02D),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        widget.hadis['reference'],
-                        style: TextStyle(
-                          fontSize: 13 * fontSize,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Icon(
+                    Icons.menu_book_rounded,
+                    size: 15,
+                    color: const Color(0xFFFBC02D),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      widget.hadis['reference'],
+                      style: TextStyle(
+                        fontSize: 13 * fontSize,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.person_outline_rounded,
-                      size: 15,
-                      color: const Color(0xFF00897B),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        widget.hadis['narrator'],
-                        style: TextStyle(
-                          fontSize: 13 * fontSize,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.person_outline_rounded,
+                    size: 15,
+                    color: const Color(0xFF00897B),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      widget.hadis['narrator'],
+                      style: TextStyle(
+                        fontSize: 13 * fontSize,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),

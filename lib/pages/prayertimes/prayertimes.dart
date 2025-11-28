@@ -94,22 +94,35 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   /// Initialize notification service
   Future<void> _initializeNotifications() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasRequestedPermission =
+          prefs.getBool('notification_permission_requested') ?? false;
+
       final notificationService = NotificationService();
       await notificationService.initialize();
-      final granted = await notificationService.requestPermission();
 
-      if (granted) {
-        print('✅ Notification permission granted');
-        // Schedule will be triggered after prayer times are loaded
-      } else {
-        print('⚠️ Notification permission denied');
-        if (mounted) {
-          // SnackBar removed per user request. Keep function but suppress UI toast.
-          print(
-            'Notifikasi diperlukan untuk menghantar peringatan waktu solat (snackbar suppressed)',
-          );
-          // If you still want a retry mechanism, call _initializeNotifications() from UI elsewhere.
+      // Only request permission if it hasn't been requested before
+      if (!hasRequestedPermission) {
+        print('🔔 Requesting notification permission from prayer times page');
+        final granted = await notificationService.requestPermission();
+
+        if (granted) {
+          print('✅ Notification permission granted');
+        } else {
+          print('⚠️ Notification permission denied');
+          if (mounted) {
+            // SnackBar removed per user request. Keep function but suppress UI toast.
+            print(
+              'Notifikasi diperlukan untuk menghantar peringatan waktu solat (snackbar suppressed)',
+            );
+          }
         }
+
+        // Mark that we've requested permission
+        await prefs.setBool('notification_permission_requested', true);
+      } else {
+        print('ℹ️ Notification permission already requested (skipping dialog)');
+        // Schedule will be triggered after prayer times are loaded
       }
     } catch (e) {
       print('❌ Error initializing notifications: $e');

@@ -3,7 +3,9 @@ import 'dart:async';
 import '../../navbar.dart';
 import '../prayertimes/prayertimes.dart';
 import '../../services/prayer_times_service.dart';
+import '../../services/notification_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../zikircounter/zikircounter.dart';
 import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
@@ -57,6 +59,7 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
+    _initializeNotifications(); // Request notification permission on first install
     _loadPrayerTimes();
     _startTimer();
     _startCarouselTimer();
@@ -114,6 +117,35 @@ class _HomepageState extends State<Homepage> {
     });
   }
 
+  /// Initialize notification service and request permission on first install
+  Future<void> _initializeNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasRequestedPermission =
+          prefs.getBool('notification_permission_requested') ?? false;
+
+      if (!hasRequestedPermission) {
+        print('🔔 First install detected - requesting notification permission');
+        final notificationService = NotificationService();
+        await notificationService.initialize();
+        final granted = await notificationService.requestPermission();
+
+        if (granted) {
+          print('✅ Notification permission granted on first install');
+        } else {
+          print('⚠️ Notification permission denied on first install');
+        }
+
+        // Mark that we've requested permission
+        await prefs.setBool('notification_permission_requested', true);
+      } else {
+        print('ℹ️ Notification permission already requested previously');
+      }
+    } catch (e) {
+      print('❌ Error initializing notifications on homepage: $e');
+    }
+  }
+
   Future<void> _loadPrayerTimes() async {
     _countdownTimer?.cancel(); // Cancel any existing timer
     try {
@@ -127,6 +159,9 @@ class _HomepageState extends State<Homepage> {
         if (prayerData != null && prayerData['code'] == 200) {
           _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
           _updateNextPrayer();
+
+          // Schedule notifications after prayer times are loaded
+          _scheduleNotificationsIfNeeded(position);
         } else {
           // API failed, set default countdown
           _setDefaultCountdown();
@@ -139,6 +174,59 @@ class _HomepageState extends State<Homepage> {
       print('Error loading prayer times for homepage: $e');
       // Error occurred, set default countdown
       _setDefaultCountdown();
+    }
+  }
+
+  /// Schedule notifications if needed (on first install or if not scheduled today)
+  Future<void> _scheduleNotificationsIfNeeded(Position position) async {
+    try {
+      if (_prayerTimes.isEmpty) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final hasRequestedPermission =
+          prefs.getBool('notification_permission_requested') ?? false;
+
+      if (!hasRequestedPermission) {
+        // Permission not requested yet, skip scheduling
+        return;
+      }
+
+      // Check if already scheduled for today
+      final lastScheduledDate = prefs.getString('last_scheduled_date');
+      final today = DateTime.now().toIso8601String().split('T')[0];
+
+      if (lastScheduledDate == today) {
+        print('ℹ️ Notifications already scheduled for today');
+        return;
+      }
+
+      print('📅 Scheduling notifications with user location...');
+
+      // Get location name
+      final locationName = await PrayerTimesService.getLocationName(
+        position.latitude,
+        position.longitude,
+      );
+
+      // Save location to SharedPreferences
+      await prefs.setString('current_location_name', locationName);
+
+      // Schedule notifications
+      final notificationService = NotificationService();
+      await notificationService.schedulePrayerNotificationsWithTracking(
+        _prayerTimes,
+        locationName: locationName,
+      );
+
+      // Cache prayer times for background rescheduler
+      await notificationService.cachePrayerTimesMinimal(_prayerTimes);
+
+      // Save the location that was used for scheduling
+      await prefs.setString('last_scheduled_location', locationName);
+
+      print('✅ Notifications scheduled successfully for $locationName');
+    } catch (e) {
+      print('❌ Error scheduling notifications: $e');
     }
   }
 

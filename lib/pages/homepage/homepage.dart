@@ -59,8 +59,11 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
-    _initializeNotifications(); // Request notification permission on first install
-    _loadPrayerTimes();
+    // Initialize notifications first, then load prayer times
+    // This ensures notification permission is requested before scheduling
+    _initializeNotifications().then((_) {
+      _loadPrayerTimes();
+    });
     _startTimer();
     _startCarouselTimer();
     _startSearchTextAnimation(); // Tambah ini untuk mulakan animasi teks
@@ -157,7 +160,11 @@ class _HomepageState extends State<Homepage> {
         );
 
         if (prayerData != null && prayerData['code'] == 200) {
-          _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
+          if (mounted) {
+            setState(() {
+              _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
+            });
+          }
           _updateNextPrayer();
 
           // Schedule notifications after prayer times are loaded

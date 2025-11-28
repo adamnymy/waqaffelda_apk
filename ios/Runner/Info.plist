@@ -49,6 +49,18 @@
 	<array>
 		<string>fetch</string>
 		<string>processing</string>
+		<string>location</string>
 	</array>
+	<!-- Location Permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to show Qiblah direction and find nearby mosques.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access to provide accurate prayer times and mosque directions.</string>
+	<!-- Notification Permissions -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>This app sends prayer time notifications to help you pray on time.</string>
+	<!-- Background Location (for prayer notifications) -->
+	<key>NSLocationUsageDescription</key>
+	<string>Location access is needed for prayer time calculations and mosque finder.</string>
 </dict>
 </plist>

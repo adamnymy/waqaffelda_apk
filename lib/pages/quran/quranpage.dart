@@ -12,7 +12,8 @@ class QuranPage extends StatefulWidget {
   _QuranPageState createState() => _QuranPageState();
 }
 
-class _QuranPageState extends State<QuranPage> {
+class _QuranPageState extends State<QuranPage>
+    with SingleTickerProviderStateMixin {
   int selectedTabIndex = 0;
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -21,10 +22,16 @@ class _QuranPageState extends State<QuranPage> {
   List<Surah> allSurahs = [];
   bool isLoading = true;
   String errorMessage = '';
+  late AnimationController _shimmerController;
+  DateTime? _loadStartTime;
 
   @override
   void initState() {
     super.initState();
+    _shimmerController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
     _loadQuranData();
   }
 
@@ -33,16 +40,30 @@ class _QuranPageState extends State<QuranPage> {
     setState(() {
       isLoading = true;
       errorMessage = '';
+      _loadStartTime = DateTime.now();
     });
 
     try {
       final surahs = await QuranService.getAllSurahs();
+
+      // Ensure minimum 1 second loading time for smooth skeleton display
+      final elapsed = DateTime.now().difference(_loadStartTime!).inMilliseconds;
+      if (elapsed < 1000) {
+        await Future.delayed(Duration(milliseconds: 1000 - elapsed));
+      }
+
       setState(() {
         allSurahs = surahs;
         isLoading = false;
       });
       print('✅ Loaded ${surahs.length} surahs successfully!');
     } catch (e) {
+      // Still respect minimum time even on error
+      final elapsed = DateTime.now().difference(_loadStartTime!).inMilliseconds;
+      if (elapsed < 1000) {
+        await Future.delayed(Duration(milliseconds: 1000 - elapsed));
+      }
+
       setState(() {
         errorMessage = 'Gagal memuatkan data Al-Quran: $e';
         isLoading = false;
@@ -988,6 +1009,7 @@ class _QuranPageState extends State<QuranPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
@@ -1273,11 +1295,7 @@ class _QuranPageState extends State<QuranPage> {
 
     // Show loading indicator
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-        ),
-      );
+      return _buildSkeletonLoading();
     }
 
     // Show error message
@@ -1855,7 +1873,124 @@ class _QuranPageState extends State<QuranPage> {
       ),
     );
   }
+
+  Widget _buildSkeletonLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+      itemCount: 8,
+      itemBuilder: (context, index) => _buildSkeletonCard(),
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Number Badge Skeleton
+            _buildShimmer(
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Content Skeleton
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildShimmer(
+                    Container(
+                      width: 120,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildShimmer(
+                    Container(
+                      width: 100,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildShimmer(
+                    Container(
+                      width: 150,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Arrow Icon Skeleton
+            _buildShimmer(
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer(Widget child) {
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.grey.shade300,
+                Colors.grey.shade100,
+                Colors.grey.shade300,
+              ],
+              stops: [
+                _shimmerController.value - 0.3,
+                _shimmerController.value,
+                _shimmerController.value + 0.3,
+              ],
+            ).createShader(bounds);
+          },
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
 }
-
-
-

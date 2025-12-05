@@ -42,8 +42,8 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
     _initLocation();
   }
 
@@ -87,7 +87,6 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
       });
 
       await _searchNearbyMosques();
-      _animationController.forward();
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -671,37 +670,155 @@ out center;
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: primaryGreen.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
-              strokeWidth: 3,
-            ),
+    return Column(
+      children: [
+        // Header skeleton
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          color: scaffoldBgColor,
+          child: Row(
+            children: [
+              const SizedBox(width: 12),
+              _buildShimmer(
+                Container(
+                  width: 180,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 32),
-          const Text(
-            'Mencari Masjid Terdekat',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: blackColor,
-            ),
+        ),
+        // List skeleton
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildSkeletonCard(),
+              );
+            },
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Mengesan lokasi anda...',
-            style: TextStyle(fontSize: 14, color: secondaryTextColor),
-          ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: cardBorderColor, width: 1.5),
       ),
+      color: whiteColor,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildShimmer(
+                    Container(
+                      width: double.infinity,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _buildShimmer(
+                  Container(
+                    width: 60,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildShimmer(
+              Container(
+                width: 200,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: _buildShimmer(
+                    Container(
+                      width: double.infinity,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _buildShimmer(
+                  Container(
+                    width: 80,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer(Widget child) {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: const [lightGreyColor, Color(0xFFF5F5F5), lightGreyColor],
+              stops: [
+                _animationController.value - 0.3,
+                _animationController.value,
+                _animationController.value + 0.3,
+              ],
+            ).createShader(bounds);
+          },
+          child: child,
+        );
+      },
+      child: child,
     );
   }
 

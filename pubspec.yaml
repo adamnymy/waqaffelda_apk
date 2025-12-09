@@ -106,6 +106,7 @@ flutter:
     - assets/images/IG2.png
     - assets/images/IG3.png
     - assets/images/infak-subuh.png
+    - assets/images/waqaf_felda_logo.png
     
     # Menu icons (moved to menu folder)
     - assets/icons/menu/alquran.svg
@@ -123,6 +124,7 @@ flutter:
     - assets/icons/menu/waktu_solat-bg.svg
     - assets/icons/menu/alquran-bg.svg
     - assets/icons/logoNg.svg
+    - assets/icons/logo.svg
     - assets/splash_screen.gif
 
   # For details regarding adding assets from package dependencies, see

@@ -955,7 +955,7 @@ class _HomepageState extends State<Homepage> {
               _buildMenuItem(
                 'Arah Kiblat',
                 SvgPicture.asset(
-                  'assets/icons/menu/kiblat.svg',
+                  'assets/icons/menu/kaabah_new.svg',
                   fit: BoxFit.contain,
                 ),
                 const Color(0xFFFBC02D),
@@ -969,7 +969,7 @@ class _HomepageState extends State<Homepage> {
               _buildMenuItem(
                 'Al Qur\'an',
                 SvgPicture.asset(
-                  'assets/icons/menu/alquran.svg',
+                  'assets/icons/menu/quran_new.svg',
                   fit: BoxFit.contain,
                 ),
                 const Color(0xFF00897B),
@@ -1073,9 +1073,14 @@ class _HomepageState extends State<Homepage> {
           children: [
             GestureDetector(
               onTap: onTap,
-              child: SizedBox(
+              child: Container(
                 width: iconSize,
                 height: iconSize,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(10),
                 child: FittedBox(fit: BoxFit.contain, child: iconWidget),
               ),
             ),

@@ -185,32 +185,48 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Transform.scale(
                           scale: _logoScale.value,
                           child: SvgPicture.asset(
-                            'assets/icons/logoNg.svg',
-                            height: 140,
-                            width: 140,
+                            'assets/icons/logo.svg',
+                            height: 200,
+                            width: 200,
                             color: isWhiteBg ? Color(0xFF0F766E) : Colors.white,
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 24),
-
-                      // Text
-                      Opacity(
-                        opacity: _textOpacity.value,
-                        child: Text(
-                          'Kejayaan Dalam Keberkatan',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: isWhiteBg ? Color(0xFF0F766E) : Colors.white,
-                            letterSpacing: 2.0,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
+
+                // Bottom aligned label + logo so main SVG stays perfectly centered
+                if (isWhiteBg)
+                  Align(
+                    alignment: const Alignment(0, 0.7),
+                    child: Opacity(
+                      opacity: _textOpacity.value,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Disediakan Oleh:',
+                            style: TextStyle(
+                              fontFamily: 'Ubuntu',
+                              fontSize: 12,
+                              color: Color(0xFF000000).withOpacity(0.85),
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Image.asset(
+                            'assets/images/waqaf_felda_logo.png',
+                            height: 56,
+                            width: 168,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           );

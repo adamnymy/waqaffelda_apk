@@ -210,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen>
                           Text(
                             'Disediakan Oleh:',
                             style: TextStyle(
-                              fontFamily: 'Ubuntu',
+                              fontFamily: 'Inter',
                               fontSize: 12,
                               color: Color(0xFF000000).withOpacity(0.85),
                               fontWeight: FontWeight.w800,

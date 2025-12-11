@@ -208,10 +208,10 @@ class _SplashScreenState extends State<SplashScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Disediakan Oleh:',
+                            'By:',
                             style: TextStyle(
                               fontFamily: 'Inter',
-                              fontSize: 12,
+                              fontSize: 8,
                               color: Color(0xFF000000).withOpacity(0.85),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.6,

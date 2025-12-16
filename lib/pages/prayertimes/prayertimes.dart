@@ -1094,6 +1094,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   Widget _buildSkeletonLoading() {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -1197,7 +1198,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                             vertical: screenHeight * 0.008,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0A7E6E).withOpacity(0.8),
+                            gradient: LinearGradient(
+                              colors: [
+                                colorScheme.primary.withOpacity(0.9),
+                                colorScheme.primary.withOpacity(0.8),
+                              ],
+                            ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
@@ -1252,12 +1258,58 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           ),
         ),
         const SizedBox(height: 16),
-        // Prayer Cards Skeleton
+        // Date Navigation Skeleton
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildShimmer(
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+              _buildShimmer(
+                Container(
+                  width: 180,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              _buildShimmer(
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Prayer Cards Skeleton (1x6 compact layout)
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-            child: Column(
-              children: List.generate(6, (index) => _buildSkeletonPrayerCard()),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: List.generate(
+                  6,
+                  (index) => _buildSkeletonPrayerCard(),
+                ),
+              ),
             ),
           ),
         ),
@@ -1266,58 +1318,57 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   }
 
   Widget _buildSkeletonPrayerCard() {
-    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: EdgeInsets.only(bottom: screenHeight * 0.012),
+      margin: EdgeInsets.only(bottom: 6),
+      height: (screenHeight - 500) / 6,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.primary.withOpacity(0.1),
+          width: 1,
+        ),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.045,
-          vertical: screenHeight * 0.018,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
+            // Icon skeleton
             _buildShimmer(
               Container(
-                width: screenWidth * 0.13,
-                height: screenWidth * 0.13,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(16),
+                  color: colorScheme.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
-            SizedBox(width: screenWidth * 0.04),
+            SizedBox(width: 12),
+            // Prayer name skeleton
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildShimmer(
-                    Container(
-                      width: 100,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
+              child: _buildShimmer(
+                Container(
+                  width: 80,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                ],
+                ),
               ),
             ),
+            // Time skeleton
             _buildShimmer(
               Container(
-                width: 80,
-                height: 40,
+                width: 70,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(14),
+                  color: colorScheme.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),

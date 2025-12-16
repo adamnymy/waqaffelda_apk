@@ -11,15 +11,12 @@ import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
 import '../inbox/inboxpage.dart';
 import '../akaun/akaunpage.dart';
-import '../doaharian/doa_harian_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../utils/page_transitions.dart';
 import 'others_menu_page.dart';
 import 'searchpage/search_page.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
-import '../tahlil/tahlil.dart';
-import '../hadis40/hadis40.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -40,7 +37,7 @@ final List<String> _searchSuggestions = [
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   int _carouselIndex = 0;
-  final PageController _pageController = PageController();
+  final PageController _pageController = PageController(viewportFraction: 0.9);
   final ScrollController _scrollController = ScrollController();
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
@@ -397,55 +394,27 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: colorScheme.surface,
       body: SingleChildScrollView(
         controller: _scrollController,
-        child: Stack(
+        child: Column(
           children: [
-            // SMOOTH GRADIENT - No more petak!
-            Container(
-              height: screenHeight * 0.30 + statusBarHeight,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF66B2B2), // Base Teal (#66b2b2)
-                    Color(0xFF99C8C8), // Light Teal
-                    Color(0xFFCCDFDF), // Very Light Teal
-                    Color(0xFFE6F0F0), // Foggy Teal
-                    Color(0xFFFFFFFF), // Pure White
-                  ],
-                  stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: screenHeight * 0.02),
-                  _buildAppBar(context),
-                  SizedBox(height: screenHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.03,
-                    ),
-                    child: _buildCompactPrayerCard(context),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  _buildIconMenu(context),
-                  SizedBox(height: screenHeight * 0.03),
-                  _buildMainCarousel(context),
-                  SizedBox(height: screenHeight * 0.03),
-                  _buildAyatHariIni(context),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
-              ),
-            ),
+            _buildHeaderSection(context),
+            const SizedBox(height: 72), // Space for overlapping card
+            // Menu Section
+            _buildIconMenu(context),
+            SizedBox(height: screenHeight * 0.04),
+
+            // Programs Section
+            _buildMainCarousel(context),
+            SizedBox(height: screenHeight * 0.04),
+
+            // Daily Verse Section
+            _buildAyatHariIni(context),
+            SizedBox(height: screenHeight * 0.06),
           ],
         ),
       ),
@@ -457,248 +426,235 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+  Widget _buildHeaderSection(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final double headerHeight =
+        (screenHeight * 0.35).clamp(240.0, 360.0).toDouble();
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: Row(
-        children: [
-          // Logo/Icon
-          SvgPicture.asset(
-            'assets/icons/logoNg.svg',
-            width: screenWidth * 0.12,
-            height: screenWidth * 0.12,
-            fit: BoxFit.contain,
-          ),
-          SizedBox(width: screenWidth * 0.005),
-          // Search Bar
-          Expanded(
-            child: SizedBox(
-              width:
-                  screenWidth *
-                  0.8, // Adjust this value to make it narrower/wider
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SearchPage()),
-                  );
-                },
-                child: Container(
-                  height: screenHeight * 0.045,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(screenWidth * 0.45),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: Icon(Icons.search, color: Colors.grey.shade600),
-                      ),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 500),
-                          transitionBuilder: (
-                            Widget child,
-                            Animation<double> animation,
-                          ) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0, 0.5),
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _searchSuggestions[_searchTextIndex],
-                              key: ValueKey<int>(_searchTextIndex),
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: screenWidth * 0.032,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Main Header Background with gradient
+        Container(
+          height: headerHeight,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withOpacity(0.95),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMainCarousel(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Use class-level _carouselImages so timers and other methods can access
-    final List<String> carouselImages = _carouselImages;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00897B), Color(0xFF26A69A)],
+              // Decorative circles
+              Positioned(
+                top: -60,
+                right: -40,
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.06),
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.favorite_rounded,
-                  color: Colors.white,
-                  size: 22,
                 ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Peluang Beramal',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.048,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
-                      letterSpacing: 0.3,
-                    ),
+              Positioned(
+                bottom: 40,
+                left: -50,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.04),
                   ),
-                  Text(
-                    'Program Terkini',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.03,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
-                    ),
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    screenWidth * 0.05,
+                    16,
+                    screenWidth * 0.05,
+                    16,
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top Bar: Greeting & Notification
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Assalamualaikum,',
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary.withOpacity(0.85),
+                                    fontSize: screenWidth * 0.037,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Selamat Datang',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                    fontSize: screenWidth * 0.062,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.notifications_rounded,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 22,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: screenHeight * 0.032),
+                      // Search Bar
+                      _buildSearchBar(context),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          SizedBox(height: screenWidth * 0.045),
-          SizedBox(
-            height: screenHeight * 0.2, // Adjusted for 1600x900 aspect ratio
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _carouselIndex = index;
-                });
-                // reset timer when user swipes manually
-                _resetCarouselTimer();
-              },
-              itemCount: carouselImages.length,
-              itemBuilder: (context, index) {
-                return _buildCarouselCard(carouselImages[index], context);
-              },
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.015),
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(carouselImages.length, (index) {
-                // fixed pixel sizes avoid tiny overflow on small widths
-                const double activeWidth = 18.0;
-                const double inactiveWidth = 6.0;
-                const double dotHeight = 6.0;
-                const double horizontalGap = 6.0;
-
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeInOut,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: horizontalGap / 2,
-                  ),
-                  width: _carouselIndex == index ? activeWidth : inactiveWidth,
-                  height: dotHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color:
-                        _carouselIndex == index
-                            ? const Color(0xFFFBC02D)
-                            : Colors.grey.withOpacity(0.3),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
-      ),
+        ),
+        // Overlapping Prayer Card
+        Positioned(
+          bottom: -56,
+          left: screenWidth * 0.05,
+          right: screenWidth * 0.05,
+          child: _buildPrayerTimesCard(context),
+        ),
+      ],
     );
   }
 
-  Widget _buildCarouselCard(String imagePath, BuildContext context) {
+  Widget _buildSearchBar(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchPage()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        decoration: BoxDecoration(
+          color: colorScheme.onPrimary.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: colorScheme.onPrimary.withOpacity(0.3),
+            width: 1.5,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: const Color(0xFF00897B).withOpacity(0.3),
-              child: Center(
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: Colors.white,
-                  size: screenWidth * 0.12,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: colorScheme.onPrimary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.search_rounded,
+                color: colorScheme.onPrimary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.5),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _searchSuggestions[_searchTextIndex],
+                    key: ValueKey<int>(_searchTextIndex),
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontSize: screenWidth * 0.038,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // Redesigned modern prayer card
-  Widget _buildCompactPrayerCard(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+  Widget _buildPrayerTimesCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
 
-    // Parse current _nextPrayerText which we set to 'Solat Seterusnya: Name - HH:mm'
+    // Parse prayer info
     String nextPrayerName = '';
     String nextPrayerTime = '';
     if (_nextPrayerText.contains(':') &&
@@ -713,178 +669,352 @@ class _HomepageState extends State<Homepage> {
     }
 
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.02,
-        vertical: screenHeight * 0.01,
-      ),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: colorScheme.primary.withOpacity(0.12),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // SVG Background with opacity
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.9,
-                child: SvgPicture.asset(
-                  'assets/images/widget-bg-wsolat.svg',
-                  fit: BoxFit.cover,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 14,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'SOLAT SETERUSNYA',
+                        style: TextStyle(
+                          color: colorScheme.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                Text(
+                  nextPrayerName.isNotEmpty ? nextPrayerName : 'MEMUAT...',
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            // Content
-            Padding(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              child: Column(
+          ),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.primary.withOpacity(0.85),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Baki Masa',
+                  style: TextStyle(
+                    color: colorScheme.onPrimary.withOpacity(0.9),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _countdown.inSeconds > 0
+                      ? _formatDuration(_countdown)
+                      : '--:--',
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconMenu(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with progress ring and prayer name
-                  Row(
-                    children: [
-                      // Clock icon without progress ring
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00897B).withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.access_time_rounded,
-                          color: const Color(0xFF00897B),
-                          size: 24,
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.04),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'SOLAT SETERUSNYA',
-                              style: TextStyle(
-                                color: Colors.grey.shade800,
-                                fontSize: screenWidth * 0.032,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              nextPrayerName.isNotEmpty
-                                  ? nextPrayerName.toUpperCase()
-                                  : _nextPrayerText == 'Loading...'
-                                  ? 'MEMUAT...'
-                                  : 'TIDAK TERSEDIA',
-                              style: TextStyle(
-                                color:
-                                    _nextPrayerText ==
-                                            'Tidak dapat memuatkan waktu solat'
-                                        ? Colors.red.shade400
-                                        : Colors.black87,
-                                fontSize: screenWidth * 0.052,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Menu Utama',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.052,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onBackground,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                  SizedBox(height: screenHeight * 0.015),
-                  // Time and countdown section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Prayer Time
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'WAKTU',
-                              style: TextStyle(
-                                color: Colors.grey.shade800,
-                                fontSize: screenWidth * 0.028,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              nextPrayerTime.isNotEmpty
-                                  ? nextPrayerTime
-                                  : _nextPrayerText ==
-                                      'Tidak dapat memuatkan waktu solat'
-                                  ? 'Ralat API'
-                                  : '--:--',
-                              style: TextStyle(
-                                color:
-                                    _nextPrayerText ==
-                                            'Tidak dapat memuatkan waktu solat'
-                                        ? Colors.red.shade400
-                                        : Colors.black,
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Countdown
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'BAKI MASA',
-                              style: TextStyle(
-                                color: Colors.grey.shade800,
-                                fontSize: screenWidth * 0.028,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _nextPrayerText ==
-                                      'Tidak dapat memuatkan waktu solat'
-                                  ? 'Cuba lagi'
-                                  : _countdown.inSeconds > 0
-                                  ? _formatDuration(_countdown)
-                                  : _nextPrayerText == 'Loading...'
-                                  ? 'Memuat...'
-                                  : '--:--:--',
-                              style: TextStyle(
-                                color:
-                                    _nextPrayerText ==
-                                            'Tidak dapat memuatkan waktu solat'
-                                        ? Colors.red.shade400
-                                        : const Color(0xFF00897B),
-                                fontSize: screenWidth * 0.05,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pilih perkhidmatan',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.032,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onBackground.withOpacity(0.6),
+                    ),
                   ),
                 ],
+              ),
+              GestureDetector(
+                onTap: () {
+                  OthersMenuPage.show(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: colorScheme.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Semua',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.034,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: screenWidth * 0.05),
+
+          // 2x2 Grid Layout
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildMenuGridCard(
+                      context,
+                      title: 'Waktu Solat',
+                      iconPath: 'assets/icons/menu/waktu_solat.svg',
+                      backgroundColor: colorScheme.primary.withOpacity(0.1),
+                      iconColor: colorScheme.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const PrayerTimesPage()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildMenuGridCard(
+                      context,
+                      title: 'Arah Kiblat',
+                      iconPath: 'assets/icons/menu/kaabah_new.svg',
+                      backgroundColor: colorScheme.primary.withOpacity(0.08),
+                      iconColor: colorScheme.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const KiblatPage()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildMenuGridCard(
+                      context,
+                      title: 'Al Qur\'an',
+                      iconPath: 'assets/icons/menu/quran_new.svg',
+                      backgroundColor: colorScheme.primary.withOpacity(0.1),
+                      iconColor: colorScheme.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const QuranPage()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildMenuGridCard(
+                      context,
+                      title: 'Tasbih',
+                      iconPath: 'assets/icons/menu/tasbih.svg',
+                      backgroundColor: colorScheme.primary.withOpacity(0.08),
+                      iconColor: colorScheme.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const ZikirCounterPage()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuGridCard(
+    BuildContext context, {
+    required String title,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: iconColor.withOpacity(0.15), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: iconColor.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Icon container
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: iconColor.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: SvgPicture.asset(
+                iconPath,
+                width: 22,
+                height: 22,
+                color: iconColor,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Title
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: colorScheme.onBackground,
+                  fontSize: screenWidth * 0.034,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
               ),
             ),
           ],
@@ -893,228 +1023,223 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildIconMenu(BuildContext context) {
+  Widget _buildMainCarousel(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    // Use class-level _carouselImages so timers and other methods can access
+    final List<String> carouselImages = _carouselImages;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFBC02D), Color(0xFFFFA726)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.dashboard_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Menu Utama',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.048,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: screenWidth * 0.04),
-          GridView.count(
-            crossAxisCount: 4,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: screenWidth * 0.04,
-            crossAxisSpacing: screenWidth * 0.04,
-            childAspectRatio: 0.85,
-            children: [
-              _buildMenuItem(
-                'Waktu Solat',
-                SvgPicture.asset(
-                  'assets/icons/menu/waktu_solat.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFF00897B),
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const PrayerTimesPage()),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                'Arah Kiblat',
-                SvgPicture.asset(
-                  'assets/icons/menu/kaabah_new.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFFFBC02D),
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const KiblatPage()),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                'Al Qur\'an',
-                SvgPicture.asset(
-                  'assets/icons/menu/quran_new.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFF00897B),
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const QuranPage()),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                'Tasbih',
-                SvgPicture.asset(
-                  'assets/icons/menu/tasbih.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFFFBC02D), // Changed color to green
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const ZikirCounterPage()),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                'Hadith 40',
-                SvgPicture.asset(
-                  'assets/icons/menu/hadis.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFF00897B),
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const Hadis40Page()),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                'Doa Harian',
-                SvgPicture.asset(
-                  'assets/icons/menu/doa.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFFFBC02D),
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DoaHarianPage(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Peluang Beramal',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.052,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onBackground,
+                      letterSpacing: 0.3,
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Program & kempen terkini',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.032,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onBackground.withOpacity(0.6),
+                    ),
+                  ),
+                ],
               ),
-              _buildMenuItem(
-                'Tahlil',
-                SvgPicture.asset(
-                  'assets/icons/menu/tahlil.svg',
-                  fit: BoxFit.contain,
-                ),
-                const Color(0xFF00897B),
-                () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const TahlilPage()),
-                  );
+              GestureDetector(
+                onTap: () {
+                  _onTabTapped(1);
                 },
-              ),
-
-              _buildMenuItem(
-                'Lainnya',
-                SvgPicture.asset(
-                  'assets/icons/menu/lain_lain.svg',
-                  fit: BoxFit.contain,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: colorScheme.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Semua',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.034,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                    ],
+                  ),
                 ),
-                const Color(0xFFFBC02D),
-                () {
-                  OthersMenuPage.show(context);
-                },
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        SizedBox(height: screenWidth * 0.05),
+        SizedBox(
+          height: screenHeight * 0.22,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _carouselIndex = index;
+              });
+              // reset timer when user swipes manually
+              _resetCarouselTimer();
+            },
+            itemCount: carouselImages.length,
+            itemBuilder: (context, index) {
+              return _buildCarouselCard(carouselImages[index], context);
+            },
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.015),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(carouselImages.length, (index) {
+              // fixed pixel sizes avoid tiny overflow on small widths
+              const double activeWidth = 24.0;
+              const double inactiveWidth = 8.0;
+              const double dotHeight = 8.0;
+              const double horizontalGap = 6.0;
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: horizontalGap / 2,
+                ),
+                width: _carouselIndex == index ? activeWidth : inactiveWidth,
+                height: dotHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color:
+                      _carouselIndex == index
+                          ? Theme.of(context).colorScheme.secondary
+                          : Theme.of(
+                            context,
+                          ).colorScheme.secondary.withOpacity(0.2),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMenuItem(
-    String title,
-    Widget iconWidget,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        final iconSize = constraints.maxWidth * 0.7;
-
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildCarouselCard(String imagePath, BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            GestureDetector(
-              onTap: onTap,
-              child: Container(
-                width: iconSize,
-                height: iconSize,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: FittedBox(fit: BoxFit.contain, child: iconWidget),
-              ),
+            Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  child: Center(
+                    child: Icon(
+                      Icons.image_not_supported_rounded,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.5),
+                      size: 40,
+                    ),
+                  ),
+                );
+              },
             ),
-            SizedBox(height: constraints.maxHeight * 0.06),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: screenWidth * 0.028,
-                fontWeight: FontWeight.w500,
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 60,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.3)],
+                  ),
+                ),
               ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildAyatHariIni(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      padding: EdgeInsets.all(screenWidth * 0.05),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(screenWidth * 0.05),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary.withOpacity(0.08),
+            colorScheme.primary.withOpacity(0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colorScheme.primary.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: colorScheme.primary.withOpacity(0.08),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -1122,52 +1247,94 @@ class _HomepageState extends State<Homepage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Ayat Hari Ini',
-            style: TextStyle(
-              color: const Color(0xFF00897B),
-              fontSize: screenWidth * 0.045,
-              fontWeight: FontWeight.bold,
-            ),
+          // Section Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Ayat Hari Ini',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontSize: screenWidth * 0.048,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: screenHeight * 0.015),
-          Text(
-            '"Dan dirikanlah solat, tunaikanlah zakat, dan ruku\'lah beserta orang-orang yang ruku\'."',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: screenWidth * 0.04,
-              fontStyle: FontStyle.italic,
+          SizedBox(height: screenHeight * 0.02),
+
+          // Verse Content
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          Text(
-            '(Surah Al-Baqarah, Ayat 43)',
-            style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.035),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '"Dan dirikanlah solat, tunaikanlah zakat, dan ruku\'lah beserta orang-orang yang ruku\'."',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: screenWidth * 0.042,
+                    fontStyle: FontStyle.italic,
+                    height: 1.6,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.015),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Surah Al-Baqarah, Ayat 43',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: screenWidth * 0.034,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-class WaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height - 50); // Start path
-    var controlPoint = Offset(size.width / 2, size.height);
-    var endPoint = Offset(size.width, size.height - 50);
-    path.quadraticBezierTo(
-      controlPoint.dx,
-      controlPoint.dy,
-      endPoint.dx,
-      endPoint.dy,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

@@ -20,27 +20,30 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
+      height: 80, // Standard Material 3 height
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: const Color.fromARGB(255, 247, 247, 247), width: 1)),
+        color: colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 4,
-          ), //adjust heigth
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, Icons.home_rounded, 'Menu'),
-              _buildNavItem(1, Icons.menu_book, 'Program'),
-              _buildNavItem(2, Icons.volunteer_activism_rounded, 'Waqaf'),
-              _buildNavItem(3, Icons.mail, 'Inbox'),
-              _buildNavItem(4, Icons.person, 'Akaun'),
-            ],
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(0, Icons.home_rounded, 'Menu'),
+            _buildNavItem(1, Icons.menu_book_rounded, 'Program'),
+            _buildNavItem(2, Icons.volunteer_activism_rounded, 'Waqaf'),
+            _buildNavItem(3, Icons.mail_rounded, 'Inbox'),
+            _buildNavItem(4, Icons.person_rounded, 'Akaun'),
+          ],
         ),
       ),
     );
@@ -48,7 +51,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = widget.currentIndex == index;
-    final color = isSelected ? Colors.teal : Colors.grey[400];
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Expanded(
       child: InkWell(
@@ -69,30 +72,41 @@ class _BottomNavBarState extends State<BottomNavBar> {
             );
           }
         },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 24, color: color),
-              const SizedBox(height: 5),
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: isSelected ? 1.0 : 0.7,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? colorScheme.secondary.withOpacity(0.2)
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
+              child: Icon(
+                icon,
+                size: 24,
+                color:
+                    isSelected
+                        ? colorScheme.secondary
+                        : colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color:
+                    isSelected
+                        ? colorScheme.secondary
+                        : colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );

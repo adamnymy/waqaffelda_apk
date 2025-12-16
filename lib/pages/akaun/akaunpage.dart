@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../navbar.dart';
+import '../../main.dart';
 import '../homepage/homepage.dart';
 import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
@@ -55,20 +56,47 @@ class _AkaunPageState extends State<AkaunPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Akaun',
           style: TextStyle(
-            color: Color(0xFF2C3E50),
+            color: colorScheme.onBackground,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: false,
+        actions: [
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: appThemeMode,
+            builder: (context, mode, _) {
+              return IconButton(
+                tooltip:
+                    mode == ThemeMode.light
+                        ? 'Switch to dark mode'
+                        : 'Switch to light mode',
+                icon: Icon(
+                  mode == ThemeMode.light
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: () {
+                  appThemeMode.value =
+                      mode == ThemeMode.light
+                          ? ThemeMode.dark
+                          : ThemeMode.light;
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -103,15 +131,18 @@ class _AkaunPageState extends State<AkaunPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF4DB6AC), Color(0xFF26A69A)],
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withOpacity(0.85),
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4DB6AC).withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -122,26 +153,26 @@ class _AkaunPageState extends State<AkaunPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
                 width: 3,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_outline_rounded,
               size: 48,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Mode Tetamu',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
               letterSpacing: 0.5,
             ),
           ),
@@ -150,7 +181,7 @@ class _AkaunPageState extends State<AkaunPage> {
             'Menggunakan aplikasi sebagai tetamu',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
+              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
               letterSpacing: 0.2,
             ),
           ),
@@ -161,17 +192,19 @@ class _AkaunPageState extends State<AkaunPage> {
 
   // Widget untuk senarai menu
   Widget _buildSettingsList() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 16),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 16),
           child: Text(
             'Maklumat Aplikasi',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
+              color: colorScheme.onBackground,
               letterSpacing: 0.3,
             ),
           ),
@@ -191,7 +224,7 @@ class _AkaunPageState extends State<AkaunPage> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
+                  color: colorScheme.onBackground.withOpacity(0.7),
                   letterSpacing: 0.2,
                 ),
               ),
@@ -200,7 +233,7 @@ class _AkaunPageState extends State<AkaunPage> {
                 '© 2025 Waqaf FELDA',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade500,
+                  color: colorScheme.onBackground.withOpacity(0.6),
                   letterSpacing: 0.2,
                 ),
               ),
@@ -218,9 +251,11 @@ class _AkaunPageState extends State<AkaunPage> {
     required String subtitle,
     String? trailing,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -258,13 +293,13 @@ class _AkaunPageState extends State<AkaunPage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF4DB6AC).withOpacity(0.15),
-                        const Color(0xFF4DB6AC).withOpacity(0.05),
+                        colorScheme.primary.withOpacity(0.15),
+                        colorScheme.primary.withOpacity(0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: const Color(0xFF4DB6AC), size: 24),
+                  child: Icon(icon, color: colorScheme.primary, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -273,10 +308,10 @@ class _AkaunPageState extends State<AkaunPage> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2C3E50),
+                          color: colorScheme.onBackground,
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -285,7 +320,7 @@ class _AkaunPageState extends State<AkaunPage> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade600,
+                          color: colorScheme.onBackground.withOpacity(0.7),
                           letterSpacing: 0.1,
                         ),
                       ),
@@ -296,7 +331,7 @@ class _AkaunPageState extends State<AkaunPage> {
                   Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 16,
-                    color: Colors.grey.shade400,
+                    color: colorScheme.onBackground.withOpacity(0.4),
                   ),
               ],
             ),
@@ -305,5 +340,4 @@ class _AkaunPageState extends State<AkaunPage> {
       ),
     );
   }
-
 }

@@ -26,6 +26,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
       height: 80, // Standard Material 3 height
       decoration: BoxDecoration(
         color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withOpacity(0.05),

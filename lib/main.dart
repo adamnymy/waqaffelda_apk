@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'splash_screen.dart'; // Import SplashScreen
 import 'services/notification_service.dart'; // Import NotificationService
@@ -12,9 +13,37 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 // Global theme mode controller for light/dark toggle
 final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.light);
 
+// Save theme mode to SharedPreferences
+Future<void> saveThemeMode(ThemeMode mode) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('theme_mode', mode.toString());
+  print('💾 Theme mode saved: $mode');
+}
+
+// Load theme mode from SharedPreferences
+Future<ThemeMode> loadThemeMode() async {
+  final prefs = await SharedPreferences.getInstance();
+  final savedMode = prefs.getString('theme_mode');
+
+  if (savedMode == 'ThemeMode.dark') {
+    print('🌙 Loaded dark mode from preferences');
+    return ThemeMode.dark;
+  } else if (savedMode == 'ThemeMode.system') {
+    print('🔄 Loaded system mode from preferences');
+    return ThemeMode.system;
+  } else {
+    print('☀️ Loaded light mode from preferences (default)');
+    return ThemeMode.light;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Add this
   WebViewPlatform.instance; // Add this
+
+  // Load saved theme mode
+  final savedThemeMode = await loadThemeMode();
+  appThemeMode.value = savedThemeMode;
 
   // Set up notification tap handler before initializing
   NotificationService.onNotificationTapped = () {
@@ -73,10 +102,10 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             fontFamily: 'Inter',
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF06B6D4), // Bright cyan
-              secondary: Color(0xFFEC4899), // Hot pink
+              primary: Color(0xFF0284C7), // Deep ocean blue
+              secondary: Color(0xFF38BDF8), // Sky blue
               background: Color(0xFFFFFFFF), // White background
-              surface: Color(0xFFECFEFF), // Cyan tint
+              surface: Color(0xFFF0F9FF), // Ice blue tint
               onPrimary: Color(0xFFFFFFFF), // White text on primary
               onSecondary: Color(0xFFFFFFFF), // White text on secondary
               onBackground: Color(0xFF0F172A), // Dark text
@@ -85,13 +114,13 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: const Color(0xFFFFFFFF),
             appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFFFFFFFF),
-              foregroundColor: Color(0xFF06B6D4),
+              foregroundColor: Color(0xFF0284C7),
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF06B6D4)),
+              iconTheme: IconThemeData(color: Color(0xFF0284C7)),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF06B6D4), // Bright cyan CTAs
+                backgroundColor: const Color(0xFF0284C7), // Deep ocean CTAs
                 foregroundColor: const Color(
                   0xFFFFFFFF,
                 ), // White text on primary
@@ -109,8 +138,8 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData(
             fontFamily: 'Inter',
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF22D3EE), // Electric cyan
-              secondary: Color(0xFFF472B6), // Bright pink
+              primary: Color(0xFF0EA5E9), // Electric blue
+              secondary: Color(0xFF7DD3FC), // Soft sky blue
               background: Color(0xFF0C1222), // Dark navy
               surface: Color(0xFF1E293B), // Slate
               onPrimary: Color(0xFF0C1222),
@@ -121,13 +150,13 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: const Color(0xFF0C1222),
             appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFF0C1222),
-              foregroundColor: Color(0xFF22D3EE),
+              foregroundColor: Color(0xFF0EA5E9),
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF22D3EE)),
+              iconTheme: IconThemeData(color: Color(0xFF0EA5E9)),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF22D3EE),
+                backgroundColor: const Color(0xFF0EA5E9),
                 foregroundColor: const Color(0xFFFFFFFF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

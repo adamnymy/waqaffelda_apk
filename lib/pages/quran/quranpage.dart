@@ -32,7 +32,12 @@ class _QuranPageState extends State<QuranPage>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat();
-    _loadQuranData();
+
+    // Delay loading until after the first frame renders
+    // This allows the page transition to complete smoothly
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadQuranData();
+    });
   }
 
   // Add this method to load Quran data

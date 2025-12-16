@@ -25,6 +25,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   String locationName = 'Memuatkan...';
   String currentDate = '';
   Map<String, String>? nextPrayer;
+  DateTime selectedDate = DateTime.now();
+
+  // Monthly prayer times cache
+  Map<String, List<Map<String, dynamic>>>? monthlyPrayerCache;
+  String? cachedMonth; // Format: "YYYY-MM"
+  String? cachedZone;
 
   // Animation controller for refresh button
   late AnimationController _refreshAnimationController;
@@ -136,8 +142,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     super.dispose();
   }
 
-  void _setCurrentDate() {
-    final now = DateTime.now();
+  void _setCurrentDate({DateTime? forDate}) {
+    final now = forDate ?? DateTime.now();
 
     // Malay day names
     const malayDays = [
@@ -188,9 +194,106 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     ];
 
     // Calculate Hijri date using the hijri package
-    final hijriCalendar = HijriCalendar.now();
+    final hijriCalendar = HijriCalendar.fromDate(now);
     final hijriMonthName = customHijriMonths[hijriCalendar.hMonth - 1];
     hijriDate = '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
+  }
+
+  // Navigate to previous day
+  void _goToPreviousDay() {
+    setState(() {
+      selectedDate = selectedDate.subtract(const Duration(days: 1));
+      _setCurrentDate(forDate: selectedDate);
+    });
+    _loadPrayerTimesFromCache();
+  }
+
+  // Navigate to next day
+  void _goToNextDay() {
+    setState(() {
+      selectedDate = selectedDate.add(const Duration(days: 1));
+      _setCurrentDate(forDate: selectedDate);
+    });
+    _loadPrayerTimesFromCache();
+  }
+
+  // Jump to today
+  void _goToToday() {
+    setState(() {
+      selectedDate = DateTime.now();
+      _setCurrentDate(forDate: selectedDate);
+    });
+    _loadPrayerTimesFromCache();
+  }
+
+  // Load prayer times from cache or fetch if needed
+  void _loadPrayerTimesFromCache() {
+    final monthKey =
+        '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}';
+    final dayKey = selectedDate.day.toString().padLeft(2, '0');
+
+    // Check if we have cached data for this month
+    if (monthlyPrayerCache != null &&
+        cachedMonth == monthKey &&
+        monthlyPrayerCache!.containsKey(dayKey)) {
+      // Use cached data - instant navigation!
+      final cachedData = monthlyPrayerCache![dayKey]!;
+      setState(() {
+        prayerTimes =
+            cachedData.map((prayer) {
+              // Convert icon if it's still a string
+              if (prayer['icon'] is String) {
+                return {...prayer, 'icon': _getIconFromString(prayer['icon'])};
+              }
+              return prayer;
+            }).toList();
+        nextPrayer = PrayerTimesService.getNextPrayer(prayerTimes);
+      });
+    } else {
+      // Need to fetch new data (different month or cache empty)
+      _loadPrayerTimes();
+    }
+  }
+
+  // Check if selected date is today
+  bool _isToday() {
+    final now = DateTime.now();
+    return selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day;
+  }
+
+  // Get Malay month name
+  String _getMonthName(int month) {
+    const malayMonths = [
+      'Januari',
+      'Februari',
+      'Mac',
+      'April',
+      'Mei',
+      'Jun',
+      'Julai',
+      'Ogos',
+      'September',
+      'Oktober',
+      'November',
+      'Disember',
+    ];
+    return malayMonths[month - 1];
+  }
+
+  // Get Malay day name
+  String _getDayName(int weekday) {
+    const malayDays = [
+      'Isnin',
+      'Selasa',
+      'Rabu',
+      'Khamis',
+      'Jumaat',
+      'Sabtu',
+      'Ahad',
+    ];
+    return malayDays[weekday - 1];
   }
 
   Future<void> _loadPrayerTimes() async {
@@ -209,85 +312,84 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
 
     try {
-      Map<String, dynamic>? apiData;
-
       // Use current location (GPS only)
       Position? position = await PrayerTimesService.getCurrentLocation();
+      double lat = 3.139;
+      double lng = 101.6869;
 
       if (position != null) {
-        print(
-          '📍 GPS coordinates: ${position.latitude}, ${position.longitude}',
-        );
-        apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-          position.latitude,
-          position.longitude,
-        );
+        lat = position.latitude;
+        lng = position.longitude;
+        print('📍 GPS coordinates: $lat, $lng');
+
         // Get real location name from current position
-        locationName = await PrayerTimesService.getLocationName(
-          position.latitude,
-          position.longitude,
-        );
-        // Check previous location before saving new one
-        final prefs = await SharedPreferences.getInstance();
-        final previousLocation = prefs.getString('current_location_name');
-        // Always save location to SharedPreferences so notifications use latest location
-        await prefs.setString('current_location_name', locationName);
-        print(
-          '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
-        );
+        locationName = await PrayerTimesService.getLocationName(lat, lng);
       } else {
-        // Fallback to Kuala Lumpur if location permission denied
-        print(
-          '⚠️ GPS not available, using fallback coordinates: 3.139, 101.6869',
-        );
-        apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
-          3.139,
-          101.6869,
-        );
+        print('⚠️ GPS not available, using fallback coordinates');
         locationName = 'Lokasi tidak dapat dikesan';
-        // Check previous location before saving new one
-        final prefs = await SharedPreferences.getInstance();
-        final previousLocation = prefs.getString('current_location_name');
-        // Always save location to SharedPreferences so notifications use latest location
-        await prefs.setString('current_location_name', locationName);
-        print(
-          '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
-        );
       }
 
-      if (apiData != null) {
-        final parsedTimes = PrayerTimesService.parsePrayerTimes(apiData);
-        nextPrayer = PrayerTimesService.getNextPrayer(parsedTimes);
-        if (mounted) {
-          setState(() {
-            prayerTimes =
-                parsedTimes.map((prayer) {
-                  // defensive parsing for color field; allow int or hex string
-                  Color parsedColor = Colors.black;
-                  try {
-                    final colorVal = prayer['color'];
-                    if (colorVal is int) {
-                      parsedColor = Color(colorVal);
-                    } else if (colorVal is String) {
-                      // try to parse hex like "0xFF123456" or "#123456"
-                      final cleaned = colorVal.replaceAll('#', '');
-                      parsedColor = Color(int.parse(cleaned, radix: 16));
+      // Save location to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final previousLocation = prefs.getString('current_location_name');
+      await prefs.setString('current_location_name', locationName);
+      print(
+        '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
+      );
+
+      // Fetch full monthly prayer times for caching
+      final monthKey =
+          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}';
+      final monthlyData = await PrayerTimesService.getMonthlyPrayerTimes(
+        lat,
+        lng,
+        selectedDate,
+      );
+
+      if (monthlyData != null && monthlyData.isNotEmpty) {
+        // Cache the monthly data
+        monthlyPrayerCache = monthlyData;
+        cachedMonth = monthKey;
+
+        // Get times for the selected day
+        final dayKey = selectedDate.day.toString().padLeft(2, '0');
+        final todayPrayerTimes =
+            monthlyData[dayKey] ?? monthlyData[selectedDate.day.toString()];
+
+        if (todayPrayerTimes != null) {
+          nextPrayer = PrayerTimesService.getNextPrayer(todayPrayerTimes);
+          if (mounted) {
+            setState(() {
+              prayerTimes =
+                  todayPrayerTimes.map((prayer) {
+                    // defensive parsing for color field
+                    Color parsedColor = Colors.black;
+                    try {
+                      final colorVal = prayer['color'];
+                      if (colorVal is int) {
+                        parsedColor = Color(colorVal);
+                      } else if (colorVal is String) {
+                        final cleaned = colorVal.replaceAll('#', '');
+                        parsedColor = Color(int.parse(cleaned, radix: 16));
+                      }
+                    } catch (_) {
+                      parsedColor = Colors.black;
                     }
-                  } catch (_) {
-                    parsedColor = Colors.black;
-                  }
 
-                  return {
-                    ...prayer,
-                    'icon': _getIconFromString(prayer['icon']),
-                    'color': parsedColor,
-                  };
-                }).toList();
-            isLoading = false;
-          });
+                    return {
+                      ...prayer,
+                      'icon': _getIconFromString(prayer['icon']),
+                      'color': parsedColor,
+                    };
+                  }).toList();
+              isLoading = false;
+            });
 
-          // Schedule notifications after prayer times loaded
-          _scheduleNotifications();
+            // Schedule notifications ONLY for today's prayer times (not past/future dates)
+            if (_isToday()) {
+              _scheduleNotifications();
+            }
+          }
         }
       } else {
         if (mounted) {
@@ -509,6 +611,65 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                 children: [
                   _buildHeaderCard(),
                   const SizedBox(height: 16),
+                  // Date Navigation Controls
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Previous Day Button
+                        IconButton(
+                          onPressed: _goToPreviousDay,
+                          icon: Icon(Icons.arrow_back_ios_rounded),
+                          color: colorScheme.primary,
+                          tooltip: 'Hari sebelumnya',
+                        ),
+                        // Date Display with Today button
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                '${_getDayName(selectedDate.weekday)}, ${selectedDate.day} ${_getMonthName(selectedDate.month)} ${selectedDate.year}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (!_isToday())
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: TextButton.icon(
+                                    onPressed: _goToToday,
+                                    icon: Icon(Icons.today_rounded, size: 14),
+                                    label: Text(
+                                      'Kembali ke Hari Ini',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: colorScheme.primary,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        // Next Day Button
+                        IconButton(
+                          onPressed: _goToNextDay,
+                          icon: Icon(Icons.arrow_forward_ios_rounded),
+                          color: colorScheme.primary,
+                          tooltip: 'Hari berikutnya',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
@@ -741,17 +902,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
   Widget _buildAllPrayerTimesCard() {
     final colorScheme = Theme.of(context).colorScheme;
-    final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.02),
+      padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(color: Colors.transparent),
       child: Column(
         children:
             prayerTimes.asMap().entries.map((entry) {
-              final Map<String, dynamic> prayer = entry.value;
-
+              final prayer = entry.value;
               final bool isNextPrayer =
                   nextPrayer != null &&
                   nextPrayer!['name'] == prayer['name'] &&
@@ -759,7 +918,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
               final bool isPassed = prayer['isPassed'] ?? false;
 
               return Container(
-                margin: EdgeInsets.only(bottom: screenHeight * 0.012),
+                margin: EdgeInsets.only(bottom: 6),
+                height:
+                    (screenHeight - 500) /
+                    6, // Divide available space by 6 cards
                 decoration: BoxDecoration(
                   gradient:
                       isNextPrayer
@@ -783,16 +945,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   : colorScheme.surface,
                             ],
                           ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
                       color:
                           isNextPrayer
-                              ? Colors.orange.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.06),
-                      blurRadius: isNextPrayer ? 12 : 8,
-                      offset: Offset(0, isNextPrayer ? 4 : 2),
-                      spreadRadius: 0,
+                              ? Colors.orange.withOpacity(0.25)
+                              : Colors.black.withOpacity(0.05),
+                      blurRadius: isNextPrayer ? 8 : 4,
+                      offset: Offset(0, isNextPrayer ? 2 : 1),
                     ),
                   ],
                   border: Border.all(
@@ -806,16 +967,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.045,
-                    vertical: screenHeight * 0.018,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     children: [
-                      // Icon Container
+                      // Icon
                       Container(
-                        width: screenWidth * 0.13,
-                        height: screenWidth * 0.13,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color:
                               isNextPrayer
@@ -823,7 +981,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   : isPassed
                                   ? Colors.grey.shade200
                                   : colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color:
                                 isNextPrayer
@@ -840,19 +998,20 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   : isPassed
                                   ? Colors.grey.shade400
                                   : colorScheme.primary,
-                          size: screenWidth * 0.065,
+                          size: 20,
                         ),
                       ),
-                      SizedBox(width: screenWidth * 0.04),
+                      SizedBox(width: 12),
                       // Prayer Name
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               prayer['name'] ?? '',
                               style: TextStyle(
-                                fontSize: screenWidth * 0.048,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color:
                                     isNextPrayer
@@ -861,20 +1020,19 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                         ? Colors.grey.shade500
                                         : colorScheme.onSurface,
                                 letterSpacing: 0.2,
-                                height: 1.2,
                               ),
                             ),
                             if (isNextPrayer)
                               Padding(
-                                padding: const EdgeInsets.only(top: 4),
+                                padding: const EdgeInsets.only(top: 2),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
+                                    horizontal: 6,
+                                    vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.25),
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(4),
                                     border: Border.all(
                                       color: Colors.white.withOpacity(0.3),
                                       width: 1,
@@ -883,10 +1041,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   child: Text(
                                     'SETERUSNYA',
                                     style: TextStyle(
-                                      fontSize: screenWidth * 0.025,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
-                                      letterSpacing: 1.2,
+                                      letterSpacing: 0.8,
                                     ),
                                   ),
                                 ),
@@ -894,11 +1052,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                           ],
                         ),
                       ),
-                      // Time Badge
+                      // Time
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.045,
-                          vertical: screenHeight * 0.012,
+                          horizontal: 14,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
                           color:
@@ -907,47 +1065,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   : isPassed
                                   ? Colors.grey.shade200
                                   : colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow:
-                              isNextPrayer
-                                  ? [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                  : null,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: screenWidth * 0.04,
-                              color:
-                                  isNextPrayer
-                                      ? Colors.orange.shade700
-                                      : isPassed
-                                      ? Colors.grey.shade500
-                                      : colorScheme.primary,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              prayer['time'] ?? '--:--',
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.042,
-                                fontWeight: FontWeight.w800,
-                                color:
-                                    isNextPrayer
-                                        ? Colors.orange.shade700
-                                        : isPassed
-                                        ? Colors.grey.shade600
-                                        : colorScheme.primary,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          prayer['time'] ?? '--:--',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color:
+                                isNextPrayer
+                                    ? Colors.orange.shade700
+                                    : isPassed
+                                    ? Colors.grey.shade600
+                                    : colorScheme.primary,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ],

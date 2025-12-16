@@ -7,12 +7,13 @@ class PrayerTimesService {
   // Get prayer times using e-solat.gov.my official data
   static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
     double latitude,
-    double longitude,
-  ) async {
+    double longitude, {
+    DateTime? forDate,
+  }) async {
     try {
       // Get the closest Malaysian zone for coordinates
       String zoneCode = _getZoneFromCoordinates(latitude, longitude);
-      final result = await getPrayerTimesByZone(zoneCode);
+      final result = await getPrayerTimesByZone(zoneCode, forDate: forDate);
 
       // Don't override location name here - let the UI handle it separately
       // This allows for more accurate location names from geocoding
@@ -26,13 +27,20 @@ class PrayerTimesService {
 
   // Get prayer times by Malaysian zone (e-solat.gov.my official data)
   static Future<Map<String, dynamic>?> getPrayerTimesByZone(
-    String zoneName,
-  ) async {
+    String zoneName, {
+    DateTime? forDate,
+  }) async {
     try {
-      final url =
-          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=today&zone=$zoneName';
+      final targetDate = forDate ?? DateTime.now();
+      final month = targetDate.month.toString().padLeft(2, '0');
+      final year = targetDate.year.toString();
 
-      print('🌐 Fetching from e-solat.gov.my for zone: $zoneName');
+      final url =
+          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&month=$month&year=$year&zone=$zoneName';
+
+      print(
+        '🌐 Fetching monthly data from e-solat.gov.my for zone: $zoneName ($year-$month)',
+      );
 
       final response = await http
           .get(Uri.parse(url))
@@ -47,7 +55,7 @@ class PrayerTimesService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('✅ Successfully fetched from e-solat.gov.my');
-        return _formatEsolatResponse(data, zoneName);
+        return _formatEsolatResponse(data, zoneName, forDate: targetDate);
       } else {
         print('❌ e-solat.gov.my returned ${response.statusCode}');
         return null;
@@ -519,11 +527,36 @@ class PrayerTimesService {
   // Format e-solat.gov.my API response to match expected format
   static Map<String, dynamic> _formatEsolatResponse(
     Map<String, dynamic> data,
-    String zoneCode,
-  ) {
+    String zoneCode, {
+    DateTime? forDate,
+  }) {
     try {
       if (data['prayerTime'] != null && data['prayerTime'].isNotEmpty) {
-        final prayerData = data['prayerTime'][0] as Map<String, dynamic>;
+        final targetDate = forDate ?? DateTime.now();
+        final targetDay = targetDate.day;
+
+        // Find the matching day's prayer times from monthly data
+        Map<String, dynamic>? prayerData;
+        for (var dayData in data['prayerTime']) {
+          final dateStr = dayData['date'] as String?;
+          if (dateStr != null) {
+            // Parse DD-MM-YYYY format
+            final parts = dateStr.split('-');
+            if (parts.isNotEmpty) {
+              final day = int.tryParse(parts[0]);
+              if (day == targetDay) {
+                prayerData = dayData as Map<String, dynamic>;
+                break;
+              }
+            }
+          }
+        }
+
+        // Fallback to first entry if no match
+        if (prayerData == null) {
+          prayerData = data['prayerTime'][0] as Map<String, dynamic>;
+          print('⚠️ Using fallback - first day of month');
+        }
         final timings = <String, String>{};
 
         timings['Fajr'] = prayerData['fajr'] ?? '';
@@ -571,6 +604,89 @@ class PrayerTimesService {
     double longitude,
   ) async {
     return await getPrayerTimesForMalaysia(latitude, longitude);
+  }
+
+  // Get full monthly prayer times for caching
+  static Future<Map<String, List<Map<String, dynamic>>>?> getMonthlyPrayerTimes(
+    double latitude,
+    double longitude,
+    DateTime forDate,
+  ) async {
+    try {
+      String zoneCode = _getZoneFromCoordinates(latitude, longitude);
+      final month = forDate.month.toString().padLeft(2, '0');
+      final year = forDate.year.toString();
+
+      final url =
+          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&month=$month&year=$year&zone=$zoneCode';
+
+      print(
+        '🌐 Fetching full monthly data for caching: $zoneCode ($year-$month)',
+      );
+
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception('Connection timeout');
+            },
+          );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['prayerTime'] != null && data['prayerTime'].isNotEmpty) {
+          // Build a map of day -> prayer times
+          Map<String, List<Map<String, dynamic>>> monthlyCache = {};
+
+          for (var dayData in data['prayerTime']) {
+            final dateStr = dayData['date'] as String?;
+            if (dateStr != null) {
+              final parts = dateStr.split('-');
+              if (parts.isNotEmpty) {
+                final day = parts[0]; // Day as string (e.g., "01", "15", "30")
+
+                // Parse the single day's data
+                final singleDayData = {
+                  'code': 200,
+                  'status': 'OK',
+                  'data': {
+                    'timings': {
+                      'Fajr': dayData['fajr'] ?? '',
+                      'Sunrise': dayData['syuruk'] ?? '',
+                      'Dhuhr': dayData['dhuhr'] ?? '',
+                      'Asr': dayData['asr'] ?? '',
+                      'Maghrib': dayData['maghrib'] ?? '',
+                      'Isha': dayData['isha'] ?? '',
+                    },
+                    'date': {
+                      'readable': dateStr,
+                      'timestamp':
+                          DateTime.now().millisecondsSinceEpoch.toString(),
+                    },
+                    'meta': {
+                      'latitude': latitude,
+                      'longitude': longitude,
+                      'timezone': 'Asia/Kuala_Lumpur',
+                      'method': {'id': 11, 'name': 'JAKIM Malaysia'},
+                      'locationName': _getLocationNameFromZone(zoneCode),
+                    },
+                  },
+                };
+
+                monthlyCache[day] = parsePrayerTimes(singleDayData);
+              }
+            }
+          }
+
+          print('✅ Cached ${monthlyCache.length} days of prayer times');
+          return monthlyCache;
+        }
+      }
+    } catch (e) {
+      print('❌ Failed to fetch monthly prayer times: $e');
+    }
+    return null;
   }
 
   // Get prayer times by city (using e-solat.gov.my zone mapping)

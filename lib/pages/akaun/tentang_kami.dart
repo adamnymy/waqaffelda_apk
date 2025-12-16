@@ -199,7 +199,7 @@ class TentangKamiPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Melestarikan institusi waqaf melalui kemapanan sumber, pelaburan berimpak tinggi dan memperkukuh sosio-ekonomi ummah.',
+                      'Melestarikan institusi waqaf melalui kemampanan sumber, pelaburan berimpak tinggi dan memperkukuh sosio-ekonomi ummah.',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey.shade700,

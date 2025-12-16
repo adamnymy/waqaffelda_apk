@@ -9,6 +9,9 @@ import 'pages/prayertimes/prayertimes.dart'; // Import PrayerTimesPage
 // Global navigator key for notification navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+// Global theme mode controller for light/dark toggle
+final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.light);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Add this
   WebViewPlatform.instance; // Add this
@@ -46,56 +49,100 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey, // Add global navigator key
-      title: 'Waqafer',
-      debugShowCheckedModeBanner: false, //remove debug banner
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      locale: const Locale(
-        'ms',
-        'MY',
-      ), // Set default to Bahasa Melayu (Malaysia)
-      supportedLocales: const [
-        Locale('ms', 'MY'), // Bahasa Melayu
-        Locale('en', 'US'), // English
-      ],
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-        fontFamily: 'Inter',
-        colorScheme: ColorScheme.light(
-          primary: const Color(0xFF00897B), // Deep Teal - PRIMARY
-          secondary: const Color(0xFFFBC02D), // Golden Yellow - SECONDARY
-          background: Colors.white,
-          surface: Colors.white,
-          onPrimary: Colors.white,
-          onSecondary: Colors.black,
-          onBackground: Colors.black,
-          onSurface: Colors.black,
-        ),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFF00897B)), // Deep Teal
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00897B), // Deep Teal
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeMode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey, // Add global navigator key
+          title: 'Waqafer',
+          themeMode: mode,
+          debugShowCheckedModeBanner: false, //remove debug banner
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          locale: const Locale(
+            'ms',
+            'MY',
+          ), // Set default to Bahasa Melayu (Malaysia)
+          supportedLocales: const [
+            Locale('ms', 'MY'), // Bahasa Melayu
+            Locale('en', 'US'), // English
+          ],
+          theme: ThemeData(
+            fontFamily: 'Inter',
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF06B6D4), // Bright cyan
+              secondary: Color(0xFFEC4899), // Hot pink
+              background: Color(0xFFFFFFFF), // White background
+              surface: Color(0xFFECFEFF), // Cyan tint
+              onPrimary: Color(0xFFFFFFFF), // White text on primary
+              onSecondary: Color(0xFFFFFFFF), // White text on secondary
+              onBackground: Color(0xFF0F172A), // Dark text
+              onSurface: Color(0xFF0F172A), // Dark text
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFFFFFFFF),
+              foregroundColor: Color(0xFF06B6D4),
+              elevation: 0,
+              iconTheme: IconThemeData(color: Color(0xFF06B6D4)),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF06B6D4), // Bright cyan CTAs
+                foregroundColor: const Color(
+                  0xFFFFFFFF,
+                ), // White text on primary
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+            useMaterial3: true,
           ),
-        ),
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(), // Direct to SplashScreen on app start
+          darkTheme: ThemeData(
+            fontFamily: 'Inter',
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF22D3EE), // Electric cyan
+              secondary: Color(0xFFF472B6), // Bright pink
+              background: Color(0xFF0C1222), // Dark navy
+              surface: Color(0xFF1E293B), // Slate
+              onPrimary: Color(0xFF0C1222),
+              onSecondary: Color(0xFFFFFFFF),
+              onBackground: Color(0xFFF9FAFB),
+              onSurface: Color(0xFFF9FAFB),
+            ),
+            scaffoldBackgroundColor: const Color(0xFF0C1222),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF0C1222),
+              foregroundColor: Color(0xFF22D3EE),
+              elevation: 0,
+              iconTheme: IconThemeData(color: Color(0xFF22D3EE)),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF22D3EE),
+                foregroundColor: const Color(0xFFFFFFFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+            useMaterial3: true,
+          ),
+          home: const SplashScreen(), // Direct to SplashScreen on app start
+        );
+      },
     );
   }
 }

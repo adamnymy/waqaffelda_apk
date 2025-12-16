@@ -128,6 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final colorScheme = Theme.of(context).colorScheme;
     final maxRadius = math.sqrt(
       screenSize.width * screenSize.width +
           screenSize.height * screenSize.height,
@@ -148,26 +149,26 @@ class _SplashScreenState extends State<SplashScreen>
             opacity: _fadeOpacity.value,
             child: Stack(
               children: [
-                // Teal gradient background
+                // Primary gradient background
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF0F766E),
-                        Color(0xFF0D9488),
-                        Color(0xFF14B8A6),
+                        colorScheme.primary,
+                        colorScheme.primary.withOpacity(0.9),
+                        colorScheme.primary.withOpacity(0.85),
                       ],
                     ),
                   ),
                 ),
 
-                // Ripple effect (white expanding from center)
+                // Ripple effect (background expanding from center)
                 CustomPaint(
                   painter: RipplePainter(
                     animationValue: _rippleAnimation.value,
-                    color: Colors.white,
+                    color: colorScheme.background,
                     maxRadius: maxRadius,
                     center: Offset(screenSize.width / 2, screenSize.height / 2),
                   ),
@@ -188,7 +189,10 @@ class _SplashScreenState extends State<SplashScreen>
                             'assets/icons/logo.svg',
                             height: 200,
                             width: 200,
-                            color: isWhiteBg ? Color(0xFF0F766E) : Colors.white,
+                            color:
+                                isWhiteBg
+                                    ? colorScheme.primary
+                                    : colorScheme.onPrimary,
                           ),
                         ),
                       ),
@@ -212,7 +216,7 @@ class _SplashScreenState extends State<SplashScreen>
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 8,
-                              color: Color(0xFF000000).withOpacity(0.85),
+                              color: colorScheme.onBackground.withOpacity(0.85),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.6,
                             ),

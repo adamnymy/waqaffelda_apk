@@ -283,7 +283,7 @@ class OthersMenuPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     _buildCompactMenuItem(
                       context,
-                      'Kalender Islam',
+                      'Kalendar Islam',
                       'Kalendar Hijriah',
                       'assets/icons/menu/kalendar_islam.svg',
                       const Color(0xFFFBC02D),

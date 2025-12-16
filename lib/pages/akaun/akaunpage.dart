@@ -88,10 +88,12 @@ class _AkaunPageState extends State<AkaunPage> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: () {
-                  appThemeMode.value =
+                  final newMode =
                       mode == ThemeMode.light
                           ? ThemeMode.dark
                           : ThemeMode.light;
+                  appThemeMode.value = newMode;
+                  saveThemeMode(newMode);
                 },
               );
             },

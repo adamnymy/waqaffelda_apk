@@ -140,16 +140,16 @@ class MyApp extends StatelessWidget {
             colorScheme: const ColorScheme.dark(
               primary: Color(0xFF0EA5E9), // Electric blue
               secondary: Color(0xFF7DD3FC), // Soft sky blue
-              background: Color(0xFF0C1222), // Dark navy
-              surface: Color(0xFF1E293B), // Slate
-              onPrimary: Color(0xFF0C1222),
+              background: Color(0xFF111827), // Dark gray
+              surface: Color(0xFF1F2937), // Medium dark gray
+              onPrimary: Color(0xFF111827),
               onSecondary: Color(0xFFFFFFFF),
               onBackground: Color(0xFFF9FAFB),
               onSurface: Color(0xFFF9FAFB),
             ),
-            scaffoldBackgroundColor: const Color(0xFF0C1222),
+            scaffoldBackgroundColor: const Color(0xFF111827),
             appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF0C1222),
+              backgroundColor: Color(0xFF111827),
               foregroundColor: Color(0xFF0EA5E9),
               elevation: 0,
               iconTheme: IconThemeData(color: Color(0xFF0EA5E9)),

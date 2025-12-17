@@ -39,6 +39,7 @@ class _HomepageState extends State<Homepage> {
   int _carouselIndex = 0;
   final PageController _pageController = PageController(viewportFraction: 0.9);
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _prayerTimesScrollController = ScrollController();
   // Carousel images moved to class-level so timers can access length
   final List<String> _carouselImages = [
     'assets/images/KP5R3.png', //Kempen Potong Lima
@@ -47,6 +48,7 @@ class _HomepageState extends State<Homepage> {
     'assets/images/WQT1.png', //Waqaf Quran
   ];
   Timer? _carouselTimer; // Auto-scroll timer for the carousel
+  Timer? _prayerTimesScrollTimer; // Auto-scroll timer for prayer times
   String _nextPrayerText = 'Loading...';
   Timer? _timer;
   Timer? _countdownTimer;
@@ -64,6 +66,7 @@ class _HomepageState extends State<Homepage> {
     _startTimer();
     _startCarouselTimer();
     _startSearchTextAnimation(); // Tambah ini untuk mulakan animasi teks
+    _startPrayerTimesAutoScroll();
   }
 
   @override
@@ -72,8 +75,10 @@ class _HomepageState extends State<Homepage> {
     _carouselTimer?.cancel();
     _countdownTimer?.cancel();
     _searchTextTimer?.cancel(); // Tambah ini untuk batalkan timer teks
+    _prayerTimesScrollTimer?.cancel();
     _pageController.dispose();
     _scrollController.dispose();
+    _prayerTimesScrollController.dispose();
     super.dispose();
   }
 
@@ -84,6 +89,64 @@ class _HomepageState extends State<Homepage> {
           _searchTextIndex = (_searchTextIndex + 1) % _searchSuggestions.length;
         });
       }
+    });
+  }
+
+  void _startPrayerTimesAutoScroll() {
+    // Cancel any existing timer first
+    _prayerTimesScrollTimer?.cancel();
+
+    // Wait a bit before starting to ensure widget is built
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+
+      // Keep checking until scroll controller is ready (max 5 attempts)
+      int attempts = 0;
+      Timer.periodic(const Duration(milliseconds: 500), (checkTimer) {
+        attempts++;
+
+        if (!mounted) {
+          checkTimer.cancel();
+          return;
+        }
+
+        if (_prayerTimesScrollController.hasClients || attempts >= 5) {
+          checkTimer.cancel();
+
+          if (!_prayerTimesScrollController.hasClients) return;
+
+          // Now start the actual auto-scroll timer
+          _prayerTimesScrollTimer = Timer.periodic(const Duration(seconds: 3), (
+            timer,
+          ) async {
+            if (!mounted || !_prayerTimesScrollController.hasClients) {
+              timer.cancel();
+              return;
+            }
+
+            final maxScroll =
+                _prayerTimesScrollController.position.maxScrollExtent;
+            final currentScroll = _prayerTimesScrollController.offset;
+
+            // If at the end, scroll back to start
+            if (currentScroll >= maxScroll - 10) {
+              await _prayerTimesScrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOut,
+              );
+            } else {
+              // Scroll to next item (approximately 100 pixels)
+              final nextScroll = (currentScroll + 100).clamp(0.0, maxScroll);
+              await _prayerTimesScrollController.animateTo(
+                nextScroll,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+              );
+            }
+          });
+        }
+      });
     });
   }
 
@@ -403,17 +466,24 @@ class _HomepageState extends State<Homepage> {
         child: Column(
           children: [
             _buildHeaderSection(context),
-            const SizedBox(height: 72), // Space for overlapping card
+            const SizedBox(height: 12),
+            // Upcoming Prayer Card
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.05,
+              ),
+              child: _buildUpcomingPrayerCard(context),
+            ),
+            const SizedBox(height: 20),
+            // Today's Prayer Times Card
+            _buildTodayPrayerTimesCard(context),
+            SizedBox(height: screenHeight * 0.04),
             // Menu Section
             _buildIconMenu(context),
             SizedBox(height: screenHeight * 0.04),
 
             // Programs Section
             _buildMainCarousel(context),
-            SizedBox(height: screenHeight * 0.04),
-
-            // Daily Verse Section
-            _buildAyatHariIni(context),
             SizedBox(height: screenHeight * 0.06),
           ],
         ),
@@ -430,7 +500,9 @@ class _HomepageState extends State<Homepage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final double headerHeight =
-        (screenHeight * 0.35).clamp(240.0, 360.0).toDouble();
+        (screenHeight * 0.38)
+            .clamp(280.0, 420.0)
+            .toDouble(); //waveclipper length
 
     return Stack(
       clipBehavior: Clip.none,
@@ -490,7 +562,7 @@ class _HomepageState extends State<Homepage> {
                     screenWidth * 0.05,
                     16,
                     screenWidth * 0.05,
-                    16,
+                    24,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,7 +624,10 @@ class _HomepageState extends State<Homepage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: screenHeight * 0.032),
+                      SizedBox(height: screenHeight * 0.024),
+                      // Ayat Hari Ini
+                      _buildAyatHariIniHeader(context),
+                      SizedBox(height: screenHeight * 0.024),
                       // Search Bar
                       _buildSearchBar(context),
                     ],
@@ -561,13 +636,6 @@ class _HomepageState extends State<Homepage> {
               ),
             ],
           ),
-        ),
-        // Overlapping Prayer Card
-        Positioned(
-          bottom: -56,
-          left: screenWidth * 0.05,
-          right: screenWidth * 0.05,
-          child: _buildPrayerTimesCard(context),
         ),
       ],
     );
@@ -587,34 +655,19 @@ class _HomepageState extends State<Homepage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         decoration: BoxDecoration(
-          color: colorScheme.onPrimary.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: colorScheme.onPrimary.withOpacity(0.3),
-            width: 1.5,
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: colorScheme.onPrimary.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.search_rounded,
-                color: colorScheme.onPrimary,
-                size: 18,
-              ),
-            ),
+            Icon(Icons.search_rounded, color: colorScheme.primary, size: 18),
             const SizedBox(width: 14),
             Expanded(
               child: AnimatedSwitcher(
@@ -637,7 +690,7 @@ class _HomepageState extends State<Homepage> {
                     _searchSuggestions[_searchTextIndex],
                     key: ValueKey<int>(_searchTextIndex),
                     style: TextStyle(
-                      color: colorScheme.onPrimary,
+                      color: colorScheme.onSurface.withOpacity(0.6),
                       fontSize: screenWidth * 0.038,
                       fontWeight: FontWeight.w500,
                     ),
@@ -651,7 +704,7 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildPrayerTimesCard(BuildContext context) {
+  Widget _buildUpcomingPrayerCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Parse prayer info
@@ -667,6 +720,24 @@ class _HomepageState extends State<Homepage> {
         nextPrayerTime = parts[1].trim();
       }
     }
+
+    // Get current date
+    final now = DateTime.now();
+    final months = [
+      'Januari',
+      'Februari',
+      'Mac',
+      'April',
+      'Mei',
+      'Jun',
+      'Julai',
+      'Ogos',
+      'September',
+      'Oktober',
+      'November',
+      'Disember',
+    ];
+    final currentDate = '${now.day} ${months[now.month - 1]} ${now.year}';
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -686,109 +757,296 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+          // Date and location row
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                currentDate,
+                style: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const Spacer(),
+              FutureBuilder<String>(
+                future: SharedPreferences.getInstance().then(
+                  (prefs) =>
+                      prefs.getString('current_location_name') ?? 'Malaysia',
+                ),
+                builder: (context, snapshot) {
+                  return Row(
                     children: [
                       Icon(
-                        Icons.access_time_rounded,
+                        Icons.location_on_rounded,
                         size: 14,
-                        color: colorScheme.primary,
+                        color: colorScheme.onSurface.withOpacity(0.6),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
-                        'SOLAT SETERUSNYA',
+                        snapshot.data ?? 'Malaysia',
                         style: TextStyle(
-                          color: colorScheme.primary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  nextPrayerName.isNotEmpty ? nextPrayerName : 'MEMUAT...',
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
-                  style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.primary,
-                  colorScheme.primary.withOpacity(0.85),
-                ],
+                  );
+                },
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Main prayer info
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'SOLAT SETERUSNYA',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      nextPrayerName.isNotEmpty ? nextPrayerName : 'MEMUAT...',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withOpacity(0.7),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Baki Masa',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary.withOpacity(0.9),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+              ),
+              const SizedBox(width: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary,
+                      colorScheme.primary.withOpacity(0.85),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  _countdown.inSeconds > 0
-                      ? _formatDuration(_countdown)
-                      : '--:--',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Baki Masa',
+                      style: TextStyle(
+                        color: colorScheme.onPrimary.withOpacity(0.9),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _countdown.inSeconds > 0
+                          ? _formatDuration(_countdown)
+                          : '--:--',
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getPrayerColor(String prayerName) {
+    // Return colors based on real-life time of day
+    switch (prayerName.toLowerCase()) {
+      case 'subuh':
+        return const Color(0xFF9C27B0); // Purple for pre-dawn
+      case 'syuruk':
+        return const Color(0xFFFF6F00); // Orange for sunrise
+      case 'zohor':
+        return const Color(0xFFFFC107); // Golden yellow for noon
+      case 'asar':
+        return const Color(0xFFFF9800); // Amber for afternoon
+      case 'maghrib':
+        return const Color(0xFFE91E63); // Pink/red for sunset
+      case 'isyak':
+        return const Color(0xFF3F51B5); // Indigo for night
+      default:
+        return const Color(0xFF0284C7); // Default blue
+    }
+  }
+
+  Widget _buildTodayPrayerTimesCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (_prayerTimes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.today_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Waktu Solat Hari Ini',
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontSize: screenWidth * 0.042,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            controller: _prayerTimesScrollController,
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+                  _prayerTimes.asMap().entries.map((entry) {
+                    final prayer = entry.value;
+                    final isLast = entry.key == _prayerTimes.length - 1;
+                    final prayerName = prayer['name'] ?? '';
+                    final prayerColor = _getPrayerColor(prayerName);
+
+                    return Padding(
+                      padding: EdgeInsets.only(right: isLast ? 0 : 10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: prayerColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: prayerColor.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              prayerName,
+                              style: TextStyle(
+                                color: prayerColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              prayer['time'] ?? '',
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
           ),
         ],
@@ -883,8 +1141,8 @@ class _HomepageState extends State<Homepage> {
                       context,
                       title: 'Waktu Solat',
                       iconPath: 'assets/icons/menu/waktu_solat.svg',
-                      backgroundColor: colorScheme.primary.withOpacity(0.1),
-                      iconColor: colorScheme.primary,
+                      backgroundColor: const Color(0xFFF3E5F5),
+                      iconColor: const Color(0xFF8E24AA),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -899,8 +1157,8 @@ class _HomepageState extends State<Homepage> {
                       context,
                       title: 'Arah Kiblat',
                       iconPath: 'assets/icons/menu/kiblat.svg',
-                      backgroundColor: colorScheme.primary.withOpacity(0.08),
-                      iconColor: colorScheme.primary,
+                      backgroundColor: const Color(0xFFFFE0B2),
+                      iconColor: const Color(0xFFFF6D00),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -919,8 +1177,8 @@ class _HomepageState extends State<Homepage> {
                       context,
                       title: 'Al Qur\'an',
                       iconPath: 'assets/icons/menu/quran_new.svg',
-                      backgroundColor: colorScheme.primary.withOpacity(0.1),
-                      iconColor: colorScheme.primary,
+                      backgroundColor: const Color(0xFFE0F2F1),
+                      iconColor: const Color(0xFF00C853),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -935,8 +1193,8 @@ class _HomepageState extends State<Homepage> {
                       context,
                       title: 'Tasbih',
                       iconPath: 'assets/icons/menu/tasbih.svg',
-                      backgroundColor: colorScheme.primary.withOpacity(0.08),
-                      iconColor: colorScheme.primary,
+                      backgroundColor: const Color(0xFFFCE4EC),
+                      iconColor: const Color(0xFFFF4081),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -964,18 +1222,27 @@ class _HomepageState extends State<Homepage> {
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Adjust colors for dark mode
+    final adjustedBackgroundColor =
+        isDark ? backgroundColor.withOpacity(0.25) : backgroundColor;
+    final adjustedIconColor = isDark ? iconColor : iconColor;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: adjustedBackgroundColor,
           borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: iconColor.withOpacity(0.15), width: 1),
+          border: Border.all(
+            color: adjustedIconColor.withOpacity(isDark ? 0.3 : 0.15),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: iconColor.withOpacity(0.08),
+              color: adjustedIconColor.withOpacity(0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -994,7 +1261,7 @@ class _HomepageState extends State<Homepage> {
                 iconPath,
                 width: 28,
                 height: 28,
-                color: iconColor,
+                color: adjustedIconColor,
               ),
             ),
             const SizedBox(width: 12),
@@ -1003,7 +1270,8 @@ class _HomepageState extends State<Homepage> {
               child: Text(
                 title,
                 style: TextStyle(
-                  color: colorScheme.onBackground,
+                  color:
+                      isDark ? colorScheme.onSurface : colorScheme.onBackground,
                   fontSize: screenWidth * 0.034,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.2,
@@ -1207,120 +1475,58 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildAyatHariIni(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+  Widget _buildAyatHariIniHeader(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primary.withOpacity(0.08),
-            colorScheme.primary.withOpacity(0.04),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: colorScheme.onPrimary.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.primary.withOpacity(0.1),
+          color: colorScheme.onPrimary.withOpacity(0.3),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Section Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.primary.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.menu_book_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Ayat Hari Ini',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontSize: screenWidth * 0.048,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: screenHeight * 0.02),
-
-          // Verse Content
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: colorScheme.onPrimary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Icon(
+              Icons.format_quote_rounded,
+              color: colorScheme.onPrimary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '"Dan dirikanlah solat, tunaikanlah zakat, dan ruku\'lah beserta orang-orang yang ruku\'."',
+                  '"Maka sesungguhnya bersama kesulitan ada kemudahan."',
                   style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: screenWidth * 0.042,
+                    color: colorScheme.onPrimary,
+                    fontSize: screenWidth * 0.035,
                     fontStyle: FontStyle.italic,
-                    height: 1.6,
-                    letterSpacing: 0.2,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: screenHeight * 0.015),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Surah Al-Baqarah, Ayat 43',
-                    style: TextStyle(
-                      color: colorScheme.primary,
-                      fontSize: screenWidth * 0.034,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  '- QS. Al-Insyirah: 5',
+                  style: TextStyle(
+                    color: colorScheme.onPrimary.withOpacity(0.8),
+                    fontSize: screenWidth * 0.03,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

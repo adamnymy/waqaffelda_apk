@@ -43,7 +43,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(0, Icons.home_rounded, 'Menu'),
-            _buildNavItem(1, Icons.menu_book_rounded, 'Program'),
+            _buildNavItem(1, Icons.calendar_month_rounded, 'Program'),
             _buildNavItem(2, Icons.volunteer_activism_rounded, 'Waqaf'),
             _buildNavItem(3, Icons.mail_rounded, 'Inbox'),
             _buildNavItem(4, Icons.person_rounded, 'Akaun'),

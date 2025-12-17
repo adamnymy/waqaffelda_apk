@@ -54,6 +54,7 @@ class _HomepageState extends State<Homepage> {
   Timer? _countdownTimer;
   Duration _countdown = Duration.zero;
   List<Map<String, dynamic>> _prayerTimes = [];
+  bool _isPrayerTimesLoading = true;
 
   @override
   void initState() {
@@ -211,6 +212,11 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadPrayerTimes() async {
     _countdownTimer?.cancel(); // Cancel any existing timer
+    if (mounted) {
+      setState(() {
+        _isPrayerTimesLoading = true;
+      });
+    }
     try {
       Position? position = await PrayerTimesService.getCurrentLocation();
       if (position != null) {
@@ -223,6 +229,7 @@ class _HomepageState extends State<Homepage> {
           if (mounted) {
             setState(() {
               _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
+              _isPrayerTimesLoading = false;
             });
           }
           _updateNextPrayer();
@@ -231,15 +238,30 @@ class _HomepageState extends State<Homepage> {
           _scheduleNotificationsIfNeeded(position);
         } else {
           // API failed, set default countdown
+          if (mounted) {
+            setState(() {
+              _isPrayerTimesLoading = false;
+            });
+          }
           _setDefaultCountdown();
         }
       } else {
         // Location not available, set default countdown
+        if (mounted) {
+          setState(() {
+            _isPrayerTimesLoading = false;
+          });
+        }
         _setDefaultCountdown();
       }
     } catch (e) {
       print('Error loading prayer times for homepage: $e');
       // Error occurred, set default countdown
+      if (mounted) {
+        setState(() {
+          _isPrayerTimesLoading = false;
+        });
+      }
       _setDefaultCountdown();
     }
   }
@@ -472,7 +494,10 @@ class _HomepageState extends State<Homepage> {
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.05,
               ),
-              child: _buildUpcomingPrayerCard(context),
+              child:
+                  _isPrayerTimesLoading
+                      ? _buildUpcomingPrayerSkeletonLoading(context)
+                      : _buildUpcomingPrayerCard(context),
             ),
             const SizedBox(height: 20),
             // Today's Prayer Times Card
@@ -948,6 +973,10 @@ class _HomepageState extends State<Homepage> {
     final colorScheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
+    if (_isPrayerTimesLoading) {
+      return _buildPrayerTimesSkeletonLoading(context);
+    }
+
     if (_prayerTimes.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -1090,40 +1119,19 @@ class _HomepageState extends State<Homepage> {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  OthersMenuPage.show(context);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colorScheme.primary.withOpacity(0.2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Semua',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.034,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 16,
-                        color: colorScheme.primary,
-                      ),
-                    ],
+              TextButton(
+                onPressed: () => OthersMenuPage.show(context),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Lihat Semua',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.034,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -1324,40 +1332,19 @@ class _HomepageState extends State<Homepage> {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  _onTabTapped(1);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colorScheme.primary.withOpacity(0.2),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Semua',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.034,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 16,
-                        color: colorScheme.primary,
-                      ),
-                    ],
+              TextButton(
+                onPressed: () => _onTabTapped(1),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Lihat Program',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.034,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -1472,6 +1459,191 @@ class _HomepageState extends State<Homepage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildUpcomingPrayerSkeletonLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.12),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date and location row
+          Row(
+            children: [
+              _buildShimmerBox(
+                width: 100,
+                height: 12,
+                colorScheme: colorScheme,
+                borderRadius: 6,
+              ),
+              const Spacer(),
+              _buildShimmerBox(
+                width: 80,
+                height: 12,
+                colorScheme: colorScheme,
+                borderRadius: 6,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Main prayer info
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildShimmerBox(
+                      width: 120,
+                      height: 24,
+                      colorScheme: colorScheme,
+                      borderRadius: 8,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildShimmerBox(
+                      width: 100,
+                      height: 28,
+                      colorScheme: colorScheme,
+                      borderRadius: 8,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildShimmerBox(
+                      width: 60,
+                      height: 18,
+                      colorScheme: colorScheme,
+                      borderRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              _buildShimmerBox(
+                width: 90,
+                height: 70,
+                colorScheme: colorScheme,
+                borderRadius: 16,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrayerTimesSkeletonLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.today_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              _buildShimmerBox(
+                width: 150,
+                height: 16,
+                colorScheme: colorScheme,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                6,
+                (index) => Padding(
+                  padding: EdgeInsets.only(right: index == 5 ? 0 : 10),
+                  child: _buildShimmerBox(
+                    width: 100,
+                    height: 36,
+                    colorScheme: colorScheme,
+                    borderRadius: 12,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerBox({
+    required double width,
+    required double height,
+    required ColorScheme colorScheme,
+    double borderRadius = 8,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.3, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOut,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+          ),
+        );
+      },
+      onEnd: () {
+        // Restart animation
+        if (mounted && _isPrayerTimesLoading) {
+          setState(() {});
+        }
+      },
     );
   }
 

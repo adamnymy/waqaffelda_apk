@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 /// WorkManager callback dispatcher - must be a top-level function
 @pragma('vm:entry-point')
@@ -116,26 +117,90 @@ void _callbackDispatcher() {
   });
 }
 
-/// Read cached prayer times from SharedPreferences and schedule WorkManager tasks.
+/// Fetch fresh prayer times from API and schedule WorkManager tasks.
 @pragma('vm:entry-point')
 Future<void> _scheduleFromCachedPrayerTimes() async {
   try {
-    print('🔄 [BG] Starting background reschedule from cached prayer times');
+    print('🔄 [BG] Starting background reschedule with fresh API fetch');
 
     final prefs = await SharedPreferences.getInstance();
-    final cached = prefs.getString('cached_prayer_times');
-    if (cached == null) {
-      print('❌ [BG] No cached prayer times found for background reschedule');
-      return;
+    List<dynamic> list;
+
+    // Try to fetch fresh prayer times from API
+    try {
+      print('🌐 [BG] Attempting to fetch fresh prayer times from API...');
+
+      // Get last known location from SharedPreferences
+      final lastLat = prefs.getDouble('last_known_lat') ?? 3.139;
+      final lastLng = prefs.getDouble('last_known_lng') ?? 101.6869;
+
+      print('📍 [BG] Using location: $lastLat, $lastLng');
+
+      // Fetch tomorrow's prayer times
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final url =
+          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&zone=WLY01&year=${tomorrow.year}&month=${tomorrow.month.toString().padLeft(2, '0')}';
+
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'OK' &&
+            data['prayerTime'] != null &&
+            data['prayerTime'].isNotEmpty) {
+          // Find tomorrow's prayer times
+          final tomorrowDateStr = tomorrow.day.toString().padLeft(2, '0');
+          final tomorrowData = (data['prayerTime'] as List).firstWhere(
+            (day) => day['date'].toString().split('-').last == tomorrowDateStr,
+            orElse: () => null,
+          );
+
+          if (tomorrowData != null) {
+            // Convert to our format
+            list = [
+              {'name': 'Subuh', 'time': tomorrowData['fajr']},
+              {'name': 'Zohor', 'time': tomorrowData['dhuhr']},
+              {'name': 'Asar', 'time': tomorrowData['asr']},
+              {'name': 'Maghrib', 'time': tomorrowData['maghrib']},
+              {'name': 'Isyak', 'time': tomorrowData['isha']},
+            ];
+
+            // Save fresh data to cache
+            await prefs.setString('cached_prayer_times', jsonEncode(list));
+            print(
+              '✅ [BG] Successfully fetched and cached fresh prayer times from API',
+            );
+          } else {
+            throw Exception('Tomorrow\'s data not found in API response');
+          }
+        } else {
+          throw Exception('Invalid API response format');
+        }
+      } else {
+        throw Exception('API returned status code: ${response.statusCode}');
+      }
+    } catch (apiError) {
+      print('⚠️ [BG] API fetch failed: $apiError. Falling back to cache...');
+
+      // Fall back to cached prayer times
+      final cached = prefs.getString('cached_prayer_times');
+      if (cached == null) {
+        print('❌ [BG] No cached prayer times found for fallback');
+        return;
+      }
+
+      list = jsonDecode(cached);
+      if (list.isEmpty) {
+        print('❌ [BG] Cached prayer times list is empty');
+        return;
+      }
+
+      print('📋 [BG] Using ${list.length} cached prayer times as fallback');
     }
 
-    final List<dynamic> list = jsonDecode(cached);
-    if (list.isEmpty) {
-      print('❌ [BG] Cached prayer times list is empty');
-      return;
-    }
-
-    print('📋 [BG] Found ${list.length} cached prayer times');
+    print('📋 [BG] Processing ${list.length} prayer times for scheduling');
 
     // Parse times for tomorrow (since this runs at night after all today's prayers passed)
     final now = DateTime.now();
@@ -337,6 +402,23 @@ class NotificationService {
     },
   };
 
+  /// Calculate initial delay to run background task at 11:50 PM
+  Duration _calculateInitialDelay() {
+    final now = DateTime.now();
+    var targetTime = DateTime(now.year, now.month, now.day, 23, 50); // 11:50 PM
+
+    // If it's already past 11:50 PM today, schedule for tomorrow
+    if (now.isAfter(targetTime)) {
+      targetTime = targetTime.add(const Duration(days: 1));
+    }
+
+    final delay = targetTime.difference(now);
+    print(
+      '⏰ Background reschedule will first run at $targetTime (in ${delay.inHours}h ${delay.inMinutes % 60}m)',
+    );
+    return delay;
+  }
+
   /// Initialize notification service
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -376,9 +458,22 @@ class NotificationService {
       isInDebugMode: false, // Production mode - no debug notifications
     );
 
-    // Daily rescheduler disabled - app will reschedule on next launch
-    // Users should open app daily to ensure notifications are scheduled
-    print('ℹ️ Daily auto-reschedule disabled - app will reschedule on launch');
+    // Register daily background task to auto-reschedule prayer times
+    // This runs every 24 hours to schedule tomorrow's notifications
+    await Workmanager().registerPeriodicTask(
+      'daily_rescheduler', // Unique task name
+      'daily_rescheduler', // Task type (matches callback dispatcher)
+      frequency: const Duration(hours: 24), // Run every 24 hours
+      initialDelay: _calculateInitialDelay(), // Run at 11:50 PM
+      constraints: Constraints(
+        networkType: NetworkType.not_required,
+        requiresCharging: false,
+        requiresDeviceIdle: false,
+        requiresBatteryNotLow: false,
+      ),
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+    );
+    print('✅ Daily auto-reschedule enabled - runs every 24 hours at 11:50 PM');
 
     _isInitialized = true;
     print('✅ Notification service initialized');

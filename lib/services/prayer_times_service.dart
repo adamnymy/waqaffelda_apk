@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PrayerTimesService {
   // Get prayer times using e-solat.gov.my official data
@@ -953,7 +954,21 @@ class PrayerTimesService {
         return null;
       }
 
-      return await Geolocator.getCurrentPosition();
+      final position = await Geolocator.getCurrentPosition();
+
+      // Save location to SharedPreferences for background tasks
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setDouble('last_known_lat', position.latitude);
+        await prefs.setDouble('last_known_lng', position.longitude);
+        print(
+          '📍 Saved last known location: ${position.latitude}, ${position.longitude}',
+        );
+      } catch (e) {
+        print('⚠️ Failed to save location: $e');
+      }
+
+      return position;
     } catch (e) {
       print('Error getting location: $e');
       return null;

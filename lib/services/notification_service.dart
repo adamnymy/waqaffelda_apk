@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'widget_service.dart';
 
 /// WorkManager callback dispatcher - must be a top-level function
 @pragma('vm:entry-point')
@@ -281,6 +282,14 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
     final tomorrowDate = DateFormat('yyyy-MM-dd').format(tomorrow);
     await prefs.setString('last_scheduled_date', tomorrowDate);
     print('💾 [BG] Updated last_scheduled_date to: $tomorrowDate');
+
+    // Update widget with the fresh prayer times data
+    try {
+      await WidgetService.updateWidget();
+      print('🔄 [BG] Widget updated with fresh prayer times');
+    } catch (e) {
+      print('⚠️ [BG] Widget update failed: $e');
+    }
 
     print(
       '✅ [BG] Background reschedule complete - scheduled $scheduledCount prayers for tomorrow',

@@ -77,6 +77,18 @@
                 <action android:name="app.waqaffelda.waqafer.ACTION_PRAYER_ALARM" />
             </intent-filter>
         </receiver>
+
+        <!-- Prayer Times Widget -->
+        <receiver android:name="com.example.waqaffelda_apk.PrayerTimesWidgetProvider"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_times_widget_info" />
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -4,6 +4,7 @@ import '../../navbar.dart';
 import '../prayertimes/prayertimes.dart';
 import '../../services/prayer_times_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/widget_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../zikircounter/zikircounter.dart';
@@ -312,6 +313,10 @@ class _HomepageState extends State<Homepage> {
 
       // Save the location that was used for scheduling
       await prefs.setString('last_scheduled_location', locationName);
+
+      // Update widget with fresh prayer times
+      await WidgetService.updateWidget();
+      print('🔄 Widget updated from homepage');
 
       print('✅ Notifications scheduled successfully for $locationName');
     } catch (e) {

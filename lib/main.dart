@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'splash_screen.dart'; // Import SplashScreen
 import 'services/notification_service.dart'; // Import NotificationService
+import 'services/widget_service.dart'; // Import WidgetService
 import 'pages/prayertimes/prayertimes.dart'; // Import PrayerTimesPage
 
 // Global navigator key for notification navigation
@@ -68,6 +69,15 @@ void main() async {
     print('✅ Notification service initialized in main()');
   } catch (e) {
     print('⚠️ Error initializing notification service in main(): $e');
+  }
+
+  // Initialize widget service
+  try {
+    await WidgetService.initialize();
+    await WidgetService.registerCallbacks();
+    print('✅ Widget service initialized in main()');
+  } catch (e) {
+    print('⚠️ Error initializing widget service in main(): $e');
   }
 
   runApp(const MyApp());

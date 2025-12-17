@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../services/prayer_times_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/widget_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
@@ -388,6 +389,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
             // Schedule notifications ONLY for today's prayer times (not past/future dates)
             if (_isToday()) {
               _scheduleNotifications();
+
+              // Update widget with fresh prayer times
+              WidgetService.updateWidget();
+              print('🔄 Widget updated with fresh prayer times');
             }
           }
         }

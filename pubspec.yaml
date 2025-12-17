@@ -122,6 +122,7 @@ flutter:
     - assets/icons/menu/masjid.svg
     - assets/icons/menu/kaabah_new.svg
     - assets/icons/menu/quran_new.svg
+    - assets/icons/menu/masjid-1.svg
 
     - assets/icons/menu/waktu_solat-bg.svg
     - assets/icons/menu/alquran-bg.svg

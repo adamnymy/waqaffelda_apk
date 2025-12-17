@@ -898,7 +898,7 @@ class _HomepageState extends State<Homepage> {
                     child: _buildMenuGridCard(
                       context,
                       title: 'Arah Kiblat',
-                      iconPath: 'assets/icons/menu/kaabah_new.svg',
+                      iconPath: 'assets/icons/menu/kiblat.svg',
                       backgroundColor: colorScheme.primary.withOpacity(0.08),
                       iconColor: colorScheme.primary,
                       onTap: () {
@@ -987,20 +987,13 @@ class _HomepageState extends State<Homepage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: Colors.transparent,
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: iconColor.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: SvgPicture.asset(
                 iconPath,
-                width: 22,
-                height: 22,
+                width: 28,
+                height: 28,
                 color: iconColor,
               ),
             ),

@@ -132,55 +132,78 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
       print('🌐 [BG] Attempting to fetch fresh prayer times from API...');
 
       // Get last known location from SharedPreferences
-      final lastLat = prefs.getDouble('last_known_lat') ?? 3.139;
-      final lastLng = prefs.getDouble('last_known_lng') ?? 101.6869;
+      final lastLat = prefs.getDouble('last_known_lat');
+      final lastLng = prefs.getDouble('last_known_lng');
 
-      print('📍 [BG] Using location: $lastLat, $lastLng');
+      // Only proceed with API if we have valid location
+      if (lastLat == null || lastLng == null) {
+        print(
+          '⚠️ [BG] No saved location found. Please open app to set location.',
+        );
 
-      // Fetch tomorrow's prayer times
-      final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final url =
-          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&zone=WLY01&year=${tomorrow.year}&month=${tomorrow.month.toString().padLeft(2, '0')}';
+        // Fall back to cached prayer times
+        final cached = prefs.getString('cached_prayer_times');
+        if (cached == null) {
+          print('❌ [BG] No cached prayer times found');
+          return;
+        }
 
-      final response = await http
-          .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 10));
+        list = jsonDecode(cached);
+        if (list.isEmpty) {
+          print('❌ [BG] Cached prayer times list is empty');
+          return;
+        }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['status'] == 'OK' &&
-            data['prayerTime'] != null &&
-            data['prayerTime'].isNotEmpty) {
-          // Find tomorrow's prayer times
-          final tomorrowDateStr = tomorrow.day.toString().padLeft(2, '0');
-          final tomorrowData = (data['prayerTime'] as List).firstWhere(
-            (day) => day['date'].toString().split('-').last == tomorrowDateStr,
-            orElse: () => null,
-          );
+        print('📋 [BG] Using ${list.length} cached prayer times');
+      } else {
+        print('📍 [BG] Using saved location: $lastLat, $lastLng');
 
-          if (tomorrowData != null) {
-            // Convert to our format
-            list = [
-              {'name': 'Subuh', 'time': tomorrowData['fajr']},
-              {'name': 'Zohor', 'time': tomorrowData['dhuhr']},
-              {'name': 'Asar', 'time': tomorrowData['asr']},
-              {'name': 'Maghrib', 'time': tomorrowData['maghrib']},
-              {'name': 'Isyak', 'time': tomorrowData['isha']},
-            ];
+        // Fetch tomorrow's prayer times
+        final tomorrow = DateTime.now().add(const Duration(days: 1));
+        final url =
+            'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&zone=WLY01&year=${tomorrow.year}&month=${tomorrow.month.toString().padLeft(2, '0')}';
 
-            // Save fresh data to cache
-            await prefs.setString('cached_prayer_times', jsonEncode(list));
-            print(
-              '✅ [BG] Successfully fetched and cached fresh prayer times from API',
+        final response = await http
+            .get(Uri.parse(url))
+            .timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['status'] == 'OK' &&
+              data['prayerTime'] != null &&
+              data['prayerTime'].isNotEmpty) {
+            // Find tomorrow's prayer times
+            final tomorrowDateStr = tomorrow.day.toString().padLeft(2, '0');
+            final tomorrowData = (data['prayerTime'] as List).firstWhere(
+              (day) =>
+                  day['date'].toString().split('-').last == tomorrowDateStr,
+              orElse: () => null,
             );
+
+            if (tomorrowData != null) {
+              // Convert to our format
+              list = [
+                {'name': 'Subuh', 'time': tomorrowData['fajr']},
+                {'name': 'Zohor', 'time': tomorrowData['dhuhr']},
+                {'name': 'Asar', 'time': tomorrowData['asr']},
+                {'name': 'Maghrib', 'time': tomorrowData['maghrib']},
+                {'name': 'Isyak', 'time': tomorrowData['isha']},
+              ];
+
+              // Save fresh data to cache
+              await prefs.setString('cached_prayer_times', jsonEncode(list));
+              print(
+                '✅ [BG] Successfully fetched and cached fresh prayer times from API',
+              );
+            } else {
+              throw Exception('Tomorrow\'s data not found in API response');
+            }
           } else {
-            throw Exception('Tomorrow\'s data not found in API response');
+            throw Exception('Invalid API response format');
           }
         } else {
-          throw Exception('Invalid API response format');
+          throw Exception('API returned status code: ${response.statusCode}');
         }
-      } else {
-        throw Exception('API returned status code: ${response.statusCode}');
       }
     } catch (apiError) {
       print('⚠️ [BG] API fetch failed: $apiError. Falling back to cache...');

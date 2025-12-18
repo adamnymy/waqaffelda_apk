@@ -9,19 +9,34 @@
     android:background="@drawable/widget_background">
 
     <!-- Location at top -->
-    <TextView
-        android:id="@+id/location_text"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Loading..."
-        android:textSize="10sp"
-        android:textColor="#FFFFFF"
-        android:alpha="0.95"
-        android:fontFamily="sans-serif-medium"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍"
+            android:textSize="10sp"
+            android:layout_marginEnd="4dp"/>
+        
+        <TextView
+            android:id="@+id/location_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Loading..."
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:alpha="0.95"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:ellipsize="marquee"
+            android:singleLine="true"/>
+    </LinearLayout>
 
     <!-- Main content - Next prayer -->
     <LinearLayout

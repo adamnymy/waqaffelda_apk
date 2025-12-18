@@ -6,8 +6,12 @@ import android.content.Context
 import android.widget.RemoteViews
 import android.content.Intent
 import android.app.PendingIntent
+import android.app.AlarmManager
+import android.os.SystemClock
 import es.antonborri.home_widget.HomeWidgetPlugin
 import app.waqaffelda.waqafer.MainActivity
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PrayerTimesWidgetProvider : AppWidgetProvider() {
 
@@ -19,6 +23,66 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
+        
+        // Schedule next update at the next prayer time
+        scheduleNextUpdate(context)
+    }
+    
+    private fun scheduleNextUpdate(context: Context) {
+        try {
+            val widgetData = HomeWidgetPlugin.getData(context)
+            val nextPrayerTime = widgetData.getString("next_prayer_time", null)
+            
+            if (nextPrayerTime != null && nextPrayerTime != "--:--") {
+                val prayerDateTime = parseTimeToDateTime(nextPrayerTime)
+                
+                if (prayerDateTime != null && prayerDateTime.after(Date())) {
+                    // Schedule update 1 minute after prayer time
+                    val updateTime = prayerDateTime.time + 60000 // +1 minute
+                    
+                    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    val intent = Intent(context, PrayerTimesWidgetProvider::class.java)
+                    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        updateTime,
+                        pendingIntent
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            // Silently fail if scheduling doesn't work
+        }
+    }
+    
+    private fun parseTimeToDateTime(timeStr: String): Date? {
+        try {
+            val calendar = Calendar.getInstance()
+            val timeParts = timeStr.split(":")
+            
+            if (timeParts.size == 2) {
+                val hour = timeParts[0].toInt()
+                val minute = timeParts[1].toInt()
+                
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                
+                return calendar.time
+            }
+        } catch (e: Exception) {
+            // Return null if parsing fails
+        }
+        return null
     }
 
     private fun updateAppWidget(

@@ -18,12 +18,34 @@ import 'others_menu_page.dart';
 import 'searchpage/search_page.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
+import '../../services/quran_service.dart';
+import '../../models/quran_models.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
 
   @override
   _HomepageState createState() => _HomepageState();
+
+  /// Static method to save reading progress - call this from Quran page
+  static Future<void> saveQuranProgress({
+    required int surahNumber,
+    required int ayahNumber,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('last_read_surah', surahNumber);
+      await prefs.setInt('last_read_ayah', ayahNumber);
+      await prefs.setBool('has_read_quran', true);
+      await prefs.setString(
+        'last_read_timestamp',
+        DateTime.now().toIso8601String(),
+      );
+      print('📖 Saved Quran progress: Surah $surahNumber, Ayat $ayahNumber');
+    } catch (e) {
+      print('❌ Error saving Quran progress: $e');
+    }
+  }
 }
 
 int _searchTextIndex = 0;
@@ -121,6 +143,8 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           '📍 Location changed by ${(distanceInMeters / 1000).toStringAsFixed(1)}km, reloading prayer times...',
         );
         _loadPrayerTimes();
+        // Update widget with new location
+        await WidgetService.updateWidget();
       }
     } catch (e) {
       print('Error checking location change: $e');
@@ -280,6 +304,9 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             });
           }
           _updateNextPrayer();
+
+          // Update widget with fresh prayer times
+          await WidgetService.updateWidget();
 
           // Schedule notifications after prayer times are loaded
           _scheduleNotificationsIfNeeded(position);
@@ -444,6 +471,8 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                 timer.cancel();
                 // refresh prayer times for next prayer
                 _loadPrayerTimes();
+                // Update widget when prayer time passes
+                WidgetService.updateWidget();
                 return;
               }
               setState(() {
@@ -550,11 +579,8 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                       ? _buildUpcomingPrayerSkeletonLoading(context)
                       : _buildUpcomingPrayerCard(context),
             ),
-            const SizedBox(height: 20),
-            // Today's Prayer Times Card
-            _buildTodayPrayerTimesCard(context),
             SizedBox(height: screenHeight * 0.04),
-            // Menu Section
+            // Menu Section (includes Quran tracker)
             _buildIconMenu(context),
             SizedBox(height: screenHeight * 0.04),
 
@@ -1020,118 +1046,221 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     }
   }
 
-  Widget _buildTodayPrayerTimesCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildLastReadQuranCard(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    if (_isPrayerTimesLoading) {
-      return _buildPrayerTimesSkeletonLoading(context);
-    }
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getLastReadQuran(),
+      builder: (context, snapshot) {
+        final lastRead = snapshot.data ?? {};
+        final surahName = lastRead['surahName'] ?? 'Al-Fatihah';
+        final ayahNumber = lastRead['ayahNumber'] ?? 1;
+        final progress = lastRead['progress'] ?? 0.0;
+        final hasRead = lastRead['hasRead'] ?? false;
 
-    if (_prayerTimes.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.today_rounded,
-                  size: 18,
-                  color: colorScheme.primary,
-                ),
+        return GestureDetector(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              SmoothPageRoute(page: const QuranPage()),
+            );
+            // Refresh the card when returning from Quran page
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0.1),
+                ],
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Waktu Solat Hari Ini',
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontSize: screenWidth * 0.042,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3,
-                ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            controller: _prayerTimesScrollController,
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children:
-                  _prayerTimes.asMap().entries.map((entry) {
-                    final prayer = entry.value;
-                    final isLast = entry.key == _prayerTimes.length - 1;
-                    final prayerName = prayer['name'] ?? '';
-                    final prayerColor = _getPrayerColor(prayerName);
-
-                    return Padding(
-                      padding: EdgeInsets.only(right: isLast ? 0 : 10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: prayerColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: prayerColor.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              prayerName,
-                              style: TextStyle(
-                                color: prayerColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              prayer['time'] ?? '',
-                              style: TextStyle(
-                                color: colorScheme.onSurface.withOpacity(0.7),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00897B).withOpacity(0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00897B).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF00897B).withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
-                    );
-                  }).toList(),
+                      child: Icon(
+                        Icons.menu_book_rounded,
+                        color: const Color(0xFF00897B),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            surahName,
+                            style: TextStyle(
+                              color: const Color(0xFF00897B),
+                              fontSize: screenWidth * 0.045,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Ayat $ayahNumber',
+                            style: TextStyle(
+                              color: const Color(0xFF00897B).withOpacity(0.6),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00897B).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF00897B).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '${(progress * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          color: Color(0xFF00897B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: const Color(0xFF00897B).withOpacity(0.15),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF00897B),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Action button
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00897B),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00897B).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        hasRead
+                            ? Icons.play_arrow_rounded
+                            : Icons.auto_stories_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        hasRead ? 'Teruskan' : 'Mula Baca',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  Future<Map<String, dynamic>> _getLastReadQuran() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastSurahNumber = prefs.getInt('last_read_surah') ?? 1;
+      final lastAyahNumber = prefs.getInt('last_read_ayah') ?? 1;
+      final hasRead = prefs.getBool('has_read_quran') ?? false;
+
+      // Load actual Surah from API (same source as quranpage)
+      final allSurahs = await QuranService.getAllSurahs();
+      Surah? lastSurah;
+      if (allSurahs.isNotEmpty) {
+        try {
+          lastSurah = allSurahs.firstWhere(
+            (surah) => surah.number == lastSurahNumber,
+          );
+        } catch (e) {
+          lastSurah = allSurahs.first;
+        }
+      }
+
+      // Calculate progress (simple: surah number / 114)
+      final progress = lastSurahNumber / 114.0;
+
+      return {
+        'surahName': lastSurah?.englishName ?? 'Al-Fatihah',
+        'surahNumber': lastSurahNumber,
+        'ayahNumber': lastAyahNumber,
+        'progress': progress,
+        'hasRead': hasRead,
+      };
+    } catch (e) {
+      print('Error getting last read Quran: $e');
+      return {
+        'surahName': 'Al-Fatihah',
+        'surahNumber': 1,
+        'ayahNumber': 1,
+        'progress': 0.0,
+        'hasRead': false,
+      };
+    }
   }
 
   Widget _buildIconMenu(BuildContext context) {
@@ -1189,6 +1318,10 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             ],
           ),
           SizedBox(height: screenWidth * 0.05),
+
+          // Featured Quran Tracker Card
+          _buildLastReadQuranCard(context),
+          const SizedBox(height: 16),
 
           // 2x2 Grid Layout
           Column(

@@ -4,6 +4,7 @@ import '../../utils/page_transitions.dart';
 import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
 import 'surah_detail_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
@@ -1011,6 +1012,41 @@ class _QuranPageState extends State<QuranPage>
     }).toList();
   }
 
+  Future<Map<String, dynamic>> _getLastReadQuran() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastSurahNumber = prefs.getInt('last_read_surah') ?? 1;
+      final lastAyahNumber = prefs.getInt('last_read_ayah') ?? 1;
+      final hasRead = prefs.getBool('has_read_quran') ?? false;
+
+      // Find the surah from loaded data
+      Surah? lastSurah;
+      if (allSurahs.isNotEmpty) {
+        try {
+          lastSurah = allSurahs.firstWhere(
+            (surah) => surah.number == lastSurahNumber,
+          );
+        } catch (e) {
+          // If not found, default to first surah
+          lastSurah = allSurahs.first;
+        }
+      }
+
+      return {
+        'surah': lastSurah,
+        'ayahNumber': lastAyahNumber,
+        'hasRead': hasRead,
+      };
+    } catch (e) {
+      print('Error getting last read Quran: $e');
+      return {
+        'surah': allSurahs.isNotEmpty ? allSurahs.first : null,
+        'ayahNumber': 1,
+        'hasRead': false,
+      };
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -1103,87 +1139,120 @@ class _QuranPageState extends State<QuranPage>
           Container(
             color: colorScheme.surface,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    colorScheme.primary,
-                    colorScheme.primary.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: _getLastReadQuran(),
+              builder: (context, snapshot) {
+                // Show loading skeleton while data is loading
+                if (isLoading || allSurahs.isEmpty) {
+                  return _buildTrackerSkeletonLoading(colorScheme);
+                }
+
+                final data = snapshot.data ?? {};
+                final Surah? lastSurah = data['surah'];
+                final int ayahNumber = data['ayahNumber'] ?? 1;
+                final bool hasRead = data['hasRead'] ?? false;
+
+                // Default values if no data
+                final displayName = lastSurah?.englishName ?? 'Al-Fatihah';
+                final displayMeaning =
+                    lastSurah?.malayTranslation ?? 'Pembukaan';
+
+                return GestureDetector(
+                  onTap: () {
+                    if (lastSurah != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => SurahDetailPage(surah: lastSurah),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: colorScheme.onPrimary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primary.withOpacity(0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      color: colorScheme.onPrimary,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          'Bacaan Terakhir',
-                          style: TextStyle(
-                            color: colorScheme.onPrimary.withOpacity(0.9),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onPrimary.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Al-Fatihah',
-                          style: TextStyle(
+                          child: Icon(
+                            Icons.menu_book_rounded,
                             color: colorScheme.onPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            size: 28,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Ayat 1 - Pembukaan',
-                          style: TextStyle(
-                            color: colorScheme.onPrimary.withOpacity(0.8),
-                            fontSize: 12,
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hasRead ? 'Bacaan Terakhir' : 'Mula Membaca',
+                                style: TextStyle(
+                                  color: colorScheme.onPrimary.withOpacity(0.9),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                displayName,
+                                style: TextStyle(
+                                  color: colorScheme.onPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Ayat $ayahNumber - $displayMeaning',
+                                style: TextStyle(
+                                  color: colorScheme.onPrimary.withOpacity(0.8),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colorScheme.onPrimary.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: colorScheme.onPrimary,
+                            size: 16,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.onPrimary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: colorScheme.onPrimary,
-                      size: 16,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
 
@@ -1996,6 +2065,87 @@ class _QuranPageState extends State<QuranPage>
         );
       },
       child: child,
+    );
+  }
+
+  Widget _buildTrackerSkeletonLoading(ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+      ),
+      child: Row(
+        children: [
+          // Icon skeleton
+          _buildShimmer(
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              width: 52,
+              height: 52,
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Text skeleton
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildShimmer(
+                  Container(
+                    width: 100,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildShimmer(
+                  Container(
+                    width: 130,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                _buildShimmer(
+                  Container(
+                    width: 150,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Arrow skeleton
+          _buildShimmer(
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              width: 32,
+              height: 32,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

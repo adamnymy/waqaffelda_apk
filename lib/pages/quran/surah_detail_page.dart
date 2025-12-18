@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
+import '../homepage/homepage.dart';
 
 class SurahDetailPage extends StatefulWidget {
   final Surah surah;
@@ -18,11 +21,32 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   Set<int> bookmarkedAyahs = {}; // Store bookmarked ayah numbers
   double arabicFontSize = 28.0;
   double translationFontSize = 16.0;
+  int currentVisibleAyah = 1; // Track currently visible ayah
+  final ScrollController _scrollController = ScrollController();
+  Timer? _scrollDebounce;
 
   @override
   void initState() {
     super.initState();
     _loadSurahDetail();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _scrollDebounce?.cancel();
+    // Save progress on exit
+    if (currentVisibleAyah >= 1) {
+      _saveProgress(currentVisibleAyah);
+    }
+    super.dispose();
+  }
+
+  void _saveProgress(int ayahNumber) {
+    Homepage.saveQuranProgress(
+      surahNumber: widget.surah.number,
+      ayahNumber: ayahNumber,
+    );
   }
 
   Future<void> _loadSurahDetail() async {
@@ -63,6 +87,8 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         );
       } else {
         bookmarkedAyahs.add(ayahNumber);
+        // Save progress when bookmarking
+        _saveProgress(ayahNumber);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Ditambah ke tandabuku'),
@@ -71,6 +97,14 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         );
       }
     });
+  }
+
+  void _onAyahVisible(int ayahNumber) {
+    if (currentVisibleAyah != ayahNumber) {
+      currentVisibleAyah = ayahNumber;
+      // Save progress as user scrolls through ayahs
+      _saveProgress(ayahNumber);
+    }
   }
 
   void _showFontSizeDialog() {
@@ -155,6 +189,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           // App Bar with Surah Info
           SliverAppBar(
@@ -309,7 +344,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                       children: [
                         _buildBismillah(colorScheme),
                         const SizedBox(height: 24),
-                        _buildAyahCard(ayahs[0], colorScheme),
+                        _buildAyahCard(ayahs[0], colorScheme, true),
                       ],
                     );
                   }
@@ -323,7 +358,11 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
                   if (ayahIndex >= ayahs.length) return null;
 
-                  return _buildAyahCard(ayahs[ayahIndex], colorScheme);
+                  return _buildAyahCard(
+                    ayahs[ayahIndex],
+                    colorScheme,
+                    index == 0,
+                  );
                 }, childCount: ayahs.length),
               ),
             ),
@@ -390,127 +429,148 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
     );
   }
 
-  Widget _buildAyahCard(Ayah ayah, ColorScheme colorScheme) {
+  Widget _buildAyahCard(Ayah ayah, ColorScheme colorScheme, bool isFirstCard) {
     final isBookmarked = bookmarkedAyahs.contains(ayah.numberInSurah);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Ayah Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+    return VisibilityDetector(
+      key: Key('ayah_${ayah.numberInSurah}'),
+      onVisibilityChanged: (VisibilityInfo info) {
+        // Track when ayah is visible at the top (above 30% visibility means it's near the top)
+        if (info.visibleFraction > 0.3) {
+          // Debounce the tracking
+          _scrollDebounce?.cancel();
+          _scrollDebounce = Timer(const Duration(milliseconds: 300), () {
+            if (mounted && currentVisibleAyah != ayah.numberInSurah) {
+              _onAyahVisible(ayah.numberInSurah);
+            }
+          });
+        }
+      },
+      child: GestureDetector(
+        onTap: () {
+          // Save progress when user taps on an ayah
+          _onAyahVisible(ayah.numberInSurah);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-            ),
-            child: Row(
-              children: [
-                // Ayah Number Badge
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    shape: BoxShape.circle,
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Ayah Header
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.08),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
-                  child: Center(
-                    child: Text(
-                      '${ayah.numberInSurah}',
-                      style: TextStyle(
-                        color: colorScheme.onPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                ),
+                child: Row(
+                  children: [
+                    // Ayah Number Badge
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${ayah.numberInSurah}',
+                          style: TextStyle(
+                            color: colorScheme.onPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Ayat ${ayah.numberInSurah}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface.withOpacity(0.8),
+                      ),
+                    ),
+                    const Spacer(),
+                    // Bookmark Button
+                    IconButton(
+                      icon: Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color:
+                            isBookmarked
+                                ? colorScheme.secondary
+                                : colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                      onPressed: () => _toggleBookmark(ayah.numberInSurah),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Ayat ${ayah.numberInSurah}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                  ),
-                ),
-                const Spacer(),
-                // Bookmark Button
-                IconButton(
-                  icon: Icon(
-                    isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                    color:
-                        isBookmarked
-                            ? colorScheme.secondary
-                            : colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                  onPressed: () => _toggleBookmark(ayah.numberInSurah),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // Ayah Content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Arabic Text
-                Text(
-                  ayah.text,
-                  style: TextStyle(
-                    fontSize: arabicFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: colorScheme.onSurface,
-                    fontFamily: 'Amiri',
-                    height: 2.0,
-                  ),
-                  textAlign: TextAlign.right,
-                  textDirection: TextDirection.rtl,
+              // Ayah Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Arabic Text
+                    Text(
+                      ayah.text,
+                      style: TextStyle(
+                        fontSize: arabicFontSize,
+                        fontWeight: FontWeight.normal,
+                        color: colorScheme.onSurface,
+                        fontFamily: 'Amiri',
+                        height: 2.0,
+                      ),
+                      textAlign: TextAlign.right,
+                      textDirection: TextDirection.rtl,
+                    ),
+                    const SizedBox(height: 16),
+                    // Divider
+                    Container(
+                      height: 1,
+                      color: colorScheme.primary.withOpacity(0.1),
+                    ),
+                    const SizedBox(height: 16),
+                    // Translation
+                    Text(
+                      ayah.translation ?? 'Terjemahan tidak tersedia',
+                      style: TextStyle(
+                        fontSize: translationFontSize,
+                        color: colorScheme.onSurface.withOpacity(0.8),
+                        height: 1.6,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                // Divider
-                Container(
-                  height: 1,
-                  color: colorScheme.primary.withOpacity(0.1),
-                ),
-                const SizedBox(height: 16),
-                // Translation
-                Text(
-                  ayah.translation ?? 'Terjemahan tidak tersedia',
-                  style: TextStyle(
-                    fontSize: translationFontSize,
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                    height: 1.6,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
-
-
-

@@ -35,7 +35,7 @@ final List<String> _searchSuggestions = [
   'Infak Subuh...',
 ];
 
-class _HomepageState extends State<Homepage> {
+class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
   int _currentIndex = 0;
   int _carouselIndex = 0;
   final PageController _pageController = PageController(viewportFraction: 0.9);
@@ -56,10 +56,12 @@ class _HomepageState extends State<Homepage> {
   Duration _countdown = Duration.zero;
   List<Map<String, dynamic>> _prayerTimes = [];
   bool _isPrayerTimesLoading = true;
+  Position? _lastKnownPosition; // Track last location
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Initialize notifications first, then load prayer times
     // This ensures notification permission is requested before scheduling
     _initializeNotifications().then((_) {
@@ -73,6 +75,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _carouselTimer?.cancel();
     _countdownTimer?.cancel();
@@ -82,6 +85,46 @@ class _HomepageState extends State<Homepage> {
     _scrollController.dispose();
     _prayerTimesScrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App resumed, check if location has changed significantly
+      _checkLocationChangeAndReload();
+    }
+  }
+
+  Future<void> _checkLocationChangeAndReload() async {
+    try {
+      Position? currentPosition = await PrayerTimesService.getCurrentLocation();
+
+      if (currentPosition == null) return;
+
+      // If we have no previous position, just reload
+      if (_lastKnownPosition == null) {
+        _loadPrayerTimes();
+        return;
+      }
+
+      // Calculate distance between last and current position
+      double distanceInMeters = Geolocator.distanceBetween(
+        _lastKnownPosition!.latitude,
+        _lastKnownPosition!.longitude,
+        currentPosition.latitude,
+        currentPosition.longitude,
+      );
+
+      // If moved more than 5km, reload prayer times
+      if (distanceInMeters > 5000) {
+        print(
+          '📍 Location changed by ${(distanceInMeters / 1000).toStringAsFixed(1)}km, reloading prayer times...',
+        );
+        _loadPrayerTimes();
+      }
+    } catch (e) {
+      print('Error checking location change: $e');
+    }
   }
 
   void _startSearchTextAnimation() {
@@ -221,6 +264,9 @@ class _HomepageState extends State<Homepage> {
     try {
       Position? position = await PrayerTimesService.getCurrentLocation();
       if (position != null) {
+        // Store current position for location change detection
+        _lastKnownPosition = position;
+
         final prayerData = await PrayerTimesService.getPrayerTimesForMalaysia(
           position.latitude,
           position.longitude,

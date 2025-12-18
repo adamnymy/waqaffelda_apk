@@ -13,6 +13,40 @@
         </shape>
     </item>
     
+    <!-- Frosted glass effect - multiple layers for Apple-style blur -->
+    <!-- Layer 1: Overall white tint for glass look -->
+    <item>
+        <shape>
+            <solid android:color="#35FFFFFF"/>
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+    
+    <!-- Layer 2: Subtle noise/texture effect across entire surface -->
+    <item>
+        <shape>
+            <gradient
+                android:angle="45"
+                android:startColor="#18FFFFFF"
+                android:centerColor="#10FFFFFF"
+                android:endColor="#18FFFFFF"
+                android:type="linear"/>
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+    
+    <!-- Layer 3: Gentle radial glow covering whole surface -->
+    <item>
+        <shape>
+            <gradient
+                android:type="radial"
+                android:gradientRadius="120dp"
+                android:centerColor="#20FFFFFF"
+                android:endColor="#00FFFFFF"/>
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+    
     <!-- Large circle top right -->
     <item
         android:width="80dp"

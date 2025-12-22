@@ -4,7 +4,7 @@
     android:minHeight="120dp"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
-    android:updatePeriodMillis="900000"
+    android:updatePeriodMillis="0"
     android:initialLayout="@layout/prayer_times_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

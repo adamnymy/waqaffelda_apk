@@ -6,6 +6,7 @@ import '../../models/quran_models.dart';
 import 'surah_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart';
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
 
@@ -62,7 +63,7 @@ class _QuranPageState extends State<QuranPage>
         allSurahs = surahs;
         isLoading = false;
       });
-      print('✅ Loaded ${surahs.length} surahs successfully!');
+      debugPrint('✅ Loaded ${surahs.length} surahs successfully!');
     } catch (e) {
       // Still respect minimum time even on error
       final elapsed = DateTime.now().difference(_loadStartTime!).inMilliseconds;
@@ -74,7 +75,7 @@ class _QuranPageState extends State<QuranPage>
         errorMessage = 'Gagal memuatkan data Al-Quran: $e';
         isLoading = false;
       });
-      print('❌ Error loading Quran: $e');
+      debugPrint('❌ Error loading Quran: $e');
     }
   }
 
@@ -1038,7 +1039,7 @@ class _QuranPageState extends State<QuranPage>
         'hasRead': hasRead,
       };
     } catch (e) {
-      print('Error getting last read Quran: $e');
+      debugPrint('Error getting last read Quran: $e');
       return {
         'surah': allSurahs.isNotEmpty ? allSurahs.first : null,
         'ayahNumber': 1,

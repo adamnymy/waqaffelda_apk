@@ -5,6 +5,7 @@ import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
 import '../homepage/homepage.dart';
 
+import 'package:flutter/foundation.dart';
 class SurahDetailPage extends StatefulWidget {
   final Surah surah;
 
@@ -63,7 +64,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         ayahs = fetchedAyahs;
         isLoading = false;
       });
-      print(
+      debugPrint(
         '✅ Loaded ${fetchedAyahs.length} ayahs for ${widget.surah.englishName}',
       );
     } catch (e) {
@@ -71,7 +72,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
         errorMessage = 'Gagal memuatkan ayat: $e';
         isLoading = false;
       });
-      print('❌ Error loading ayahs: $e');
+      debugPrint('❌ Error loading ayahs: $e');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/foundation.dart';
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
 
@@ -124,7 +125,7 @@ class _SearchPageState extends State<SearchPage> {
       ),
       child: InkWell(
         onTap: () {
-          print('Tapped on: ${program.title}');
+          debugPrint('Tapped on: ${program.title}');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

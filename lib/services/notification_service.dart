@@ -1556,7 +1556,8 @@ class NotificationService {
           if (difference.inSeconds > 0) {
             final hours = difference.inHours;
             final minutes = difference.inMinutes % 60;
-            countdown = 'dalam ${hours}j ${minutes}m';
+            // Use numeric-only format for countdown (no leading 'dalam')
+            countdown = '${hours}j ${minutes}m';
           }
         }
       } else {

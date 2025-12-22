@@ -12,7 +12,7 @@ import app.waqaffelda.waqafer.MainActivity
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class PrayerTimesWidgetProvider : AppWidgetProvider() {
+open class PrayerTimesWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,

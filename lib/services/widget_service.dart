@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
 class WidgetService {
   static const String widgetName = 'PrayerTimesWidgetProvider';
 
@@ -93,7 +94,8 @@ class WidgetService {
         if (difference.inSeconds > 0) {
           final hours = difference.inHours;
           final minutes = difference.inMinutes % 60;
-          countdown = 'dalam ${hours}j ${minutes}m';
+          // Show only the numeric countdown (e.g. "1j 23m") without the word "dalam"
+          countdown = '${hours}j ${minutes}m';
         } else {
           countdown = 'sedang berlaku';
         }
@@ -128,7 +130,7 @@ class WidgetService {
         'next_prayer_time',
         nextPrayerTime ?? '--:--',
       );
-      await HomeWidget.saveWidgetData('countdown', countdown);
+      // Countdown is no longer shown on the widget; do not save it.
 
       debugPrint('📊 Widget data saved:');
       debugPrint('  - location: $locationName');
@@ -185,7 +187,6 @@ class WidgetService {
     await HomeWidget.saveWidgetData('date', dateString);
     await HomeWidget.saveWidgetData('next_prayer_name', 'Memuat');
     await HomeWidget.saveWidgetData('next_prayer_time', '--:--');
-    await HomeWidget.saveWidgetData('countdown', '');
     await HomeWidget.updateWidget(androidName: widgetName, iOSName: widgetName);
   }
 

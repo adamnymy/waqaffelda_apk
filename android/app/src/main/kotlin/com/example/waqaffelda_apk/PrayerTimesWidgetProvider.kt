@@ -71,14 +71,12 @@ open class PrayerTimesWidgetProvider : AppWidgetProvider() {
         val date = widgetData.getString("date", "Loading...")
         views.setTextViewText(app.waqaffelda.waqafer.R.id.date_text, date)
         
-        // Update next prayer info
+        // Update next prayer info (countdown removed)
         val nextPrayerName = widgetData.getString("next_prayer_name", "Subuh")
         val nextPrayerTime = widgetData.getString("next_prayer_time", "--:--")
-        val countdown = widgetData.getString("countdown", "")
-        
+
         views.setTextViewText(app.waqaffelda.waqafer.R.id.next_prayer_name, nextPrayerName)
         views.setTextViewText(app.waqaffelda.waqafer.R.id.next_prayer_time, nextPrayerTime)
-        views.setTextViewText(app.waqaffelda.waqafer.R.id.countdown_text, countdown)
         
         // Update all prayer times
         val subuhTime = widgetData.getString("subuh_time", "--:--")

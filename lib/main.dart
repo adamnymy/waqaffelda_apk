@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart';
 import 'splash_screen.dart'; // Import SplashScreen
 import 'services/notification_service.dart'; // Import NotificationService
 import 'services/widget_service.dart'; // Import WidgetService
@@ -18,7 +19,7 @@ final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.light);
 Future<void> saveThemeMode(ThemeMode mode) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString('theme_mode', mode.toString());
-  print('💾 Theme mode saved: $mode');
+  debugPrint('💾 Theme mode saved: $mode');
 }
 
 // Load theme mode from SharedPreferences
@@ -27,13 +28,13 @@ Future<ThemeMode> loadThemeMode() async {
   final savedMode = prefs.getString('theme_mode');
 
   if (savedMode == 'ThemeMode.dark') {
-    print('🌙 Loaded dark mode from preferences');
+    debugPrint('🌙 Loaded dark mode from preferences');
     return ThemeMode.dark;
   } else if (savedMode == 'ThemeMode.system') {
-    print('🔄 Loaded system mode from preferences');
+    debugPrint('🔄 Loaded system mode from preferences');
     return ThemeMode.system;
   } else {
-    print('☀️ Loaded light mode from preferences (default)');
+    debugPrint('☀️ Loaded light mode from preferences (default)');
     return ThemeMode.light;
   }
 }
@@ -48,7 +49,7 @@ void main() async {
 
   // Set up notification tap handler before initializing
   NotificationService.onNotificationTapped = () {
-    print('🔔 Notification tapped - navigating to Prayer Times page');
+    debugPrint('🔔 Notification tapped - navigating to Prayer Times page');
     // Use a delay to ensure the app UI is ready
     Future.delayed(const Duration(milliseconds: 300), () {
       final context = navigatorKey.currentContext;
@@ -57,7 +58,7 @@ void main() async {
           MaterialPageRoute(builder: (context) => const PrayerTimesPage()),
         );
       } else {
-        print('⚠️ Navigator context not available yet');
+        debugPrint('⚠️ Navigator context not available yet');
       }
     });
   };
@@ -66,18 +67,17 @@ void main() async {
   try {
     final notificationService = NotificationService();
     await notificationService.initialize();
-    print('✅ Notification service initialized in main()');
+    debugPrint('✅ Notification service initialized in main()');
   } catch (e) {
-    print('⚠️ Error initializing notification service in main(): $e');
+    debugPrint('⚠️ Error initializing notification service in main(): $e');
   }
 
   // Initialize widget service
   try {
     await WidgetService.initialize();
-    await WidgetService.registerCallbacks();
-    print('✅ Widget service initialized in main()');
+    debugPrint('✅ Widget service initialized in main()');
   } catch (e) {
-    print('⚠️ Error initializing widget service in main(): $e');
+    debugPrint('⚠️ Error initializing widget service in main(): $e');
   }
 
   runApp(const MyApp());

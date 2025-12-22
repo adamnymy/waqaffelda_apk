@@ -4,6 +4,7 @@ import 'package:quran/quran.dart' as quran;
 import 'package:http/http.dart' as http;
 import '../models/quran_models.dart';
 
+import 'package:flutter/foundation.dart';
 class QuranService {
   static const String _baseUrl = 'https://api.quran.com/api/v4';
   static List<Surah>? _cachedSurahs;
@@ -59,10 +60,10 @@ class QuranService {
         );
       }
 
-      print('✅ Loaded ${_cachedSurahs!.length} surahs using quran package');
+      debugPrint('✅ Loaded ${_cachedSurahs!.length} surahs using quran package');
       return _cachedSurahs!;
     } catch (e) {
-      print('❌ Error loading Quran data: $e');
+      debugPrint('❌ Error loading Quran data: $e');
       return [];
     }
   }
@@ -70,7 +71,7 @@ class QuranService {
   /// Get a specific Surah by number (1-114)
   static Future<Surah?> getSurah(int surahNumber) async {
     if (surahNumber < 1 || surahNumber > 114) {
-      print('❌ Invalid surah number: $surahNumber');
+      debugPrint('❌ Invalid surah number: $surahNumber');
       return null;
     }
 
@@ -84,7 +85,7 @@ class QuranService {
     try {
       return surahs.firstWhere((surah) => surah.number == surahNumber);
     } catch (e) {
-      print('❌ Surah $surahNumber not found');
+      debugPrint('❌ Surah $surahNumber not found');
       return null;
     }
   }
@@ -100,7 +101,7 @@ class QuranService {
     try {
       return surah.ayahs.firstWhere((ayah) => ayah.numberInSurah == ayahNumber);
     } catch (e) {
-      print('❌ Ayah $ayahNumber not found in Surah $surahNumber');
+      debugPrint('❌ Ayah $ayahNumber not found in Surah $surahNumber');
       return null;
     }
   }
@@ -109,7 +110,7 @@ class QuranService {
   static Future<List<Ayah>> getSurahAyahs(int surahNumber) async {
     // Return cached data if available
     if (_cachedAyahs.containsKey(surahNumber)) {
-      print(
+      debugPrint(
         '✅ Loaded ${_cachedAyahs[surahNumber]!.length} ayahs from cache for surah $surahNumber',
       );
       return _cachedAyahs[surahNumber]!;
@@ -123,7 +124,7 @@ class QuranService {
         return ayahs;
       }
     } catch (e) {
-      print('⚠️ API failed, using fallback: $e');
+      debugPrint('⚠️ API failed, using fallback: $e');
     }
 
     // Fallback to quran package
@@ -144,13 +145,13 @@ class QuranService {
         );
       }
 
-      print(
+      debugPrint(
         '✅ Loaded $totalVerses ayahs for surah $surahNumber using quran package (offline)',
       );
       _cachedAyahs[surahNumber] = ayahs;
       return ayahs;
     } catch (e) {
-      print('❌ Error loading ayahs: $e');
+      debugPrint('❌ Error loading ayahs: $e');
       return [];
     }
   }
@@ -216,12 +217,12 @@ class QuranService {
         );
       }
 
-      print(
+      debugPrint(
         '✅ Loaded ${ayahs.length} ayahs for surah $surahNumber from API with translation',
       );
       return ayahs;
     } catch (e) {
-      print('❌ API Error: $e');
+      debugPrint('❌ API Error: $e');
       rethrow;
     }
   }

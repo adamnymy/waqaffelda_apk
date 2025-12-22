@@ -1,8 +1,8 @@
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:intl/intl.dart';
 
+import 'package:flutter/foundation.dart';
 class WidgetService {
   static const String widgetName = 'PrayerTimesWidgetProvider';
 
@@ -10,16 +10,16 @@ class WidgetService {
   static Future<void> initialize() async {
     try {
       await HomeWidget.setAppGroupId('group.waqafer');
-      print('✅ Widget service initialized');
+      debugPrint('✅ Widget service initialized');
     } catch (e) {
-      print('❌ Error initializing widget: $e');
+      debugPrint('❌ Error initializing widget: $e');
     }
   }
 
   /// Update widget with current prayer times
   static Future<void> updateWidget() async {
     try {
-      print('🔄 Updating home screen widget...');
+      debugPrint('🔄 Updating home screen widget...');
 
       // Get cached prayer times
       final prefs = await SharedPreferences.getInstance();
@@ -28,7 +28,7 @@ class WidgetService {
           prefs.getString('current_location_name') ?? 'Malaysia';
 
       if (cachedData == null) {
-        print('⚠️ No cached prayer times for widget');
+        debugPrint('⚠️ No cached prayer times for widget');
         await _setEmptyWidget();
         return;
       }
@@ -49,12 +49,19 @@ class WidgetService {
         final prayerName = prayer['name'] as String;
         if (prayerName == 'Syuruk') continue; // Skip Syuruk
 
+        // Use time24 for accurate parsing, but display the 12-hour format
+        final time24Str = prayer['time24'] as String?;
         final timeStr = prayer['time'] as String;
-        final prayerTime = _parseTimeString(timeStr);
+
+        // Parse using 24-hour format for accuracy
+        final prayerTime =
+            time24Str != null
+                ? _parseTimeString(time24Str)
+                : _parseTimeString(timeStr);
 
         if (prayerTime != null && prayerTime.isAfter(now)) {
           nextPrayer = prayer;
-          nextPrayerTime = timeStr;
+          nextPrayerTime = timeStr; // Display format
           nextPrayerDateTime = prayerTime;
           break;
         }
@@ -62,21 +69,57 @@ class WidgetService {
 
       // If no next prayer today, use first prayer (Subuh) for tomorrow
       if (nextPrayer == null && prayerTimes.isNotEmpty) {
-        nextPrayer = prayerTimes.first;
-        nextPrayerTime = prayerTimes.first['time'] as String;
+        final firstPrayer = prayerTimes.firstWhere(
+          (p) => p['name'] != 'Syuruk',
+          orElse: () => prayerTimes.first,
+        );
+        nextPrayer = firstPrayer;
+        nextPrayerTime = firstPrayer['time'] as String;
+        // Set datetime to tomorrow
+        final time24Str = firstPrayer['time24'] as String?;
+        final parsedTime =
+            time24Str != null
+                ? _parseTimeString(time24Str)
+                : _parseTimeString(nextPrayerTime);
+        if (parsedTime != null) {
+          nextPrayerDateTime = parsedTime.add(const Duration(days: 1));
+        }
       }
 
       // Calculate countdown
       String countdown = '';
       if (nextPrayerDateTime != null) {
         final difference = nextPrayerDateTime.difference(now);
-        final hours = difference.inHours;
-        final minutes = difference.inMinutes % 60;
-        countdown = 'dalam ${hours}j ${minutes}m';
+        if (difference.inSeconds > 0) {
+          final hours = difference.inHours;
+          final minutes = difference.inMinutes % 60;
+          countdown = 'dalam ${hours}j ${minutes}m';
+        } else {
+          countdown = 'sedang berlaku';
+        }
       }
 
       // Prepare widget data with correct keys (using underscores)
       await HomeWidget.saveWidgetData('location', locationName);
+
+      // Add today's date in Malay format (reuse existing 'now' variable)
+      final malayMonths = [
+        'Jan',
+        'Feb',
+        'Mac',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Ogo',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Dis',
+      ];
+      final dateString = '${now.day} ${malayMonths[now.month - 1]} ${now.year}';
+      await HomeWidget.saveWidgetData('date', dateString);
+
       await HomeWidget.saveWidgetData(
         'next_prayer_name',
         nextPrayer?['name'] ?? 'Subuh',
@@ -87,11 +130,11 @@ class WidgetService {
       );
       await HomeWidget.saveWidgetData('countdown', countdown);
 
-      print('📊 Widget data saved:');
-      print('  - location: $locationName');
-      print('  - next_prayer_name: ${nextPrayer?['name']}');
-      print('  - next_prayer_time: $nextPrayerTime');
-      print('  - countdown: $countdown');
+      debugPrint('📊 Widget data saved:');
+      debugPrint('  - location: $locationName');
+      debugPrint('  - next_prayer_name: ${nextPrayer?['name']}');
+      debugPrint('  - next_prayer_time: $nextPrayerTime');
+      debugPrint('  - countdown: $countdown');
 
       // Add individual prayer times by name
       for (var prayer in prayerTimes) {
@@ -103,7 +146,7 @@ class WidgetService {
           '${prayerName.toLowerCase()}_time',
           prayerTime,
         );
-        print('  - ${prayerName.toLowerCase()}_time: $prayerTime');
+        debugPrint('  - ${prayerName.toLowerCase()}_time: $prayerTime');
       }
 
       // Update widget
@@ -112,15 +155,34 @@ class WidgetService {
         iOSName: widgetName,
       );
 
-      print('✅ Widget updated successfully');
+      debugPrint('✅ Widget updated successfully');
     } catch (e) {
-      print('❌ Error updating widget: $e');
+      debugPrint('❌ Error updating widget: $e');
     }
   }
 
   /// Set empty/loading widget state
   static Future<void> _setEmptyWidget() async {
+    // Add today's date even in loading state
+    final now = DateTime.now();
+    final malayMonths = [
+      'Jan',
+      'Feb',
+      'Mac',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Ogo',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Dis',
+    ];
+    final dateString = '${now.day} ${malayMonths[now.month - 1]} ${now.year}';
+
     await HomeWidget.saveWidgetData('location', 'Memuatkan...');
+    await HomeWidget.saveWidgetData('date', dateString);
     await HomeWidget.saveWidgetData('next_prayer_name', 'Memuat');
     await HomeWidget.saveWidgetData('next_prayer_time', '--:--');
     await HomeWidget.saveWidgetData('countdown', '');
@@ -166,22 +228,31 @@ class WidgetService {
 
       return null;
     } catch (e) {
-      print('❌ Error parsing time: $e');
+      debugPrint('❌ Error parsing time: $e');
       return null;
     }
   }
 
-  /// Register widget update callback
-  static Future<void> registerCallbacks() async {
+  /// Force refresh widget by updating data and then triggering widget update
+  static Future<void> forceRefreshWidget() async {
     try {
-      HomeWidget.widgetClicked.listen((Uri? uri) async {
-        if (uri != null) {
-          print('🔔 Widget clicked: $uri');
-          // Handle widget click (open specific page)
-        }
-      });
+      debugPrint('🔄 Force refreshing widget...');
+
+      // Update the data first
+      await updateWidget();
+
+      // Add a small delay to ensure data is saved
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Trigger widget update again to ensure it picks up the new data
+      await HomeWidget.updateWidget(
+        androidName: widgetName,
+        iOSName: widgetName,
+      );
+
+      debugPrint('✅ Widget force refreshed');
     } catch (e) {
-      print('❌ Error registering widget callbacks: $e');
+      debugPrint('❌ Error force refreshing widget: $e');
     }
   }
 }

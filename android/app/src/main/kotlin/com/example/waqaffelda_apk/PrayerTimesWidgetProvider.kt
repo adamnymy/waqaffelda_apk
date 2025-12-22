@@ -6,12 +6,11 @@ import android.content.Context
 import android.widget.RemoteViews
 import android.content.Intent
 import android.app.PendingIntent
-import android.app.AlarmManager
-import android.os.SystemClock
+import androidx.work.*
 import es.antonborri.home_widget.HomeWidgetPlugin
 import app.waqaffelda.waqafer.MainActivity
-import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class PrayerTimesWidgetProvider : AppWidgetProvider() {
 
@@ -24,65 +23,33 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
         
-        // Schedule next update at the next prayer time
-        scheduleNextUpdate(context)
+        // Schedule periodic widget updates
+        schedulePeriodicUpdates(context)
     }
     
-    private fun scheduleNextUpdate(context: Context) {
+    private fun schedulePeriodicUpdates(context: Context) {
         try {
-            val widgetData = HomeWidgetPlugin.getData(context)
-            val nextPrayerTime = widgetData.getString("next_prayer_time", null)
+            // Create a periodic work request that runs every 15 minutes
+            val workRequest = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
+                15, TimeUnit.MINUTES,
+                5, TimeUnit.MINUTES // Flex interval for battery optimization
+            )
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiresBatteryNotLow(false)
+                        .build()
+                )
+                .build()
             
-            if (nextPrayerTime != null && nextPrayerTime != "--:--") {
-                val prayerDateTime = parseTimeToDateTime(nextPrayerTime)
-                
-                if (prayerDateTime != null && prayerDateTime.after(Date())) {
-                    // Schedule update 1 minute after prayer time
-                    val updateTime = prayerDateTime.time + 60000 // +1 minute
-                    
-                    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                    val intent = Intent(context, PrayerTimesWidgetProvider::class.java)
-                    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    
-                    val pendingIntent = PendingIntent.getBroadcast(
-                        context,
-                        0,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        updateTime,
-                        pendingIntent
-                    )
-                }
-            }
+            // Enqueue with unique name to avoid duplicates
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                "widget_periodic_update",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
         } catch (e: Exception) {
             // Silently fail if scheduling doesn't work
         }
-    }
-    
-    private fun parseTimeToDateTime(timeStr: String): Date? {
-        try {
-            val calendar = Calendar.getInstance()
-            val timeParts = timeStr.split(":")
-            
-            if (timeParts.size == 2) {
-                val hour = timeParts[0].toInt()
-                val minute = timeParts[1].toInt()
-                
-                calendar.set(Calendar.HOUR_OF_DAY, hour)
-                calendar.set(Calendar.MINUTE, minute)
-                calendar.set(Calendar.SECOND, 0)
-                calendar.set(Calendar.MILLISECOND, 0)
-                
-                return calendar.time
-            }
-        } catch (e: Exception) {
-            // Return null if parsing fails
-        }
-        return null
     }
 
     private fun updateAppWidget(
@@ -98,6 +65,10 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
         // Update location
         val location = widgetData.getString("location", "Loading...")
         views.setTextViewText(app.waqaffelda.waqafer.R.id.location_text, location)
+        
+        // Update date
+        val date = widgetData.getString("date", "Loading...")
+        views.setTextViewText(app.waqaffelda.waqafer.R.id.date_text, date)
         
         // Update next prayer info
         val nextPrayerName = widgetData.getString("next_prayer_name", "Subuh")
@@ -140,10 +111,48 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onEnabled(context: Context) {
-        // Enter relevant functionality for when the first widget is created
+        // Start periodic updates when first widget is added
+        schedulePeriodicUpdates(context)
     }
 
     override fun onDisabled(context: Context) {
-        // Enter relevant functionality for when the last widget is disabled
+        // Cancel periodic updates when last widget is removed
+        try {
+            WorkManager.getInstance(context).cancelUniqueWork("widget_periodic_update")
+        } catch (e: Exception) {
+            // Ignore
+        }
+    }
+}
+
+// Worker class for periodic widget updates
+class WidgetUpdateWorker(
+    context: Context,
+    params: WorkerParameters
+) : Worker(context, params) {
+    
+    override fun doWork(): Result {
+        return try {
+            // Trigger widget update
+            val intent = Intent(applicationContext, PrayerTimesWidgetProvider::class.java)
+            intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            
+            val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
+            val widgetIds = appWidgetManager.getAppWidgetIds(
+                android.content.ComponentName(
+                    applicationContext,
+                    PrayerTimesWidgetProvider::class.java
+                )
+            )
+            
+            if (widgetIds.isNotEmpty()) {
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+                applicationContext.sendBroadcast(intent)
+            }
+            
+            Result.success()
+        } catch (e: Exception) {
+            Result.retry()
+        }
     }
 }

@@ -116,7 +116,7 @@ class _KiblatPageState extends State<KiblatPage> {
         // Handle null heading (compass not available or needs calibration)
         if (newHeading == null) {
           // Don't set error, just skip this reading
-          print('Compass reading null - may need calibration');
+          debugPrint('Compass reading null - may need calibration');
           return;
         }
 
@@ -167,7 +167,7 @@ class _KiblatPageState extends State<KiblatPage> {
       },
       onError: (e) {
         if (!mounted) return;
-        print('Compass error: $e');
+        debugPrint('Compass error: $e');
         // Don't show error to user, compass might recover
         // Only log for debugging
       },
@@ -200,7 +200,7 @@ class _KiblatPageState extends State<KiblatPage> {
           _updateLocationDetails(lastKnown);
         }
       } catch (e) {
-        print('Last known position error: $e');
+        debugPrint('Last known position error: $e');
       }
 
       // 2. Get current position to refine accuracy with retry logic
@@ -218,11 +218,11 @@ class _KiblatPageState extends State<KiblatPage> {
           break; // Success, exit retry loop
         } on TimeoutException catch (_) {
           retryCount++;
-          print('Location timeout, attempt $retryCount of $maxRetries');
+          debugPrint('Location timeout, attempt $retryCount of $maxRetries');
           if (retryCount >= maxRetries) {
             // If we have last known position, continue with that
             if (hasLastKnown && mounted) {
-              print('Using last known position after timeout');
+              debugPrint('Using last known position after timeout');
               return; // Already have last known position active
             }
             throw TimeoutException(
@@ -233,7 +233,7 @@ class _KiblatPageState extends State<KiblatPage> {
           await Future.delayed(Duration(seconds: 1));
         } catch (e) {
           retryCount++;
-          print('Location error (attempt $retryCount): $e');
+          debugPrint('Location error (attempt $retryCount): $e');
           if (retryCount >= maxRetries) {
             if (hasLastKnown && mounted) {
               return; // Use last known position

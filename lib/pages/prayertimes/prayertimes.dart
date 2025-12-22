@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
+import 'package:intl/intl.dart';
 import '../../services/prayer_times_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/widget_service.dart';
@@ -10,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 
+import 'package:flutter/foundation.dart';
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
 
@@ -68,7 +70,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
     // When app resumes, check if we need to reschedule
     if (state == AppLifecycleState.resumed) {
-      print('📱 App resumed - checking if reschedule needed');
+      debugPrint('📱 App resumed - checking if reschedule needed');
       _checkAndReschedule();
     }
   }
@@ -82,19 +84,105 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       final shouldReschedule = await notificationService.shouldReschedule();
 
       if (shouldReschedule) {
-        print('🔄 Date changed, rescheduling...');
-        await notificationService.schedulePrayerNotificationsWithTracking(
-          prayerTimes,
-          locationName: locationName,
-        );
-        // SnackBar removed per user request. Keep function but suppress UI toast.
-        if (mounted) {
-          // Optionally log or handle non-UI feedback here.
-          print('Notifikasi dikemaskini untuk hari baru (snackbar suppressed)');
+        debugPrint('🔄 Date changed, rescheduling with accurate 7-day times...');
+
+        // Build accurate 7-day prayer times. Prefer using the already-fetched
+        // monthly cache (`monthlyPrayerCache`) when available to avoid extra
+        // network requests. For days not present in the cache (month boundary),
+        // fall back to fetching the day's data from the API.
+
+        final now = DateTime.now();
+        final List<Map<String, dynamic>> allPrayerTimes = [];
+
+        // Try to obtain last known coordinates from saved prefs if needed
+        final prefs = await SharedPreferences.getInstance();
+        double? lastLat = prefs.getDouble('last_known_lat');
+        double? lastLng = prefs.getDouble('last_known_lng');
+
+        for (int day = 0; day < 7; day++) {
+          final targetDate = now.add(Duration(days: day));
+          final dayKey = targetDate.day.toString().padLeft(2, '0');
+
+          List<Map<String, dynamic>>? dayPrayers;
+
+          // Use monthly cache when it matches the target month
+          if (monthlyPrayerCache != null && cachedMonth != null) {
+            final cacheMonth = cachedMonth!; // format YYYY-MM
+            final targetMonth =
+                '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}';
+            if (cacheMonth == targetMonth &&
+                monthlyPrayerCache!.containsKey(dayKey)) {
+              dayPrayers = List<Map<String, dynamic>>.from(
+                monthlyPrayerCache![dayKey]!,
+              );
+            }
+          }
+
+          // If not found in cache, fetch from API (needs coordinates)
+          if (dayPrayers == null) {
+            try {
+              // If we don't have last known coords, attempt to get current location
+              if (lastLat == null || lastLng == null) {
+                final pos = await PrayerTimesService.getCurrentLocation();
+                if (pos != null) {
+                  lastLat = pos.latitude;
+                  lastLng = pos.longitude;
+                }
+              }
+
+              if (lastLat != null && lastLng != null) {
+                final prayerData =
+                    await PrayerTimesService.getPrayerTimesForMalaysia(
+                      lastLat,
+                      lastLng,
+                      forDate: targetDate,
+                    );
+
+                if (prayerData != null) {
+                  dayPrayers = PrayerTimesService.parsePrayerTimes(prayerData);
+                }
+              }
+            } catch (e) {
+              debugPrint(
+                '⚠️ Failed to fetch prayer times for ${targetDate.toIso8601String()}: $e',
+              );
+            }
+          }
+
+          if (dayPrayers != null && dayPrayers.isNotEmpty) {
+            for (var p in dayPrayers) {
+              final entry = Map<String, dynamic>.from(p);
+              entry['dayOffset'] = day;
+              entry['date'] = DateFormat('yyyy-MM-dd').format(targetDate);
+              allPrayerTimes.add(entry);
+            }
+            debugPrint(
+              '  ✅ Fetched ${dayPrayers.length} prayers for ${targetDate.toIso8601String().split('T').first}',
+            );
+          } else {
+            debugPrint(
+              '  ⚠️ No prayer times available for ${targetDate.toIso8601String().split('T').first}',
+            );
+          }
+        }
+
+        if (allPrayerTimes.isNotEmpty) {
+          await notificationService.schedule7DaysPrayerNotifications(
+            allPrayerTimes,
+            locationName: locationName,
+          );
+        } else {
+          debugPrint(
+            '❌ Failed to build 7-day prayer times - falling back to single-day scheduling',
+          );
+          await notificationService.schedulePrayerNotificationsWithTracking(
+            prayerTimes,
+            locationName: locationName,
+          );
         }
       }
     } catch (e) {
-      print('❌ Error checking reschedule: $e');
+      debugPrint('❌ Error checking reschedule: $e');
     }
   }
 
@@ -110,16 +198,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       // Only request permission if it hasn't been requested before
       if (!hasRequestedPermission) {
-        print('🔔 Requesting notification permission from prayer times page');
+        debugPrint('🔔 Requesting notification permission from prayer times page');
         final granted = await notificationService.requestPermission();
 
         if (granted) {
-          print('✅ Notification permission granted');
+          debugPrint('✅ Notification permission granted');
         } else {
-          print('⚠️ Notification permission denied');
+          debugPrint('⚠️ Notification permission denied');
           if (mounted) {
             // SnackBar removed per user request. Keep function but suppress UI toast.
-            print(
+            debugPrint(
               'Notifikasi diperlukan untuk menghantar peringatan waktu solat (snackbar suppressed)',
             );
           }
@@ -128,11 +216,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         // Mark that we've requested permission
         await prefs.setBool('notification_permission_requested', true);
       } else {
-        print('ℹ️ Notification permission already requested (skipping dialog)');
+        debugPrint('ℹ️ Notification permission already requested (skipping dialog)');
         // Schedule will be triggered after prayer times are loaded
       }
     } catch (e) {
-      print('❌ Error initializing notifications: $e');
+      debugPrint('❌ Error initializing notifications: $e');
     }
   }
 
@@ -321,12 +409,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       if (position != null) {
         lat = position.latitude;
         lng = position.longitude;
-        print('📍 GPS coordinates: $lat, $lng');
+        debugPrint('📍 GPS coordinates: $lat, $lng');
 
         // Get real location name from current position
         locationName = await PrayerTimesService.getLocationName(lat, lng);
       } else {
-        print('⚠️ GPS not available, using fallback coordinates');
+        debugPrint('⚠️ GPS not available, using fallback coordinates');
         locationName = 'Lokasi tidak dapat dikesan';
       }
 
@@ -334,7 +422,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       final prefs = await SharedPreferences.getInstance();
       final previousLocation = prefs.getString('current_location_name');
       await prefs.setString('current_location_name', locationName);
-      print(
+      debugPrint(
         '💾 Saved location name: $locationName${previousLocation != null && previousLocation != locationName ? " (changed from $previousLocation)" : ""}',
       );
 
@@ -392,7 +480,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
               // Update widget with fresh prayer times
               WidgetService.updateWidget();
-              print('🔄 Widget updated with fresh prayer times');
+              debugPrint('🔄 Widget updated with fresh prayer times');
             }
           }
         }
@@ -470,7 +558,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       // If location changed but date hasn't, force reschedule to update location in notifications
       if (!wasRescheduled && locationChanged) {
-        print(
+        debugPrint(
           '📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule',
         );
         await notificationService.forceReschedule(
@@ -483,9 +571,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         try {
           await NotificationService().cachePrayerTimesMinimal(prayerTimes);
         } catch (e) {
-          print('⚠️ Failed to cache prayer times: $e');
+          debugPrint('⚠️ Failed to cache prayer times: $e');
         }
-        print('✅ Notifications rescheduled with new location: $locationName');
+        // Update widget with new prayer times
+        try {
+          await WidgetService.forceRefreshWidget();
+          debugPrint('🔄 Widget updated after location change');
+        } catch (e) {
+          debugPrint('⚠️ Failed to update widget: $e');
+        }
+        debugPrint('✅ Notifications rescheduled with new location: $locationName');
         return;
       }
 
@@ -496,7 +591,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       if (!wasRescheduled) {
         // Not rescheduled, means already scheduled for today and location hasn't changed
-        print(
+        debugPrint(
           'ℹ️ Notifications already scheduled for today with same location',
         );
         return;
@@ -506,25 +601,25 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       try {
         await NotificationService().cachePrayerTimesMinimal(prayerTimes);
       } catch (e) {
-        print('⚠️ Failed to cache prayer times: $e');
+        debugPrint('⚠️ Failed to cache prayer times: $e');
       }
 
       // Show confirmation snackbar (always show on first time, or when rescheduled)
       if (mounted && (isFirstTime || wasRescheduled)) {
         // Confirmation snackbar removed per user request.
-        print(
+        debugPrint(
           isFirstTime
               ? 'Notifikasi waktu solat telah diaktifkan! (snackbar suppressed)'
               : 'Notifikasi waktu solat telah dijadualkan (snackbar suppressed)',
         );
       }
 
-      print('✅ Prayer notifications scheduled successfully');
+      debugPrint('✅ Prayer notifications scheduled successfully');
     } catch (e) {
-      print('❌ Error scheduling notifications: $e');
+      debugPrint('❌ Error scheduling notifications: $e');
       if (mounted) {
         // Error snackbar removed per user request. Keep function but suppress UI toast.
-        print('Gagal menjadualkan notifikasi (snackbar suppressed) - $e');
+        debugPrint('Gagal menjadualkan notifikasi (snackbar suppressed) - $e');
       }
     }
   }

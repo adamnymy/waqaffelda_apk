@@ -84,6 +84,19 @@ class MainActivity : FlutterActivity() {
 						result.error("error", "Failed to schedule exact alarm: ${e.message}", null)
 					}
 				}
+				"scheduleWidgetUpdateAlarm" -> {
+					try {
+						val widgetUpdateId = call.argument<Int>("widgetUpdateId")!!
+						val triggerAtMillis = call.argument<Long>("triggerAtMillis")!!
+						val prayerName = call.argument<String>("prayerName")!!
+
+						scheduleWidgetUpdateAlarm(widgetUpdateId, triggerAtMillis, prayerName)
+						result.success(true)
+					} catch (e: Exception) {
+						Log.e("MainActivity", "Failed to schedule widget update alarm: ${e.message}", e)
+						result.error("error", "Failed to schedule widget update alarm: ${e.message}", null)
+					}
+				}
 				"cancelExactAlarm" -> {
 					try {
 						val notificationId = call.argument<Int>("notificationId")!!
@@ -94,11 +107,28 @@ class MainActivity : FlutterActivity() {
 						result.error("error", "Failed to cancel exact alarm: ${e.message}", null)
 					}
 				}
+				"cancelWidgetUpdateAlarm" -> {
+					try {
+						val widgetUpdateId = call.argument<Int>("widgetUpdateId")!!
+						cancelWidgetUpdateAlarm(widgetUpdateId)
+						result.success(true)
+					} catch (e: Exception) {
+						Log.e("MainActivity", "Failed to cancel widget update alarm: ${e.message}", e)
+						result.error("error", "Failed to cancel widget update alarm: ${e.message}", null)
+					}
+				}
 				"cancelAllExactAlarms" -> {
 					try {
 						// Cancel all prayer notification IDs (1001-1005)
-						for (id in 1001..1005) {
-							cancelExactAlarm(id)
+						// We schedule up to 7 days ahead using ID offsets (base + day*100).
+						// Cancel every combination to ensure no stale alarms remain.
+						for (dayOffset in 0..6) {
+							for (baseId in 1001..1005) {
+								val id = baseId + (dayOffset * 100)
+								cancelExactAlarm(id)
+								// Also cancel corresponding widget update alarms (id + 10000)
+								cancelWidgetUpdateAlarm(id + 10000)
+							}
 						}
 						result.success(true)
 					} catch (e: Exception) {
@@ -173,6 +203,54 @@ class MainActivity : FlutterActivity() {
 		}
 	}
 
+	private fun scheduleWidgetUpdateAlarm(widgetUpdateId: Int, triggerAtMillis: Long, prayerName: String) {
+		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+		// Create intent for AlarmReceiver with widget update action
+		val intent = Intent(this, AlarmReceiver::class.java).apply {
+			action = AlarmReceiver.ACTION_WIDGET_UPDATE
+			putExtra(AlarmReceiver.EXTRA_PRAYER_NAME, prayerName)
+			putExtra(AlarmReceiver.EXTRA_NOTIFICATION_ID, widgetUpdateId)
+		}
+
+		val pendingIntent = PendingIntent.getBroadcast(
+			this,
+			widgetUpdateId,
+			intent,
+			PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+		)
+
+		// Use setExactAndAllowWhileIdle for guaranteed exact timing even in Doze mode
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			// Android 12+ requires exact alarm permission
+			if (alarmManager.canScheduleExactAlarms()) {
+				alarmManager.setExactAndAllowWhileIdle(
+					AlarmManager.RTC_WAKEUP,
+					triggerAtMillis,
+					pendingIntent
+				)
+				Log.d("MainActivity", "✅ Scheduled widget update alarm for $prayerName at ${java.util.Date(triggerAtMillis)}")
+			} else {
+				Log.w("MainActivity", "⚠️ Cannot schedule exact widget update alarm - permission not granted")
+				// Fallback to setAndAllowWhileIdle (less precise but better than nothing)
+				alarmManager.setAndAllowWhileIdle(
+					AlarmManager.RTC_WAKEUP,
+					triggerAtMillis,
+					pendingIntent
+				)
+				Log.d("MainActivity", "⚠️ Scheduled inexact widget update alarm for $prayerName (fallback)")
+			}
+		} else {
+			// Pre-Android 12: setExactAndAllowWhileIdle always available
+			alarmManager.setExactAndAllowWhileIdle(
+				AlarmManager.RTC_WAKEUP,
+				triggerAtMillis,
+				pendingIntent
+			)
+			Log.d("MainActivity", "✅ Scheduled widget update alarm for $prayerName at ${java.util.Date(triggerAtMillis)}")
+		}
+	}
+
 	private fun cancelExactAlarm(notificationId: Int) {
 		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -190,5 +268,24 @@ class MainActivity : FlutterActivity() {
 		alarmManager.cancel(pendingIntent)
 		pendingIntent.cancel()
 		Log.d("MainActivity", "🗑️ Cancelled exact alarm (id: $notificationId)")
+	}
+
+	private fun cancelWidgetUpdateAlarm(widgetUpdateId: Int) {
+		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+		val intent = Intent(this, AlarmReceiver::class.java).apply {
+			action = AlarmReceiver.ACTION_WIDGET_UPDATE
+		}
+
+		val pendingIntent = PendingIntent.getBroadcast(
+			this,
+			widgetUpdateId,
+			intent,
+			PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+		)
+
+		alarmManager.cancel(pendingIntent)
+		pendingIntent.cancel()
+		Log.d("MainActivity", "🗑️ Cancelled widget update alarm (id: $widgetUpdateId)")
 	}
 }

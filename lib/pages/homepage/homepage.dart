@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:ui';
 import '../../navbar.dart';
 import '../prayertimes/prayertimes.dart';
 import '../../services/prayer_times_service.dart';
@@ -21,6 +22,7 @@ import '../quran/quranpage.dart';
 import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
 
+import 'package:flutter/foundation.dart';
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
 
@@ -41,9 +43,9 @@ class Homepage extends StatefulWidget {
         'last_read_timestamp',
         DateTime.now().toIso8601String(),
       );
-      print('📖 Saved Quran progress: Surah $surahNumber, Ayat $ayahNumber');
+      debugPrint('📖 Saved Quran progress: Surah $surahNumber, Ayat $ayahNumber');
     } catch (e) {
-      print('❌ Error saving Quran progress: $e');
+      debugPrint('❌ Error saving Quran progress: $e');
     }
   }
 }
@@ -79,11 +81,13 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
   List<Map<String, dynamic>> _prayerTimes = [];
   bool _isPrayerTimesLoading = true;
   Position? _lastKnownPosition; // Track last location
+  String _currentLocationName = 'Malaysia'; // Track current location name
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _loadInitialLocationName();
     // Initialize notifications first, then load prayer times
     // This ensures notification permission is requested before scheduling
     _initializeNotifications().then((_) {
@@ -139,7 +143,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
 
       // If moved more than 5km, reload prayer times
       if (distanceInMeters > 5000) {
-        print(
+        debugPrint(
           '📍 Location changed by ${(distanceInMeters / 1000).toStringAsFixed(1)}km, reloading prayer times...',
         );
         _loadPrayerTimes();
@@ -147,7 +151,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         await WidgetService.updateWidget();
       }
     } catch (e) {
-      print('Error checking location change: $e');
+      debugPrint('Error checking location change: $e');
     }
   }
 
@@ -249,6 +253,21 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     });
   }
 
+  /// Load initial location name from SharedPreferences
+  Future<void> _loadInitialLocationName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final locationName = prefs.getString('current_location_name');
+      if (locationName != null && mounted) {
+        setState(() {
+          _currentLocationName = locationName;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading initial location name: $e');
+    }
+  }
+
   /// Initialize notification service and request permission on first install
   Future<void> _initializeNotifications() async {
     try {
@@ -257,24 +276,24 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           prefs.getBool('notification_permission_requested') ?? false;
 
       if (!hasRequestedPermission) {
-        print('🔔 First install detected - requesting notification permission');
+        debugPrint('🔔 First install detected - requesting notification permission');
         final notificationService = NotificationService();
         await notificationService.initialize();
         final granted = await notificationService.requestPermission();
 
         if (granted) {
-          print('✅ Notification permission granted on first install');
+          debugPrint('✅ Notification permission granted on first install');
         } else {
-          print('⚠️ Notification permission denied on first install');
+          debugPrint('⚠️ Notification permission denied on first install');
         }
 
         // Mark that we've requested permission
         await prefs.setBool('notification_permission_requested', true);
       } else {
-        print('ℹ️ Notification permission already requested previously');
+        debugPrint('ℹ️ Notification permission already requested previously');
       }
     } catch (e) {
-      print('❌ Error initializing notifications on homepage: $e');
+      debugPrint('❌ Error initializing notifications on homepage: $e');
     }
   }
 
@@ -305,6 +324,20 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           }
           _updateNextPrayer();
 
+          // Update location name in SharedPreferences and state
+          final locationName = await PrayerTimesService.getLocationName(
+            position.latitude,
+            position.longitude,
+          );
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('current_location_name', locationName);
+          if (mounted) {
+            setState(() {
+              _currentLocationName = locationName;
+            });
+          }
+          debugPrint('📍 Location updated: $locationName');
+
           // Update widget with fresh prayer times
           await WidgetService.updateWidget();
 
@@ -329,7 +362,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         _setDefaultCountdown();
       }
     } catch (e) {
-      print('Error loading prayer times for homepage: $e');
+      debugPrint('Error loading prayer times for homepage: $e');
       // Error occurred, set default countdown
       if (mounted) {
         setState(() {
@@ -340,7 +373,8 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     }
   }
 
-  /// Schedule notifications if needed (on first install or if not scheduled today)
+  /// Schedule notifications if needed (on first install or if not scheduled for 7 days)
+  /// Now fetches prayer times for 7 days and schedules accurate times
   Future<void> _scheduleNotificationsIfNeeded(Position position) async {
     try {
       if (_prayerTimes.isEmpty) return;
@@ -354,16 +388,33 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         return;
       }
 
-      // Check if already scheduled for today
-      final lastScheduledDate = prefs.getString('last_scheduled_date');
-      final today = DateTime.now().toIso8601String().split('T')[0];
+      // Check if prayer zone changed since last schedule
+      // This is more accurate than distance because nearby areas can have different zones
+      // (e.g., Damansara/PJ is SGR01, KL is WLY01 even though they're close)
+      final lastScheduledZone = prefs.getString('last_scheduled_zone');
+      final currentZone = PrayerTimesService.getZoneFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
-      if (lastScheduledDate == today) {
-        print('ℹ️ Notifications already scheduled for today');
+      bool locationChanged = false;
+      if (lastScheduledZone != null && lastScheduledZone != currentZone) {
+        locationChanged = true;
+        debugPrint(
+          '🌍 Prayer zone changed: $lastScheduledZone → $currentZone - forcing notification reschedule',
+        );
+      }
+
+      // Check if schedule is still valid (not expired or close to expiry)
+      final notificationService = NotificationService();
+      final needsReschedule = await notificationService.shouldReschedule();
+
+      if (!needsReschedule && !locationChanged) {
+        debugPrint('ℹ️ 7-day notification schedule still valid');
         return;
       }
 
-      print('📅 Scheduling notifications with user location...');
+      debugPrint('📅 Fetching prayer times for next 7 days...');
 
       // Get location name
       final locationName = await PrayerTimesService.getLocationName(
@@ -371,29 +422,71 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         position.longitude,
       );
 
-      // Save location to SharedPreferences
-      await prefs.setString('current_location_name', locationName);
+      // Fetch prayer times for the next 7 days
+      List<Map<String, dynamic>> allPrayerTimes = [];
+      final now = DateTime.now();
 
-      // Schedule notifications
-      final notificationService = NotificationService();
-      await notificationService.schedulePrayerNotificationsWithTracking(
-        _prayerTimes,
+      for (int day = 0; day < 7; day++) {
+        final targetDate = now.add(Duration(days: day));
+        final dateStr =
+            '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
+
+        debugPrint('📆 Fetching prayer times for day +$day ($dateStr)...');
+
+        final prayerData = await PrayerTimesService.getPrayerTimesForMalaysia(
+          position.latitude,
+          position.longitude,
+          forDate: targetDate,
+        );
+
+        if (prayerData != null && prayerData['code'] == 200) {
+          final dayPrayerTimes = PrayerTimesService.parsePrayerTimes(
+            prayerData,
+          );
+
+          // Add day offset to each prayer time for identification
+          for (var prayer in dayPrayerTimes) {
+            final prayerWithDay = Map<String, dynamic>.from(prayer);
+            prayerWithDay['dayOffset'] = day;
+            prayerWithDay['date'] = dateStr;
+            allPrayerTimes.add(prayerWithDay);
+          }
+
+          debugPrint('  ✅ Fetched ${dayPrayerTimes.length} prayers for $dateStr');
+        } else {
+          debugPrint('  ⚠️ Failed to fetch prayer times for day +$day');
+        }
+      }
+
+      if (allPrayerTimes.isEmpty) {
+        debugPrint('❌ No prayer times fetched for 7 days - cannot schedule');
+        return;
+      }
+
+      debugPrint('🎯 Total prayers fetched: ${allPrayerTimes.length}');
+
+      // Schedule notifications for all 7 days with accurate times
+      await notificationService.schedule7DaysPrayerNotifications(
+        allPrayerTimes,
         locationName: locationName,
       );
 
-      // Cache prayer times for background rescheduler
+      // Cache today's prayer times for widget and background task
       await notificationService.cachePrayerTimesMinimal(_prayerTimes);
 
-      // Save the location that was used for scheduling
+      // Save the location, coordinates, and prayer zone that were used for scheduling
       await prefs.setString('last_scheduled_location', locationName);
+      await prefs.setString('last_scheduled_zone', currentZone);
+      await prefs.setDouble('last_scheduled_lat', position.latitude);
+      await prefs.setDouble('last_scheduled_lng', position.longitude);
 
       // Update widget with fresh prayer times
-      await WidgetService.updateWidget();
-      print('🔄 Widget updated from homepage');
+      await WidgetService.forceRefreshWidget();
+      debugPrint('🔄 Widget force refreshed from homepage');
 
-      print('✅ Notifications scheduled successfully for $locationName');
+      debugPrint('✅ 7-day notifications scheduled successfully for $locationName');
     } catch (e) {
-      print('❌ Error scheduling notifications: $e');
+      debugPrint('❌ Error scheduling 7-day notifications: $e');
     }
   }
 
@@ -419,7 +512,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
       final time24 =
           nextPrayer['time24'] ?? timeStr; // Use 24-hour format for calculation
 
-      print('Next prayer: $name at $timeStr (24h: $time24)'); // Debug log
+      debugPrint('Next prayer: $name at $timeStr (24h: $time24)'); // Debug log
 
       // Check if this is a new prayer (name or time changed)
       final newPrayerText = 'Solat Seterusnya: $name - $timeStr';
@@ -428,6 +521,12 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
       setState(() {
         _nextPrayerText = newPrayerText;
       });
+
+      // Update widget when prayer changes
+      if (isPrayerChanged) {
+        debugPrint('🔄 Prayer changed to $name, updating widget...');
+        WidgetService.updateWidget();
+      }
 
       // Only recreate countdown timer if prayer changed or timer doesn't exist
       if (isPrayerChanged ||
@@ -454,7 +553,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             // initialize countdown and total duration for progress
             _countdownTimer?.cancel();
             final initialCountdown = target.difference(now);
-            print(
+            debugPrint(
               'Starting new countdown: ${initialCountdown.inSeconds} seconds (${_formatDuration(initialCountdown)})',
             ); // Debug log
 
@@ -470,9 +569,10 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
               if (remaining.inSeconds <= 0) {
                 timer.cancel();
                 // refresh prayer times for next prayer
-                _loadPrayerTimes();
-                // Update widget when prayer time passes
-                WidgetService.updateWidget();
+                debugPrint(
+                  '⏰ Prayer time reached, reloading prayer times and updating widget...',
+                );
+                _loadPrayerTimes(); // This will call updateWidget when complete
                 return;
               }
               setState(() {
@@ -481,7 +581,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             });
           }
         } catch (e) {
-          print('Error parsing prayer time: $e'); // Debug log
+          debugPrint('Error parsing prayer time: $e'); // Debug log
         }
       }
     }
@@ -602,14 +702,14 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final double headerHeight =
-        (screenHeight * 0.38)
-            .clamp(280.0, 420.0)
+        (screenHeight * 0.28)
+            .clamp(240.0, 320.0)
             .toDouble(); //waveclipper length
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Main Header Background with gradient
+        // Main Header Background with U-shaped curve
         Container(
           height: headerHeight,
           width: double.infinity,
@@ -627,84 +727,104 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
               bottomRight: Radius.circular(40),
             ),
           ),
-          child: Stack(
-            children: [
-              // Decorative circles
-              Positioned(
-                top: -60,
-                right: -40,
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onPrimary.withOpacity(0.06),
+        ),
+        // Decorative elements
+        IgnorePointer(
+          child: SizedBox(
+            height: headerHeight,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -60,
+                  right: -40,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimary.withOpacity(0.06),
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                bottom: 40,
-                left: -50,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onPrimary.withOpacity(0.04),
+                Positioned(
+                  bottom: 40,
+                  left: -50,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimary.withOpacity(0.04),
+                    ),
                   ),
                 ),
-              ),
-              SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    screenWidth * 0.05,
-                    16,
-                    screenWidth * 0.05,
-                    24,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Top Bar: Greeting & Notification
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ],
+            ),
+          ),
+        ),
+        // Content container with SafeArea
+        SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              screenWidth * 0.05,
+              16,
+              screenWidth * 0.05,
+              24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Bar: Greeting & Notification
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Assalamualaikum,',
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimary.withOpacity(0.85),
-                                    fontSize: screenWidth * 0.037,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Selamat Datang',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    fontSize: screenWidth * 0.062,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.3,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'Assalamualaikum,',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withOpacity(0.85),
+                              fontSize: screenWidth * 0.037,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
                             ),
                           ),
-                          Container(
+                          const SizedBox(height: 6),
+                          Text(
+                            'Selamat Datang',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: screenWidth * 0.062,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SearchPage(),
+                              ),
+                            );
+                          },
+                          child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: Theme.of(
@@ -719,24 +839,42 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                               ),
                             ),
                             child: Icon(
-                              Icons.notifications_rounded,
+                              Icons.search_rounded,
                               color: Theme.of(context).colorScheme.onPrimary,
                               size: 22,
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: screenHeight * 0.024),
-                      // Ayat Hari Ini
-                      _buildAyatHariIniHeader(context),
-                      SizedBox(height: screenHeight * 0.024),
-                      // Search Bar
-                      _buildSearchBar(context),
-                    ],
-                  ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.notifications_rounded,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            size: 22,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                // Quran Tracker under greeting
+                _buildQuranTrackerHeader(context),
+              ],
+            ),
           ),
         ),
       ],
@@ -881,31 +1019,23 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                 ),
               ),
               const Spacer(),
-              FutureBuilder<String>(
-                future: SharedPreferences.getInstance().then(
-                  (prefs) =>
-                      prefs.getString('current_location_name') ?? 'Malaysia',
-                ),
-                builder: (context, snapshot) {
-                  return Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        size: 14,
-                        color: colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        snapshot.data ?? 'Malaysia',
-                        style: TextStyle(
-                          color: colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    size: 14,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _currentLocationName,
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1252,7 +1382,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         'hasRead': hasRead,
       };
     } catch (e) {
-      print('Error getting last read Quran: $e');
+      debugPrint('Error getting last read Quran: $e');
       return {
         'surahName': 'Al-Fatihah',
         'surahNumber': 1,
@@ -1319,38 +1449,36 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           ),
           SizedBox(height: screenWidth * 0.05),
 
-          // Featured Quran Tracker Card
-          _buildLastReadQuranCard(context),
-          const SizedBox(height: 16),
-
-          // 2x2 Grid Layout
+          // Material You: Dynamic masonry layout with varied sizes
           Column(
             children: [
+              // Row 1: Waktu Solat (full width, tall)
+              _buildExtraLargeMenuCard(
+                context,
+                title: 'Waktu Solat',
+                iconPath: 'assets/icons/menu/waktu_solat.svg',
+                backgroundColor: const Color(0xFF6750A4), // M3 Primary Purple
+                iconColor: const Color(0xFF6750A4),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const PrayerTimesPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              // Row 2: Kiblat (40%) + Quran (60%)
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _buildMenuGridCard(
+                    flex: 4,
+                    child: _buildCompactMenuCard(
                       context,
-                      title: 'Waktu Solat',
-                      iconPath: 'assets/icons/menu/waktu_solat.svg',
-                      backgroundColor: const Color(0xFFF3E5F5),
-                      iconColor: const Color(0xFF8E24AA),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const PrayerTimesPage()),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildMenuGridCard(
-                      context,
-                      title: 'Arah Kiblat',
+                      title: 'Kiblat',
                       iconPath: 'assets/icons/menu/kiblat.svg',
-                      backgroundColor: const Color(0xFFFFE0B2),
-                      iconColor: const Color(0xFFFF6D00),
+                      backgroundColor: const Color(0xFFFF6F00), // M3 Orange
+                      iconColor: const Color(0xFFE65100),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -1359,18 +1487,16 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                       },
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: _buildMenuGridCard(
+                    flex: 6,
+                    child: _buildWideMenuCard(
                       context,
-                      title: 'Al Qur\'an',
+                      title: 'Quran',
+                      subtitle: 'Bacaan Al-Quran',
                       iconPath: 'assets/icons/menu/quran_new.svg',
-                      backgroundColor: const Color(0xFFE0F2F1),
-                      iconColor: const Color(0xFF00C853),
+                      backgroundColor: const Color(0xFF00897B), // M3 Teal
+                      iconColor: const Color(0xFF00695C),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -1379,23 +1505,23 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildMenuGridCard(
-                      context,
-                      title: 'Tasbih',
-                      iconPath: 'assets/icons/menu/tasbih.svg',
-                      backgroundColor: const Color(0xFFFCE4EC),
-                      iconColor: const Color(0xFFFF4081),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const ZikirCounterPage()),
-                        );
-                      },
-                    ),
-                  ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              // Row 3: Tasbih (full width, compact)
+              _buildHorizontalMenuCard(
+                context,
+                title: 'Tasbih Digital',
+                subtitle: 'Kira zikir & tasbih',
+                iconPath: 'assets/icons/menu/tasbih.svg',
+                backgroundColor: const Color(0xFFC2185B), // M3 Pink
+                iconColor: const Color(0xFFAD1457),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const ZikirCounterPage()),
+                  );
+                },
               ),
             ],
           ),
@@ -1404,7 +1530,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildMenuGridCard(
+  Widget _buildLargeMenuCard(
     BuildContext context, {
     required String title,
     required String iconPath,
@@ -1412,65 +1538,687 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     required Color iconColor,
     required VoidCallback onTap,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Adjust colors for dark mode
-    final adjustedBackgroundColor =
-        isDark ? backgroundColor.withOpacity(0.25) : backgroundColor;
-    final adjustedIconColor = isDark ? iconColor : iconColor;
+    // Material 3 approach: use surface colors with tonal variations
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: adjustedBackgroundColor,
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(
-            color: adjustedIconColor.withOpacity(isDark ? 0.3 : 0.15),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: adjustedIconColor.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
         ),
-        child: Row(
-          children: [
-            // Icon container
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: SvgPicture.asset(
-                iconPath,
-                width: 28,
-                height: 28,
-                color: adjustedIconColor,
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Title
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Icon with filled tonal container
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
                   color:
-                      isDark ? colorScheme.onSurface : colorScheme.onBackground,
-                  fontSize: screenWidth * 0.034,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 24,
+                    height: 24,
+                    color: iconColor,
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: onSurfaceColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.15,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Jadual solat harian',
+                      style: TextStyle(
+                        color:
+                            isDark
+                                ? colorScheme.onSurfaceVariant
+                                : const Color(0xFF49454F),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color:
+                    isDark
+                        ? colorScheme.onSurfaceVariant
+                        : const Color(0xFF79747E),
+                size: 24,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Extra Large Card - Full width with prominent display
+  Widget _buildExtraLargeMenuCard(
+    BuildContext context, {
+    required String title,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 24,
+                    height: 24,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: onSurfaceColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.15,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Lihat jadual waktu solat lengkap',
+                      style: TextStyle(
+                        color:
+                            isDark
+                                ? colorScheme.onSurfaceVariant
+                                : const Color(0xFF49454F),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_rounded, color: iconColor, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Compact Square Card - Small vertical card
+  Widget _buildCompactMenuCard(
+    BuildContext context, {
+    required String title,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          height: 120,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 20,
+                    height: 20,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                title,
+                style: TextStyle(
+                  color: onSurfaceColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Cari arah',
+                style: TextStyle(
+                  color:
+                      isDark
+                          ? colorScheme.onSurfaceVariant
+                          : const Color(0xFF49454F),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Wide Card - Horizontal card with more width
+  Widget _buildWideMenuCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          height: 120,
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color:
+                          isDark
+                              ? iconColor.withOpacity(0.2)
+                              : iconColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        iconPath,
+                        width: 21,
+                        height: 21,
+                        color: iconColor,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color:
+                        isDark
+                            ? colorScheme.onSurfaceVariant
+                            : const Color(0xFF79747E),
+                    size: 20,
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                title,
+                style: TextStyle(
+                  color: onSurfaceColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.15,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color:
+                      isDark
+                          ? colorScheme.onSurfaceVariant
+                          : const Color(0xFF49454F),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Horizontal Full Width Card - Compact horizontal layout
+  Widget _buildHorizontalMenuCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 20,
+                    height: 20,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: onSurfaceColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.1,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color:
+                            isDark
+                                ? colorScheme.onSurfaceVariant
+                                : const Color(0xFF49454F),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color:
+                    isDark
+                        ? colorScheme.onSurfaceVariant
+                        : const Color(0xFF79747E),
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMediumMenuCard(
+    BuildContext context, {
+    required String title,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Material 3 filled tonal container
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon with filled tonal background
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 24,
+                    height: 24,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: onSurfaceColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.15,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Cari arah kiblat',
+                style: TextStyle(
+                  color:
+                      isDark
+                          ? colorScheme.onSurfaceVariant
+                          : const Color(0xFF49454F),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallMenuCard(
+    BuildContext context, {
+    required String title,
+    required String iconPath,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Material 3 filled tonal container
+    final surfaceColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest
+            : backgroundColor.withOpacity(0.15);
+
+    final onSurfaceColor =
+        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color:
+              isDark
+                  ? colorScheme.outline.withOpacity(0.2)
+                  : iconColor.withOpacity(0.12),
+          width: 1,
+        ),
+      ),
+      color: surfaceColor,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon with filled tonal background
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? iconColor.withOpacity(0.2)
+                          : iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    iconPath,
+                    width: 24,
+                    height: 24,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: onSurfaceColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                  height: 1.2,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1831,65 +2579,118 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildAyatHariIniHeader(BuildContext context) {
+  Widget _buildQuranTrackerHeader(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.onPrimary.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.onPrimary.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getLastReadQuran(),
+      builder: (context, snapshot) {
+        final lastRead = snapshot.data ?? {};
+        final surahName = lastRead['surahName'] ?? 'Al-Fatihah';
+        final ayahNumber = lastRead['ayahNumber'] ?? 1;
+        final hasRead = lastRead['hasRead'] ?? false;
+
+        return GestureDetector(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              SmoothPageRoute(page: const QuranPage()),
+            );
+            // Refresh when returning from Quran page
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: colorScheme.onPrimary.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
+                width: 1,
+              ),
             ),
-            child: Icon(
-              Icons.format_quote_rounded,
-              color: colorScheme.onPrimary,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  '"Maka sesungguhnya bersama kesulitan ada kemudahan."',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: screenWidth * 0.035,
-                    fontStyle: FontStyle.italic,
-                    height: 1.4,
-                    fontWeight: FontWeight.w500,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    size: 22,
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '- QS. Al-Insyirah: 5',
-                  style: TextStyle(
-                    color: colorScheme.onPrimary.withOpacity(0.8),
-                    fontSize: screenWidth * 0.03,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        surahName,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: screenWidth * 0.038,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Ayat $ayahNumber',
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary.withOpacity(0.85),
+                          fontSize: screenWidth * 0.032,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        hasRead
+                            ? Icons.play_arrow_rounded
+                            : Icons.auto_stories_rounded,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        hasRead ? 'Teruskan' : 'Mula',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: screenWidth * 0.032,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

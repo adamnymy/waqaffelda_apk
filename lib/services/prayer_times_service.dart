@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart';
 class PrayerTimesService {
   // Get prayer times using e-solat.gov.my official data
   static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
@@ -13,7 +14,7 @@ class PrayerTimesService {
   }) async {
     try {
       // Get the closest Malaysian zone for coordinates
-      String zoneCode = _getZoneFromCoordinates(latitude, longitude);
+      String zoneCode = getZoneFromCoordinates(latitude, longitude);
       final result = await getPrayerTimesByZone(zoneCode, forDate: forDate);
 
       // Don't override location name here - let the UI handle it separately
@@ -21,7 +22,7 @@ class PrayerTimesService {
 
       return result;
     } catch (e) {
-      print('Error fetching prayer times: $e');
+      debugPrint('Error fetching prayer times: $e');
       return null;
     }
   }
@@ -39,7 +40,7 @@ class PrayerTimesService {
       final url =
           'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&month=$month&year=$year&zone=$zoneName';
 
-      print(
+      debugPrint(
         '🌐 Fetching monthly data from e-solat.gov.my for zone: $zoneName ($year-$month)',
       );
 
@@ -48,27 +49,27 @@ class PrayerTimesService {
           .timeout(
             const Duration(seconds: 10),
             onTimeout: () {
-              print('⏱️ e-solat.gov.my timed out after 10 seconds');
+              debugPrint('⏱️ e-solat.gov.my timed out after 10 seconds');
               throw Exception('Connection timeout');
             },
           );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ Successfully fetched from e-solat.gov.my');
+        debugPrint('✅ Successfully fetched from e-solat.gov.my');
         return _formatEsolatResponse(data, zoneName, forDate: targetDate);
       } else {
-        print('❌ e-solat.gov.my returned ${response.statusCode}');
+        debugPrint('❌ e-solat.gov.my returned ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('❌ e-solat.gov.my failed: $e');
+      debugPrint('❌ e-solat.gov.my failed: $e');
       return null;
     }
   }
 
   // Map coordinates to Malaysian prayer zone codes (for e-solat.gov.my API)
-  static String _getZoneFromCoordinates(double latitude, double longitude) {
+  static String getZoneFromCoordinates(double latitude, double longitude) {
     // Check for Putrajaya and Cyberjaya first - they should use WLY01
     // Putrajaya area: roughly 2.88-2.96 lat, 101.65-101.72 lng
     // Cyberjaya area: roughly 2.91-2.93 lat, 101.64-101.66 lng
@@ -76,7 +77,7 @@ class PrayerTimesService {
         latitude <= 2.96 &&
         longitude >= 101.64 &&
         longitude <= 101.72) {
-      print('Detected Putrajaya/Cyberjaya area - using WLY01 zone');
+      debugPrint('Detected Putrajaya/Cyberjaya area - using WLY01 zone');
       return 'WLY01';
     }
 
@@ -402,7 +403,7 @@ class PrayerTimesService {
       }
     });
 
-    print(
+    debugPrint(
       'Selected zone $closestZone (${zones[closestZone]!['name']}) for coordinates ($latitude, $longitude)',
     );
     return closestZone;
@@ -556,7 +557,7 @@ class PrayerTimesService {
         // Fallback to first entry if no match
         if (prayerData == null) {
           prayerData = data['prayerTime'][0] as Map<String, dynamic>;
-          print('⚠️ Using fallback - first day of month');
+          debugPrint('⚠️ Using fallback - first day of month');
         }
         final timings = <String, String>{};
 
@@ -594,7 +595,7 @@ class PrayerTimesService {
         };
       }
     } catch (e) {
-      print('Error formatting e-solat response: $e');
+      debugPrint('Error formatting e-solat response: $e');
     }
     return {'code': 400, 'status': 'No data available'};
   }
@@ -614,14 +615,14 @@ class PrayerTimesService {
     DateTime forDate,
   ) async {
     try {
-      String zoneCode = _getZoneFromCoordinates(latitude, longitude);
+      String zoneCode = getZoneFromCoordinates(latitude, longitude);
       final month = forDate.month.toString().padLeft(2, '0');
       final year = forDate.year.toString();
 
       final url =
           'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&month=$month&year=$year&zone=$zoneCode';
 
-      print(
+      debugPrint(
         '🌐 Fetching full monthly data for caching: $zoneCode ($year-$month)',
       );
 
@@ -680,12 +681,12 @@ class PrayerTimesService {
             }
           }
 
-          print('✅ Cached ${monthlyCache.length} days of prayer times');
+          debugPrint('✅ Cached ${monthlyCache.length} days of prayer times');
           return monthlyCache;
         }
       }
     } catch (e) {
-      print('❌ Failed to fetch monthly prayer times: $e');
+      debugPrint('❌ Failed to fetch monthly prayer times: $e');
     }
     return null;
   }
@@ -929,7 +930,7 @@ class PrayerTimesService {
       // Fallback to Kuala Lumpur if city not found
       return await getPrayerTimesByZone('WLY01');
     } catch (e) {
-      print('Error fetching prayer times by city: $e');
+      debugPrint('Error fetching prayer times by city: $e');
       return null;
     }
   }
@@ -961,16 +962,16 @@ class PrayerTimesService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setDouble('last_known_lat', position.latitude);
         await prefs.setDouble('last_known_lng', position.longitude);
-        print(
+        debugPrint(
           '📍 Saved last known location: ${position.latitude}, ${position.longitude}',
         );
       } catch (e) {
-        print('⚠️ Failed to save location: $e');
+        debugPrint('⚠️ Failed to save location: $e');
       }
 
       return position;
     } catch (e) {
-      print('Error getting location: $e');
+      debugPrint('Error getting location: $e');
       return null;
     }
   }
@@ -1182,7 +1183,7 @@ class PrayerTimesService {
             if (locationName.length > 40) {
               locationName = locationName.substring(0, 37) + '...';
             }
-            print(
+            debugPrint(
               'Location from geocoding: $locationName (subLocality: ${place.subLocality}, locality: ${place.locality})',
             );
             return locationName;
@@ -1191,19 +1192,19 @@ class PrayerTimesService {
       }
 
       // If geocoding didn't give us a good name, fall back to zone-based name
-      final zoneCode = _getZoneFromCoordinates(latitude, longitude);
+      final zoneCode = getZoneFromCoordinates(latitude, longitude);
       final zoneLocation = _getLocationNameFromZone(zoneCode);
-      print('Using zone-based location: $zoneLocation (zone: $zoneCode)');
+      debugPrint('Using zone-based location: $zoneLocation (zone: $zoneCode)');
       return zoneLocation;
     } catch (e) {
-      print('Error getting location name: $e');
+      debugPrint('Error getting location name: $e');
       // Final fallback to zone-based location
       try {
-        final zoneCode = _getZoneFromCoordinates(latitude, longitude);
+        final zoneCode = getZoneFromCoordinates(latitude, longitude);
         final zoneLocation = _getLocationNameFromZone(zoneCode);
         return zoneLocation;
       } catch (zoneError) {
-        print('Error getting zone location: $zoneError');
+        debugPrint('Error getting zone location: $zoneError');
         return 'Lokasi Semasa';
       }
     }

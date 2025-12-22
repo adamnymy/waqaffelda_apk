@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geocoding/geocoding.dart';
 
+import 'package:flutter/foundation.dart';
 class MasjidTerdekatPage extends StatefulWidget {
   const MasjidTerdekatPage({Key? key}) : super(key: key);
 
@@ -121,7 +122,7 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
             : 'Alamat tidak tersedia';
       }
     } catch (e) {
-      print('Error getting address: $e');
+      debugPrint('Error getting address: $e');
     }
     return 'Alamat tidak tersedia';
   }

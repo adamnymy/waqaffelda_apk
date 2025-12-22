@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'hadis40_detail.dart';
 
+import 'package:flutter/foundation.dart';
 class Hadis40Page extends StatefulWidget {
   const Hadis40Page({Key? key}) : super(key: key);
 
@@ -50,7 +51,7 @@ class _Hadis40PageState extends State<Hadis40Page>
       });
       _animationController.forward();
     } catch (e) {
-      print('Error loading hadis: $e');
+      debugPrint('Error loading hadis: $e');
       setState(() {
         isLoading = false;
       });

@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.widget.RemoteViews
+import android.graphics.Color
 import android.content.Intent
 import android.app.PendingIntent
 import androidx.work.*
@@ -81,18 +82,58 @@ open class PrayerTimesWidgetProvider : AppWidgetProvider() {
         
         // Update all prayer times
         val subuhTime = widgetData.getString("subuh_time", "--:--")
-        val syurukTime = widgetData.getString("syuruk_time", "--:--")
         val zohorTime = widgetData.getString("zohor_time", "--:--")
         val asarTime = widgetData.getString("asar_time", "--:--")
         val maghribTime = widgetData.getString("maghrib_time", "--:--")
         val isyakTime = widgetData.getString("isyak_time", "--:--")
-        
         views.setTextViewText(app.waqaffelda.waqafer.R.id.subuh_time, subuhTime)
-        views.setTextViewText(app.waqaffelda.waqafer.R.id.syuruk_time, syurukTime)
         views.setTextViewText(app.waqaffelda.waqafer.R.id.zohor_time, zohorTime)
         views.setTextViewText(app.waqaffelda.waqafer.R.id.asar_time, asarTime)
         views.setTextViewText(app.waqaffelda.waqafer.R.id.maghrib_time, maghribTime)
         views.setTextViewText(app.waqaffelda.waqafer.R.id.isyak_time, isyakTime)
+
+        // Reset chip colors to default
+        val defaultLabelColor = Color.parseColor("#DDE6FF")
+        val defaultTimeColor = Color.parseColor("#FFFFFF")
+        views.setTextColor(app.waqaffelda.waqafer.R.id.subuh_label, defaultLabelColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.subuh_time, defaultTimeColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.zohor_label, defaultLabelColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.zohor_time, defaultTimeColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.asar_label, defaultLabelColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.asar_time, defaultTimeColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.maghrib_label, defaultLabelColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.maghrib_time, defaultTimeColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.isyak_label, defaultLabelColor)
+        views.setTextColor(app.waqaffelda.waqafer.R.id.isyak_time, defaultTimeColor)
+
+        // Highlight the next prayer chip
+        try {
+            val accent = Color.parseColor("#FFD54F")
+            when (nextPrayerName?.lowercase(Locale.getDefault())) {
+                "subuh" -> {
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.subuh_label, accent)
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.subuh_time, accent)
+                }
+                "zohor" -> {
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.zohor_label, accent)
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.zohor_time, accent)
+                }
+                "asar" -> {
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.asar_label, accent)
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.asar_time, accent)
+                }
+                "maghrib" -> {
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.maghrib_label, accent)
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.maghrib_time, accent)
+                }
+                "isyak", "isha", "isyak" -> {
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.isyak_label, accent)
+                    views.setTextColor(app.waqaffelda.waqafer.R.id.isyak_time, accent)
+                }
+            }
+        } catch (e: Exception) {
+            // ignore coloring failures
+        }
         
         // Set up click intent to open app
         val intent = Intent(context, MainActivity::class.java).apply {

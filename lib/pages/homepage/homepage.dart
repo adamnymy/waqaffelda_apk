@@ -716,6 +716,15 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                       ? _buildUpcomingPrayerSkeletonLoading(context)
                       : _buildUpcomingPrayerCard(context),
             ),
+            const SizedBox(height: 16),
+            // Today's Prayer Times Card
+            if (!_isPrayerTimesLoading && _prayerTimes.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.05,
+                ),
+                child: _buildTodayPrayerTimesCard(context),
+              ),
             SizedBox(height: screenHeight * 0.04),
             // Menu Section (includes Quran tracker)
             _buildIconMenu(context),
@@ -2429,6 +2438,213 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  Widget _buildTodayPrayerTimesCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.access_time_rounded,
+                size: 16,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Waktu Solat Hari Ini',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate if we need compact mode
+              final availableWidth = constraints.maxWidth;
+              final isCompact = availableWidth < 350;
+
+              // Determine next prayer
+              final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
+              final nextPrayerName = nextPrayer?['name'] ?? '';
+
+              return Row(
+                children:
+                    _prayerTimes.map((prayer) {
+                      final prayerName = prayer['name'] ?? '';
+                      final prayerTime = prayer['time'] ?? '';
+                      final prayerTime24 = prayer['time24'] ?? '';
+
+                      // Check if this prayer time has passed
+                      bool hasPassed = false;
+                      try {
+                        final parts = prayerTime24.split(':');
+                        if (parts.length >= 2) {
+                          final hour = int.parse(parts[0]);
+                          final minute = int.parse(parts[1]);
+                          final prayerDateTime = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                            hour,
+                            minute,
+                          );
+                          hasPassed = now.isAfter(prayerDateTime);
+                        }
+                      } catch (e) {
+                        // Ignore parsing errors
+                      }
+
+                      // Check if this is the next prayer
+                      final isNextPrayer = prayerName == nextPrayerName;
+
+                      // Get icon for prayer
+                      IconData prayerIcon = _getPrayerIcon(prayerName);
+
+                      return Expanded(
+                        child: Transform.translate(
+                          offset:
+                              isNextPrayer ? const Offset(0, -4) : Offset.zero,
+                          child: Transform.scale(
+                            scale: isNextPrayer ? 1.08 : 1.0,
+                            child: Container(
+                              margin: EdgeInsets.symmetric(
+                                horizontal: isCompact ? 1.5 : 2.5,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isCompact ? 3 : 5,
+                                vertical: isCompact ? 6 : 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getPrayerColor(prayerName).withOpacity(
+                                  isNextPrayer
+                                      ? 0.18
+                                      : (hasPassed ? 0.08 : 0.12),
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: _getPrayerColor(
+                                    prayerName,
+                                  ).withOpacity(
+                                    isNextPrayer
+                                        ? 0.6
+                                        : (hasPassed ? 0.2 : 0.3),
+                                  ),
+                                  width: isNextPrayer ? 1.5 : 0.8,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    prayerIcon,
+                                    size: isCompact ? 14 : 16,
+                                    color:
+                                        hasPassed
+                                            ? colorScheme.onSurface.withOpacity(
+                                              0.35,
+                                            )
+                                            : _getPrayerColor(
+                                              prayerName,
+                                            ).withOpacity(
+                                              isNextPrayer ? 1.0 : 0.9,
+                                            ),
+                                  ),
+                                  SizedBox(height: isCompact ? 2 : 3),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      prayerName,
+                                      style: TextStyle(
+                                        fontSize: isCompact ? 8 : 9,
+                                        fontWeight:
+                                            isNextPrayer
+                                                ? FontWeight.w900
+                                                : FontWeight.bold,
+                                        color:
+                                            hasPassed
+                                                ? colorScheme.onSurface
+                                                    .withOpacity(0.4)
+                                                : _getPrayerColor(prayerName),
+                                        letterSpacing: -0.2,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  SizedBox(height: isCompact ? 1 : 2),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      prayerTime,
+                                      style: TextStyle(
+                                        fontSize: isCompact ? 9 : 10,
+                                        fontWeight:
+                                            isNextPrayer
+                                                ? FontWeight.bold
+                                                : FontWeight.w600,
+                                        color:
+                                            hasPassed
+                                                ? colorScheme.onSurface
+                                                    .withOpacity(0.35)
+                                                : colorScheme.onSurface
+                                                    .withOpacity(0.85),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getPrayerIcon(String prayerName) {
+    switch (prayerName.toLowerCase()) {
+      case 'subuh':
+        return Icons.wb_twilight;
+      case 'syuruk':
+        return Icons.wb_sunny;
+      case 'zohor':
+        return Icons.wb_cloudy;
+      case 'asar':
+        return Icons.wb_sunny;
+      case 'maghrib':
+        return Icons.brightness_3;
+      case 'isyak':
+        return Icons.brightness_2;
+      default:
+        return Icons.access_time;
+    }
   }
 
   Widget _buildUpcomingPrayerSkeletonLoading(BuildContext context) {

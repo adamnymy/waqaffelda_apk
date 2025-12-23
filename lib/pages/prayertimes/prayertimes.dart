@@ -12,6 +12,7 @@ import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 
 import 'package:flutter/foundation.dart';
+
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({Key? key}) : super(key: key);
 
@@ -84,7 +85,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       final shouldReschedule = await notificationService.shouldReschedule();
 
       if (shouldReschedule) {
-        debugPrint('🔄 Date changed, rescheduling with accurate 7-day times...');
+        debugPrint(
+          '🔄 Date changed, rescheduling with accurate 7-day times...',
+        );
 
         // Build accurate 7-day prayer times. Prefer using the already-fetched
         // monthly cache (`monthlyPrayerCache`) when available to avoid extra
@@ -198,7 +201,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
       // Only request permission if it hasn't been requested before
       if (!hasRequestedPermission) {
-        debugPrint('🔔 Requesting notification permission from prayer times page');
+        debugPrint(
+          '🔔 Requesting notification permission from prayer times page',
+        );
         final granted = await notificationService.requestPermission();
 
         if (granted) {
@@ -216,7 +221,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         // Mark that we've requested permission
         await prefs.setBool('notification_permission_requested', true);
       } else {
-        debugPrint('ℹ️ Notification permission already requested (skipping dialog)');
+        debugPrint(
+          'ℹ️ Notification permission already requested (skipping dialog)',
+        );
         // Schedule will be triggered after prayer times are loaded
       }
     } catch (e) {
@@ -561,6 +568,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         debugPrint(
           '📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule',
         );
+        debugPrint('🔎 [forceReschedule] Using location: $locationName');
+        debugPrint(
+          '🔎 [forceReschedule] Using prayerTimes: ' +
+              (prayerTimes.isNotEmpty
+                  ? prayerTimes.map((e) => e.toString()).join(', ')
+                  : 'EMPTY'),
+        );
         await notificationService.forceReschedule(
           prayerTimes,
           locationName: locationName,
@@ -580,7 +594,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         } catch (e) {
           debugPrint('⚠️ Failed to update widget: $e');
         }
-        debugPrint('✅ Notifications rescheduled with new location: $locationName');
+        debugPrint(
+          '✅ Notifications rescheduled with new location: $locationName',
+        );
         return;
       }
 

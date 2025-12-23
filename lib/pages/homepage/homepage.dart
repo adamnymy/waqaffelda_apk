@@ -23,6 +23,7 @@ import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
 
 import 'package:flutter/foundation.dart';
+
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
 
@@ -43,7 +44,9 @@ class Homepage extends StatefulWidget {
         'last_read_timestamp',
         DateTime.now().toIso8601String(),
       );
-      debugPrint('📖 Saved Quran progress: Surah $surahNumber, Ayat $ayahNumber');
+      debugPrint(
+        '📖 Saved Quran progress: Surah $surahNumber, Ayat $ayahNumber',
+      );
     } catch (e) {
       debugPrint('❌ Error saving Quran progress: $e');
     }
@@ -129,7 +132,21 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
 
       // If we have no previous position, just reload
       if (_lastKnownPosition == null) {
-        _loadPrayerTimes();
+        await _loadPrayerTimes();
+        // After loading, force reschedule notifications with latest data
+        if (_prayerTimes.isNotEmpty) {
+          final locationName = await PrayerTimesService.getLocationName(
+            currentPosition.latitude,
+            currentPosition.longitude,
+          );
+          debugPrint(
+            '[Homepage] Forcing notification reschedule after initial location load.',
+          );
+          await NotificationService().forceReschedule(
+            _prayerTimes,
+            locationName: locationName,
+          );
+        }
         return;
       }
 
@@ -146,7 +163,21 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         debugPrint(
           '📍 Location changed by ${(distanceInMeters / 1000).toStringAsFixed(1)}km, reloading prayer times...',
         );
-        _loadPrayerTimes();
+        await _loadPrayerTimes();
+        // After loading, force reschedule notifications with latest data
+        if (_prayerTimes.isNotEmpty) {
+          final locationName = await PrayerTimesService.getLocationName(
+            currentPosition.latitude,
+            currentPosition.longitude,
+          );
+          debugPrint(
+            '[Homepage] Forcing notification reschedule after location change.',
+          );
+          await NotificationService().forceReschedule(
+            _prayerTimes,
+            locationName: locationName,
+          );
+        }
         // Update widget with new location
         await WidgetService.updateWidget();
       }
@@ -276,7 +307,9 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           prefs.getBool('notification_permission_requested') ?? false;
 
       if (!hasRequestedPermission) {
-        debugPrint('🔔 First install detected - requesting notification permission');
+        debugPrint(
+          '🔔 First install detected - requesting notification permission',
+        );
         final notificationService = NotificationService();
         await notificationService.initialize();
         final granted = await notificationService.requestPermission();
@@ -452,7 +485,9 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             allPrayerTimes.add(prayerWithDay);
           }
 
-          debugPrint('  ✅ Fetched ${dayPrayerTimes.length} prayers for $dateStr');
+          debugPrint(
+            '  ✅ Fetched ${dayPrayerTimes.length} prayers for $dateStr',
+          );
         } else {
           debugPrint('  ⚠️ Failed to fetch prayer times for day +$day');
         }
@@ -484,7 +519,9 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
       await WidgetService.forceRefreshWidget();
       debugPrint('🔄 Widget force refreshed from homepage');
 
-      debugPrint('✅ 7-day notifications scheduled successfully for $locationName');
+      debugPrint(
+        '✅ 7-day notifications scheduled successfully for $locationName',
+      );
     } catch (e) {
       debugPrint('❌ Error scheduling 7-day notifications: $e');
     }

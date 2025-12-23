@@ -1450,6 +1450,13 @@ class NotificationService {
     String? locationName,
   }) async {
     debugPrint('🔄 Force rescheduling notifications...');
+    debugPrint('🔎 [forceReschedule] Received locationName: $locationName');
+    debugPrint(
+      '🔎 [forceReschedule] Received prayerTimes: ' +
+          (prayerTimes.isNotEmpty
+              ? prayerTimes.map((e) => e.toString()).join(', ')
+              : 'EMPTY'),
+    );
 
     // Clear last scheduled date
     final prefs = await SharedPreferences.getInstance();

@@ -19,8 +19,10 @@ import 'others_menu_page.dart';
 import 'searchpage/search_page.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
+import '../doaharian/doa_harian_page.dart';
 import '../../services/quran_service.dart';
 import '../../models/quran_models.dart';
+import 'package:hijri/hijri_calendar.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -718,13 +720,17 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
             // Today's Prayer Times Card
-            if (!_isPrayerTimesLoading && _prayerTimes.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.05,
-                ),
-                child: _buildTodayPrayerTimesCard(context),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.05,
               ),
+              child:
+                  _isPrayerTimesLoading
+                      ? _buildTodayPrayerTimesSkeletonLoading(context)
+                      : (_prayerTimes.isNotEmpty
+                          ? _buildTodayPrayerTimesCard(context)
+                          : const SizedBox.shrink()),
+            ),
             SizedBox(height: screenHeight * 0.04),
             // Menu Section (includes Quran tracker)
             _buildIconMenu(context),
@@ -1025,6 +1031,26 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     ];
     final currentDate = '${now.day} ${months[now.month - 1]} ${now.year}';
 
+    // Get Hijri date
+    const hijriMonths = [
+      'Muharram',
+      'Safar',
+      "Rabi'ulawal",
+      "Rabi'ulakhir",
+      'Jamadilawwal',
+      'Jamadilakhir',
+      'Rejab',
+      "Sha'ban",
+      'Ramadan',
+      'Shawwal',
+      'Zulkaedah',
+      'Zulhijjah',
+    ];
+    final hijriCalendar = HijriCalendar.fromDate(now);
+    final hijriMonthName = hijriMonths[hijriCalendar.hMonth - 1];
+    final hijriDate =
+        '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -1046,7 +1072,7 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Date and location row
+          // Date row with both Gregorian and Hijri
           Row(
             children: [
               Icon(
@@ -1055,33 +1081,18 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                 color: colorScheme.onSurface.withOpacity(0.6),
               ),
               const SizedBox(width: 6),
-              Text(
-                currentDate,
-                style: TextStyle(
-                  color: colorScheme.onSurface.withOpacity(0.6),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    size: 14,
+              Expanded(
+                child: Text(
+                  '$currentDate / $hijriDate',
+                  style: TextStyle(
                     color: colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _currentLocationName,
-                    style: TextStyle(
-                      color: colorScheme.onSurface.withOpacity(0.6),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -1193,6 +1204,26 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Location row
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_rounded,
+                size: 13,
+                color: colorScheme.onSurface.withOpacity(0.5),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                _currentLocationName,
+                style: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1495,51 +1526,34 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           ),
           SizedBox(height: screenWidth * 0.05),
 
-          // Material You: Dynamic masonry layout with varied sizes
+          // New Layout: 2 boxes top (Waktu Solat + Quran), 3 boxes bottom (Kiblat + Tasbih + Hadis 40)
           Column(
             children: [
-              // Row 1: Waktu Solat (full width, tall)
-              _buildExtraLargeMenuCard(
-                context,
-                title: 'Waktu Solat',
-                iconPath: 'assets/icons/menu/waktu_solat.svg',
-                backgroundColor: const Color(0xFF6750A4), // M3 Primary Purple
-                iconColor: const Color(0xFF6750A4),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const PrayerTimesPage()),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              // Row 2: Kiblat (40%) + Quran (60%)
+              // Top Row: Waktu Solat (50%) + Quran (50%)
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    flex: 4,
-                    child: _buildCompactMenuCard(
+                    child: _buildMediumMenuCard(
                       context,
-                      title: 'Kiblat',
-                      iconPath: 'assets/icons/menu/kiblat.svg',
-                      backgroundColor: const Color(0xFFFF6F00), // M3 Orange
-                      iconColor: const Color(0xFFE65100),
+                      title: 'Waktu Solat',
+                      iconPath: 'assets/icons/menu/waktu_solat.svg',
+                      backgroundColor: const Color(
+                        0xFF6750A4,
+                      ), // M3 Primary Purple
+                      iconColor: const Color(0xFF6750A4),
                       onTap: () {
                         Navigator.push(
                           context,
-                          SmoothPageRoute(page: const KiblatPage()),
+                          SmoothPageRoute(page: const PrayerTimesPage()),
                         );
                       },
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    flex: 6,
-                    child: _buildWideMenuCard(
+                    child: _buildMediumMenuCard(
                       context,
-                      title: 'Quran',
-                      subtitle: 'Bacaan Al-Quran',
+                      title: 'Al-Quran',
                       iconPath: 'assets/icons/menu/quran_new.svg',
                       backgroundColor: const Color(0xFF00897B), // M3 Teal
                       iconColor: const Color(0xFF00695C),
@@ -1554,20 +1568,59 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                 ],
               ),
               const SizedBox(height: 12),
-              // Row 3: Tasbih (full width, compact)
-              _buildHorizontalMenuCard(
-                context,
-                title: 'Tasbih Digital',
-                subtitle: 'Kira zikir & tasbih',
-                iconPath: 'assets/icons/menu/tasbih.svg',
-                backgroundColor: const Color(0xFFC2185B), // M3 Pink
-                iconColor: const Color(0xFFAD1457),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    SmoothPageRoute(page: const ZikirCounterPage()),
-                  );
-                },
+              // Bottom Row: Arah Kiblat (33%) + Tasbih (33%) + Hadis 40 (33%)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSmallMenuCard(
+                      context,
+                      title: 'Arah Kiblat',
+                      iconPath: 'assets/icons/menu/kiblat.svg',
+                      backgroundColor: const Color(0xFF6A7BA2), // Slate Blue
+                      iconColor: const Color(0xFF5A6B92),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const KiblatPage()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSmallMenuCard(
+                      context,
+                      title: 'Tasbih',
+                      iconPath: 'assets/icons/menu/tasbih.svg',
+                      backgroundColor: const Color(0xFFC2185B), // M3 Pink
+                      iconColor: const Color(0xFFAD1457),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const ZikirCounterPage()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSmallMenuCard(
+                      context,
+                      title: 'Doa Harian',
+                      iconPath: 'assets/icons/menu/doa.svg',
+                      backgroundColor: const Color(
+                        0xFFFF6B6B,
+                      ), // Vibrant Coral Red
+                      iconColor: const Color(0xFFE53935),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const DoaHarianPage()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -2104,14 +2157,11 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Material 3 filled tonal container
+    // Solid color background
     final surfaceColor =
-        isDark
-            ? colorScheme.surfaceContainerHighest
-            : backgroundColor.withOpacity(0.15);
+        isDark ? colorScheme.surfaceContainerHighest : backgroundColor;
 
-    final onSurfaceColor =
-        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+    final onSurfaceColor = isDark ? colorScheme.onSurface : Colors.white;
 
     return Card(
       elevation: 0,
@@ -2122,65 +2172,59 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           color:
               isDark
                   ? colorScheme.outline.withOpacity(0.2)
-                  : iconColor.withOpacity(0.12),
+                  : Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
-      color: surfaceColor,
-      child: InkWell(
-        onTap: onTap,
+      color: Colors.transparent,
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon with filled tonal background
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color:
-                      isDark
-                          ? iconColor.withOpacity(0.2)
-                          : iconColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    iconPath,
-                    width: 24,
-                    height: 24,
-                    color: iconColor,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: onSurfaceColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.15,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Cari arah kiblat',
-                style: TextStyle(
-                  color:
-                      isDark
-                          ? colorScheme.onSurfaceVariant
-                          : const Color(0xFF49454F),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: 0.4,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: surfaceColor.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Stack(
+                  children: [
+                    // Text at top-left
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: onSurfaceColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.15,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Icon at bottom-right
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: SvgPicture.asset(iconPath, width: 64, height: 64),
+                    ),
+                    // Spacer to maintain card height
+                    const SizedBox(height: 80),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -2198,14 +2242,11 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Material 3 filled tonal container
+    // Solid color background
     final surfaceColor =
-        isDark
-            ? colorScheme.surfaceContainerHighest
-            : backgroundColor.withOpacity(0.15);
+        isDark ? colorScheme.surfaceContainerHighest : backgroundColor;
 
-    final onSurfaceColor =
-        isDark ? colorScheme.onSurface : const Color(0xFF1C1B1F);
+    final onSurfaceColor = isDark ? colorScheme.onSurface : Colors.white;
 
     return Card(
       elevation: 0,
@@ -2216,54 +2257,56 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
           color:
               isDark
                   ? colorScheme.outline.withOpacity(0.2)
-                  : iconColor.withOpacity(0.12),
+                  : Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
-      color: surfaceColor,
-      child: InkWell(
-        onTap: onTap,
+      color: Colors.transparent,
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon with filled tonal background
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color:
-                      isDark
-                          ? iconColor.withOpacity(0.2)
-                          : iconColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    iconPath,
-                    width: 24,
-                    height: 24,
-                    color: iconColor,
-                  ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: surfaceColor.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Stack(
+                  children: [
+                    // Text at top-left
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: onSurfaceColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.1,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Icon at bottom-right
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: SvgPicture.asset(iconPath, width: 52, height: 52),
+                    ),
+                    // Spacer to maintain card height
+                    const SizedBox(height: 80),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: onSurfaceColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.1,
-                  height: 1.2,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -2790,6 +2833,63 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                     height: 36,
                     colorScheme: colorScheme,
                     borderRadius: 12,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodayPrayerTimesSkeletonLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildShimmerBox(
+                width: 16,
+                height: 16,
+                colorScheme: colorScheme,
+                borderRadius: 4,
+              ),
+              const SizedBox(width: 8),
+              _buildShimmerBox(
+                width: 150,
+                height: 14,
+                colorScheme: colorScheme,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: List.generate(
+              6,
+              (index) => Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                  child: _buildShimmerBox(
+                    width: double.infinity,
+                    height: 70,
+                    colorScheme: colorScheme,
+                    borderRadius: 10,
                   ),
                 ),
               ),

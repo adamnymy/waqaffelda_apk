@@ -112,28 +112,26 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             fontFamily: 'Inter',
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0284C7), // Deep ocean blue
-              secondary: Color(0xFF38BDF8), // Sky blue
-              background: Color(0xFFFFFFFF), // White background
-              surface: Color(0xFFF0F9FF), // Ice blue tint
-              onPrimary: Color(0xFFFFFFFF), // White text on primary
-              onSecondary: Color(0xFFFFFFFF), // White text on secondary
-              onBackground: Color(0xFF0F172A), // Dark text
-              onSurface: Color(0xFF0F172A), // Dark text
+              primary: Color(0xFF0F766E), // Darker Teal
+              secondary: Color(0xFFF59E42), // Orange
+              background: Color(0xFFF8FAFC), // Light Gray
+              surface: Color(0xFFF1F5F9), // Soft Gray
+              onPrimary: Color(0xFFFFFFFF),
+              onSecondary: Color(0xFFFFFFFF),
+              onBackground: Color(0xFF1E293B),
+              onSurface: Color(0xFF1E293B),
             ),
-            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
             appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFFFFFFFF),
-              foregroundColor: Color(0xFF0284C7),
+              backgroundColor: Color(0xFFF8FAFC),
+              foregroundColor: Color(0xFF14B8A6),
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF0284C7)),
+              iconTheme: IconThemeData(color: Color(0xFF14B8A6)),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7), // Deep ocean CTAs
-                foregroundColor: const Color(
-                  0xFFFFFFFF,
-                ), // White text on primary
+                backgroundColor: const Color(0xFF14B8A6),
+                foregroundColor: const Color(0xFFFFFFFF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -148,25 +146,25 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData(
             fontFamily: 'Inter',
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF0EA5E9), // Electric blue
-              secondary: Color(0xFF7DD3FC), // Soft sky blue
-              background: Color(0xFF111827), // Dark gray
-              surface: Color(0xFF1F2937), // Medium dark gray
-              onPrimary: Color(0xFF111827),
+              primary: Color(0xFF0F766E), // Darker Teal
+              secondary: Color(0xFFF59E42), // Orange
+              background: Color(0xFF1E293B), // Dark Gray
+              surface: Color(0xFF334155), // Medium dark gray
+              onPrimary: Color(0xFFFFFFFF),
               onSecondary: Color(0xFFFFFFFF),
-              onBackground: Color(0xFFF9FAFB),
-              onSurface: Color(0xFFF9FAFB),
+              onBackground: Color(0xFFF8FAFC),
+              onSurface: Color(0xFFF8FAFC),
             ),
-            scaffoldBackgroundColor: const Color(0xFF111827),
+            scaffoldBackgroundColor: const Color(0xFF1E293B),
             appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF111827),
-              foregroundColor: Color(0xFF0EA5E9),
+              backgroundColor: Color(0xFF1E293B),
+              foregroundColor: Color(0xFFF59E42),
               elevation: 0,
-              iconTheme: IconThemeData(color: Color(0xFF0EA5E9)),
+              iconTheme: IconThemeData(color: Color(0xFFF59E42)),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0EA5E9),
+                backgroundColor: const Color(0xFF14B8A6),
                 foregroundColor: const Color(0xFFFFFFFF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

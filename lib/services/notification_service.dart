@@ -1072,10 +1072,11 @@ class NotificationService {
       scheduledTime = scheduledTime.add(Duration(days: daysFromNow));
     }
 
-    // If the prayer time has already passed today (and daysFromNow=0), schedule for tomorrow
-    if (daysFromNow == 0 && scheduledTime.isBefore(now)) {
+    // Always schedule for the correct day, even if time has passed
+    // If the prayer time has already passed for today, schedule for tomorrow
+    if (scheduledTime.isBefore(now)) {
       debugPrint(
-        '⏰ $prayerName time has passed today, scheduling for tomorrow',
+        '⏰ $prayerName time has passed for scheduled day, scheduling for next available day',
       );
       scheduledTime = scheduledTime.add(const Duration(days: 1));
     }

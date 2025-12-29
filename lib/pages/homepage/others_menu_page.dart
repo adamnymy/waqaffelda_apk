@@ -9,6 +9,7 @@ import '../tahlil/tahlil.dart';
 import '../masjid_terdekat/masjid_terdekat.dart';
 import '../hadis40/hadis40.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../kalendar/kalendar_islam.dart';
 
 class OthersMenuPage extends StatelessWidget {
   const OthersMenuPage({Key? key}) : super(key: key);
@@ -289,7 +290,10 @@ class OthersMenuPage extends StatelessWidget {
                       const Color(0xFFFBC02D),
                       () {
                         Navigator.pop(context);
-                        // TODO: Navigate to Islamic calendar page
+                        Navigator.push(
+                          context,
+                          SmoothPageRoute(page: const CombinedCalendarPage()),
+                        );
                       },
                     ),
                     const SizedBox(height: 20),

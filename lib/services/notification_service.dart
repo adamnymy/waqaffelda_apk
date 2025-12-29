@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:home_widget/home_widget.dart';
 import 'widget_service.dart';
+import 'prayer_times_service.dart';
 
 /// WorkManager callback dispatcher - must be a top-level function
 @pragma('vm:entry-point')
@@ -1014,6 +1015,11 @@ class NotificationService {
 
     debugPrint('📅 Scheduling for next 7 days...\n');
 
+    // Try to obtain last known coordinates to fetch accurate per-day times
+    final sprefs = await SharedPreferences.getInstance();
+    final lastLat = sprefs.getDouble('last_known_lat');
+    final lastLng = sprefs.getDouble('last_known_lng');
+
     for (int day = 0; day < 7; day++) {
       final targetDate = now.add(Duration(days: day));
       final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
@@ -1022,7 +1028,28 @@ class NotificationService {
 
       debugPrint('📆 Day +$day ($dateStr):');
 
-      for (var prayer in prayerTimes) {
+      // Attempt to fetch accurate times for this specific date when possible
+      List<Map<String, dynamic>> prayersForDay = List.from(prayerTimes);
+      try {
+        if (lastLat != null && lastLng != null) {
+          final apiData = await PrayerTimesService.getPrayerTimesForMalaysia(
+            lastLat,
+            lastLng,
+            forDate: targetDate,
+          );
+          if (apiData != null) {
+            final parsed = PrayerTimesService.parsePrayerTimes(apiData);
+            if (parsed.isNotEmpty) {
+              prayersForDay = parsed;
+              debugPrint('  ✅ Fetched accurate prayers for $dateStr');
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('  ⚠️ Failed to fetch accurate prayers for $dateStr: $e');
+      }
+
+      for (var prayer in prayersForDay) {
         final prayerName = prayer['name'] as String;
         // Use time24 if available, fallback to time (12-hour format)
         final prayerTimeString = (prayer['time24'] ?? prayer['time']) as String;

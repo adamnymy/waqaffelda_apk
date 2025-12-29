@@ -1544,7 +1544,7 @@ class _HomepageState extends State<Homepage> {
               time,
               style: TextStyle(
                 fontSize: screenWidth * 0.028,
-                fontWeight: isNext ? FontWeight.w900 : FontWeight.w500,
+                fontWeight: isNext ? FontWeight.w500 : FontWeight.w500,
                 color:
                     isNext
                         ? prayerColor

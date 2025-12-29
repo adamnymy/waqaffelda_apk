@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geocoding/geocoding.dart';
 
 import 'package:flutter/foundation.dart';
+
 class MasjidTerdekatPage extends StatefulWidget {
   const MasjidTerdekatPage({Key? key}) : super(key: key);
 
@@ -26,6 +27,9 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
   String _searchRadius = '5';
   late AnimationController _animationController;
   String _sortOption = 'Jarak Terdekat';
+
+  // Cache for lazy-loaded addresses
+  final Map<String, String> _addressCache = {};
 
   // Color scheme based on the new design
   static const Color scaffoldBgColor = Color(0xFFF0F7F7);
@@ -96,7 +100,53 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
     }
   }
 
+  /// Build address string from OSM tags (fast, no network call)
+  String _buildAddressFromTags(Map<String, dynamic> tags) {
+    List<String> addressParts = [];
+
+    // Try full address first
+    if (tags['addr:full'] != null && tags['addr:full'].toString().isNotEmpty) {
+      return tags['addr:full'].toString();
+    }
+
+    // Build from components
+    if (tags['addr:street'] != null &&
+        tags['addr:street'].toString().isNotEmpty) {
+      addressParts.add(tags['addr:street'].toString());
+    }
+    if (tags['addr:housenumber'] != null &&
+        tags['addr:housenumber'].toString().isNotEmpty) {
+      if (addressParts.isNotEmpty) {
+        addressParts[addressParts.length - 1] =
+            '${tags['addr:housenumber']} ${addressParts.last}';
+      } else {
+        addressParts.add(tags['addr:housenumber'].toString());
+      }
+    }
+    if (tags['addr:city'] != null && tags['addr:city'].toString().isNotEmpty) {
+      addressParts.add(tags['addr:city'].toString());
+    }
+    if (tags['addr:postcode'] != null &&
+        tags['addr:postcode'].toString().isNotEmpty) {
+      addressParts.add(tags['addr:postcode'].toString());
+    }
+    if (tags['addr:state'] != null &&
+        tags['addr:state'].toString().isNotEmpty) {
+      addressParts.add(tags['addr:state'].toString());
+    }
+
+    return addressParts.join(', ');
+  }
+
+  /// Get address from coordinates with caching (called on-demand)
   Future<String> _getAddressFromCoordinates(double lat, double lng) async {
+    final cacheKey = '${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}';
+
+    // Check cache first
+    if (_addressCache.containsKey(cacheKey)) {
+      return _addressCache[cacheKey]!;
+    }
+
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
       if (placemarks.isNotEmpty) {
@@ -117,14 +167,22 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
           addressParts.add(place.administrativeArea!);
         }
 
-        return addressParts.isNotEmpty
-            ? addressParts.join(', ')
-            : 'Alamat tidak tersedia';
+        final address =
+            addressParts.isNotEmpty
+                ? addressParts.join(', ')
+                : 'Alamat tidak tersedia';
+
+        // Cache the result
+        _addressCache[cacheKey] = address;
+        return address;
       }
     } catch (e) {
       debugPrint('Error getting address: $e');
     }
-    return 'Alamat tidak tersedia';
+
+    final fallback = 'Alamat tidak tersedia';
+    _addressCache[cacheKey] = fallback;
+    return fallback;
   }
 
   Future<void> _searchNearbyMosques() async {
@@ -199,17 +257,12 @@ out center;
               }
             }
 
-            // Try to get address from OSM tags first, then use geocoding
-            String address =
-                tags['addr:full'] ??
-                tags['addr:street'] ??
-                tags['addr:city'] ??
-                tags['addr:state'] ??
-                '';
+            // Build address from available OSM tags (no geocoding for speed)
+            String address = _buildAddressFromTags(tags);
 
-            // If no address from OSM, fetch using geocoding
+            // If still no address, set a placeholder (will be lazy-loaded on demand)
             if (address.isEmpty) {
-              address = await _getAddressFromCoordinates(lat, lng);
+              address = 'Memuat alamat...'; // Placeholder
             }
 
             final mosque = Mosque(
@@ -276,6 +329,11 @@ out center;
   }
 
   Widget _buildMosqueDetailsSheet(Mosque mosque) {
+    // Lazy load address if it's still a placeholder
+    if (mosque.address == 'Memuat alamat...') {
+      _loadAddressForMosque(mosque);
+    }
+
     return Container(
       decoration: const BoxDecoration(
         color: whiteColor,
@@ -454,6 +512,33 @@ out center;
         ),
       ],
     );
+  }
+
+  /// Lazy load address for a mosque (called on-demand)
+  Future<void> _loadAddressForMosque(Mosque mosque) async {
+    if (mosque.address != 'Memuat alamat...') return;
+
+    final address = await _getAddressFromCoordinates(
+      mosque.latitude,
+      mosque.longitude,
+    );
+
+    // Update the mosque object in the list
+    final index = _mosques.indexWhere((m) => m.placeId == mosque.placeId);
+    if (index != -1 && mounted) {
+      setState(() {
+        _mosques[index] = Mosque(
+          name: mosque.name,
+          address: address,
+          latitude: mosque.latitude,
+          longitude: mosque.longitude,
+          distance: mosque.distance,
+          rating: mosque.rating,
+          isOpen: mosque.isOpen,
+          placeId: mosque.placeId,
+        );
+      });
+    }
   }
 
   Future<void> _openGoogleMaps(Mosque mosque) async {

@@ -247,7 +247,7 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
     debugPrint('📋 [BG] Processing ${list.length} prayer times for scheduling');
 
     // Parse times for tomorrow (since this runs at night after all today's prayers passed)
-    final now = DateTime.now();
+    final now = tz.TZDateTime.now(tz.local);
     final tomorrow = now.add(const Duration(days: 1));
 
     int scheduledCount = 0;
@@ -267,10 +267,12 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
         debugPrint('🕐 [BG] Processing $prayerName: $timeString');
 
         // Parse time string manually (can't use instance method in isolate)
-        final parsedTime = _parseTimeStringStatic(timeString, tomorrow);
+        final normalized = _normalizeTimeString(timeString);
+        final toParse = normalized.isNotEmpty ? normalized : timeString;
+        final parsedTime = _parseTimeStringStatic(toParse, tomorrow);
         if (parsedTime == null) {
           debugPrint(
-            '❌ [BG] Failed to parse time for $prayerName: $timeString',
+            '❌ [BG] Failed to parse time for $prayerName: $timeString (normalized: $normalized)',
           );
           continue;
         }
@@ -376,9 +378,9 @@ DateTime? _parseTimeStringStatic(String timeStr, DateTime baseDate) {
         minute,
       );
     } else if (parts.length == 1) {
-      // 24-hour format: "HH:MM"
+      // 24-hour format: "HH:MM" or "HH:MM:SS" - accept >=2 components and ignore seconds
       final timeComponents = timeStr.split(':');
-      if (timeComponents.length != 2) return null;
+      if (timeComponents.length < 2) return null;
 
       final hour = int.parse(timeComponents[0]);
       final minute = int.parse(timeComponents[1]);
@@ -397,6 +399,28 @@ DateTime? _parseTimeStringStatic(String timeStr, DateTime baseDate) {
     debugPrint('❌ [BG] Error parsing time string "$timeStr": $e');
     return null;
   }
+}
+
+/// Try to extract a clean HH:MM or HH:MM AM/PM substring from messy inputs
+String _normalizeTimeString(String raw) {
+  var s = raw.trim();
+  // Replace non-breaking spaces and multiple spaces
+  s = s.replaceAll(RegExp(r'\u00A0'), ' ');
+  s = s.replaceAll(RegExp(r'\s+'), ' ');
+
+  // Try to find patterns like "HH:MM AM" or "H:MM PM" or "HH:MM"
+  final regex = RegExp(r'(\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)?)');
+  final m = regex.firstMatch(s);
+  if (m != null) {
+    return m.group(0)!.trim();
+  }
+
+  // Fallback to simple HH:MM
+  final regex2 = RegExp(r'(\d{1,2}:\d{2})');
+  final m2 = regex2.firstMatch(s);
+  if (m2 != null) return m2.group(0)!.trim();
+
+  return '';
 }
 
 class NotificationService {
@@ -458,7 +482,7 @@ class NotificationService {
 
   /// Calculate initial delay to run background task at 11:50 PM
   Duration _calculateInitialDelay() {
-    final now = DateTime.now();
+    final now = tz.TZDateTime.now(tz.local);
     var targetTime = DateTime(now.year, now.month, now.day, 23, 50); // 11:50 PM
 
     // If it's already past 11:50 PM today, schedule for tomorrow
@@ -923,7 +947,7 @@ class NotificationService {
       await initialize();
     }
 
-    final now = DateTime.now();
+    final now = tz.TZDateTime.now(tz.local);
     final scheduledTime = now.add(const Duration(seconds: 10));
 
     debugPrint(
@@ -968,7 +992,7 @@ class NotificationService {
       await initialize();
     }
 
-    final now = DateTime.now();
+    final now = tz.TZDateTime.now(tz.local);
     final today = DateFormat('yyyy-MM-dd').format(now);
 
     debugPrint(
@@ -1002,6 +1026,12 @@ class NotificationService {
         final prayerName = prayer['name'] as String;
         // Use time24 if available, fallback to time (12-hour format)
         final prayerTimeString = (prayer['time24'] ?? prayer['time']) as String;
+        final normalizedTime = _normalizeTimeString(prayerTimeString);
+        if (normalizedTime.isNotEmpty && normalizedTime != prayerTimeString) {
+          debugPrint(
+            'ℹ️ Normalized time for $prayerName: "$prayerTimeString" → "$normalizedTime"',
+          );
+        }
 
         // Skip Syuruk as requested
         if (prayerName.toLowerCase() == 'syuruk') {
@@ -1012,7 +1042,7 @@ class NotificationService {
         try {
           await _scheduleSinglePrayerWorkManager(
             prayerName,
-            prayerTimeString,
+            normalizedTime.isNotEmpty ? normalizedTime : prayerTimeString,
             daysFromNow: day,
           );
           dayScheduled++;
@@ -1056,10 +1086,29 @@ class NotificationService {
       throw Exception('Unknown prayer: $prayerName');
     }
 
-    final now = DateTime.now();
-    final parsedTime = _parseTimeString(timeString);
+    final now = tz.TZDateTime.now(tz.local);
+    // Normalize time string to handle merged code variants
+    final normalized = _normalizeTimeString(timeString);
+    tz.TZDateTime? parsedTime;
+
+    if (normalized.isNotEmpty) {
+      parsedTime = _parseTimeString(normalized);
+      if (parsedTime == null) {
+        // Fallback: use static parser and convert to TZ
+        final dt = _parseTimeStringStatic(normalized, now);
+        if (dt != null) {
+          parsedTime = tz.TZDateTime.from(dt, tz.local);
+        }
+      }
+    } else {
+      // If normalization failed, try original string as last resort
+      parsedTime = _parseTimeString(timeString);
+    }
+
     if (parsedTime == null) {
-      debugPrint('❌ Failed to parse time string: $timeString for $prayerName');
+      debugPrint(
+        '❌ Failed to parse time string: "$timeString" (normalized: "$normalized") for $prayerName',
+      );
       throw Exception('Invalid time string: $timeString');
     }
 
@@ -1082,8 +1131,19 @@ class NotificationService {
     }
 
     final delaySeconds = scheduledTime.difference(now).inSeconds;
-    // Use unique ID for each day: base ID + (day * 100)
-    final notificationId = _getNotificationId(prayerName) + (daysFromNow * 100);
+
+    // Determine actual day offset from now for the scheduledTime (in days)
+    final scheduledDateOnly = DateTime(
+      scheduledTime.year,
+      scheduledTime.month,
+      scheduledTime.day,
+    );
+    final nowDateOnly = DateTime(now.year, now.month, now.day);
+    final actualDayOffset = scheduledDateOnly.difference(nowDateOnly).inDays;
+
+    // Use unique ID for each scheduled day: base ID + (actualDayOffset * 100)
+    final notificationId =
+        _getNotificationId(prayerName) + (actualDayOffset * 100);
 
     // Format time in 12-hour format for display
     final timeLabel12h = DateFormat(
@@ -1314,7 +1374,7 @@ class NotificationService {
       debugPrint('💾 Saved location name: $locationName');
     }
 
-    final now = DateTime.now();
+    final now = tz.TZDateTime.now(tz.local);
     final today = DateFormat('yyyy-MM-dd').format(now);
 
     debugPrint(
@@ -1358,6 +1418,12 @@ class NotificationService {
       for (var prayer in dayPrayers) {
         final prayerName = prayer['name'];
         final timeString = prayer['time24'] ?? prayer['time'] ?? '--:--';
+        final normalizedTime = _normalizeTimeString(timeString.toString());
+        if (normalizedTime.isNotEmpty && normalizedTime != timeString) {
+          debugPrint(
+            'ℹ️ Normalized time for $prayerName: "$timeString" → "$normalizedTime"',
+          );
+        }
 
         // Skip Syuruk
         if (prayerName == 'Syuruk') {
@@ -1377,7 +1443,7 @@ class NotificationService {
         try {
           await _scheduleSinglePrayerWorkManager(
             prayerName,
-            timeString,
+            normalizedTime.isNotEmpty ? normalizedTime : timeString,
             daysFromNow: dayOffset,
           );
           dayScheduled++;

@@ -852,7 +852,9 @@ class _HomepageState extends State<Homepage> {
 
     // Show skeleton loading if still loading
     if (_nextPrayerText == 'Loading...' || _prayerTimes.isEmpty) {
+      // Use a fixed height that matches the actual prayer card footprint
       return Container(
+        height: screenHeight * 0.26,
         margin: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.02,
           vertical: screenHeight * 0.008,
@@ -873,26 +875,26 @@ class _HomepageState extends State<Homepage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             children: [
               // Skeleton date row
               Row(
                 children: [
                   Container(
-                    width: 12,
-                    height: 12,
+                    width: screenWidth * 0.18,
+                    height: 16,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(4),
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   Expanded(
                     child: Container(
-                      height: 14,
+                      height: 16,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                   ),
@@ -903,11 +905,11 @@ class _HomepageState extends State<Homepage> {
               Row(
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: screenWidth * 0.22,
+                    height: screenHeight * 0.11,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   SizedBox(width: screenWidth * 0.03),
@@ -916,20 +918,28 @@ class _HomepageState extends State<Homepage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          height: 16,
-                          width: screenWidth * 0.4,
+                          height: 18,
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
-                        SizedBox(height: 8),
                         Container(
-                          height: 24,
-                          width: screenWidth * 0.5,
+                          height: 18,
+                          margin: const EdgeInsets.only(bottom: 8),
+                          width: screenWidth * 0.35,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white.withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        Container(
+                          height: 18,
+                          width: screenWidth * 0.28,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                       ],
@@ -937,56 +947,27 @@ class _HomepageState extends State<Homepage> {
                   ),
                 ],
               ),
-              SizedBox(height: screenHeight * 0.015),
-              // Skeleton bottom row
+              const Spacer(),
+              // Skeleton bottom row (small badges)
               Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 12,
-                          width: screenWidth * 0.15,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Container(
-                          height: 20,
-                          width: screenWidth * 0.2,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
+                  SizedBox(width: screenWidth * 0.02),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: 12,
-                          width: screenWidth * 0.2,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Container(
-                          height: 20,
-                          width: screenWidth * 0.25,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ],
@@ -1319,7 +1300,9 @@ class _HomepageState extends State<Homepage> {
 
     // Show skeleton loading if prayer times are empty
     if (_prayerTimes.isEmpty) {
+      // Match the visible footprint of the colored prayer times card
       return Container(
+        height: screenHeight * 0.18,
         margin: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.04,
           vertical: screenHeight * 0.015,
@@ -1348,7 +1331,7 @@ class _HomepageState extends State<Homepage> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             // Skeleton title
             Container(
@@ -1361,48 +1344,41 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             // Skeleton prayer items
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(5, (index) {
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.005,
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(5, (index) {
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.005,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: screenHeight * 0.07,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 12,
+                            width: screenWidth * 0.15,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: screenWidth * 0.115,
-                          height: screenWidth * 0.115,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        SizedBox(height: screenWidth * 0.018),
-                        Container(
-                          height: 12,
-                          width: screenWidth * 0.15,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        SizedBox(height: screenWidth * 0.01),
-                        Container(
-                          height: 12,
-                          width: screenWidth * 0.18,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ],
         ),

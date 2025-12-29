@@ -292,7 +292,7 @@ class OthersMenuPage extends StatelessWidget {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          SmoothPageRoute(page: const CombinedCalendarPage()),
+                          SmoothPageRoute(page: const KalendarIslamPage()),
                         );
                       },
                     ),

@@ -28,14 +28,14 @@ class _WeekdayHeader extends StatelessWidget {
   }
 }
 
-class CombinedCalendarPage extends StatefulWidget {
-  const CombinedCalendarPage({Key? key}) : super(key: key);
+class KalendarIslamPage extends StatefulWidget {
+  const KalendarIslamPage({Key? key}) : super(key: key);
 
   @override
-  _CombinedCalendarPageState createState() => _CombinedCalendarPageState();
+  _KalendarIslamPageState createState() => _KalendarIslamPageState();
 }
 
-class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
+class _KalendarIslamPageState extends State<KalendarIslamPage> {
   DateTime _displayed = DateTime.now();
   Map<String, List<String>> _events = {}; // key: yyyy-MM-dd
   Map<String, List<String>>? _backupEvents;

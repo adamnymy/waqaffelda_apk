@@ -85,7 +85,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/splash_screen.gif
+
     - assets/images/masjidnegara.jpg
     - assets/images/waqaf_quran.png
     - assets/images/infak_spa.png
@@ -127,9 +127,8 @@ flutter:
 
     - assets/icons/menu/waktu_solat-bg.svg
     - assets/icons/menu/alquran-bg.svg
-    - assets/icons/logoNg.svg
-    - assets/icons/logo.svg
-    - assets/splash_screen.gif
+
+
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
@@ -177,6 +176,9 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/app_icon.png"
-  adaptive_icon_background: "#00897B"  # Your app's primary teal color
+  image_path_android: "assets/Logo QAF/android/play_store_512.png"
+  image_path_ios: "assets/Logo QAF/ios/AppIcon@2x.png"
+  adaptive_icon_background: "#00897B"
+  
+   # Your app's primary teal color
   # adaptive_icon_foreground: "assets/images/app_icon_foreground.png"  # Optional: if you want separate foreground

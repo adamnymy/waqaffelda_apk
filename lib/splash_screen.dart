@@ -47,10 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: Curves.elasticOut,
-      ),
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
 
     _logoBlur = Tween<double>(begin: 10.0, end: 0.0).animate(
@@ -66,9 +63,10 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOut),
-    );
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
 
     _textSlide = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
@@ -135,8 +133,8 @@ class _SplashScreenState extends State<SplashScreen>
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const Homepage(),
+          pageBuilder:
+              (context, animation, secondaryAnimation) => const Homepage(),
           transitionDuration: const Duration(milliseconds: 400),
           reverseTransitionDuration: Duration.zero,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -186,29 +184,30 @@ class _SplashScreenState extends State<SplashScreen>
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: isTransitioning
-                          ? [
-                              Color.lerp(
+                      colors:
+                          isTransitioning
+                              ? [
+                                Color.lerp(
+                                  colorScheme.primary,
+                                  colorScheme.background,
+                                  _transitionAnimation.value,
+                                )!,
+                                Color.lerp(
+                                  colorScheme.primary.withOpacity(0.9),
+                                  colorScheme.background,
+                                  _transitionAnimation.value,
+                                )!,
+                                Color.lerp(
+                                  colorScheme.primary.withOpacity(0.85),
+                                  colorScheme.background,
+                                  _transitionAnimation.value,
+                                )!,
+                              ]
+                              : [
                                 colorScheme.primary,
-                                colorScheme.background,
-                                _transitionAnimation.value,
-                              )!,
-                              Color.lerp(
                                 colorScheme.primary.withOpacity(0.9),
-                                colorScheme.background,
-                                _transitionAnimation.value,
-                              )!,
-                              Color.lerp(
                                 colorScheme.primary.withOpacity(0.85),
-                                colorScheme.background,
-                                _transitionAnimation.value,
-                              )!,
-                            ]
-                          : [
-                              colorScheme.primary,
-                              colorScheme.primary.withOpacity(0.9),
-                              colorScheme.primary.withOpacity(0.85),
-                            ],
+                              ],
                     ),
                   ),
                 ),
@@ -217,9 +216,10 @@ class _SplashScreenState extends State<SplashScreen>
                 CustomPaint(
                   painter: ParticlesPainter(
                     animationValue: _particlesAnimation.value,
-                    color: isWhiteBg
-                        ? colorScheme.primary.withOpacity(0.08)
-                        : colorScheme.onPrimary.withOpacity(0.1),
+                    color:
+                        isWhiteBg
+                            ? colorScheme.primary.withOpacity(0.08)
+                            : colorScheme.onPrimary.withOpacity(0.1),
                     screenSize: screenSize,
                   ),
                   size: screenSize,
@@ -255,9 +255,32 @@ class _SplashScreenState extends State<SplashScreen>
                               'assets/icons/Logo_QAF.png',
                               height: 100,
                               width: 100,
-                              color: isWhiteBg
-                                  ? colorScheme.primary
-                                  : colorScheme.onPrimary,
+                              color:
+                                  isWhiteBg
+                                      ? colorScheme.primary
+                                      : colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Waqafer logo below QAF logo
+                      Opacity(
+                        opacity: _logoOpacity.value,
+                        child: Transform.scale(
+                          scale: _logoScale.value,
+                          child: ImageFiltered(
+                            imageFilter: ImageFilter.blur(
+                              sigmaX: _logoBlur.value,
+                              sigmaY: _logoBlur.value,
+                            ),
+                            child: Image.asset(
+                              'assets/images/LogoWaqafer.png',
+                              height: 40,
+                              color:
+                                  isWhiteBg
+                                      ? colorScheme.primary
+                                      : colorScheme.onPrimary,
                             ),
                           ),
                         ),
@@ -283,7 +306,9 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 8,
-                                color: colorScheme.onBackground.withOpacity(0.85),
+                                color: colorScheme.onBackground.withOpacity(
+                                  0.85,
+                                ),
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.6,
                               ),
@@ -322,9 +347,10 @@ class ParticlesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
 
     // Create floating particles at various positions
     final particles = [
@@ -344,11 +370,7 @@ class ParticlesPainter extends CustomPainter {
       final radius = 3.0 + (math.sin(phase * math.pi * 2) * 2);
       final yOffset = math.sin(phase * math.pi * 2) * 20;
 
-      canvas.drawCircle(
-        Offset(offset.dx, offset.dy + yOffset),
-        radius,
-        paint,
-      );
+      canvas.drawCircle(Offset(offset.dx, offset.dy + yOffset), radius, paint);
     }
   }
 
@@ -373,26 +395,21 @@ class ShimmerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          color.withOpacity(0),
-          color,
-          color.withOpacity(0),
-        ],
-        stops: [
-          animationValue - 0.3,
-          animationValue,
-          animationValue + 0.3,
-        ].map((v) => v.clamp(0.0, 1.0)).toList(),
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    final paint =
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withOpacity(0), color, color.withOpacity(0)],
+            stops:
+                [
+                  animationValue - 0.3,
+                  animationValue,
+                  animationValue + 0.3,
+                ].map((v) => v.clamp(0.0, 1.0)).toList(),
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      paint,
-    );
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
 
   @override

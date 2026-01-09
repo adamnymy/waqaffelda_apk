@@ -108,6 +108,7 @@ flutter:
     - assets/images/IG3.png
     - assets/images/infak-subuh.png
     - assets/images/waqaf_felda_logo.png
+    - assets/images/LogoWaqafer.png
     
     # Menu icons (moved to menu folder)
     - assets/icons/menu/alquran.svg

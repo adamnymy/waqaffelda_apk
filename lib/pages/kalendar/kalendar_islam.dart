@@ -1047,7 +1047,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                                     ),
                                 ],
                               ),
-                              const Spacer(),
+                              const SizedBox(height: 2),
                               // Event text display (like Google Calendar)
                               if (hasEvents || isHoliday)
                                 Container(
@@ -1118,6 +1118,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                                     ],
                                   ),
                                 ),
+                              const Spacer(),
                             ],
                           ),
                         ),
@@ -1645,7 +1646,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                   ),
                 const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
@@ -1660,57 +1661,26 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                    Row(
-                      children: [
-                        if (holidayObjects.isNotEmpty && _showBuiltInHolidays)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                Navigator.pop(ctx);
-                                await _showHolidayInfo(holidayObjects.first);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    (holidayObjects.first['color'] as Color),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Maklumat Perayaan',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            _addEvent(date);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00897B),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Tambah',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _addEvent(date);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00897B),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                      ],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Tambah',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

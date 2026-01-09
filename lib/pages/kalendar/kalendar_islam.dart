@@ -275,6 +275,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          duration: const Duration(seconds: 5),
           content: const Text('Semua peristiwa telah dipadam'),
           action: SnackBarAction(
             label: 'Undo',
@@ -312,6 +313,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          duration: const Duration(seconds: 5),
           content: const Text('Peristiwa bulan ini telah dipadam'),
           action: SnackBarAction(
             label: 'Undo',
@@ -733,6 +735,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          duration: const Duration(seconds: 5),
           content: Text(
             'Ditambah ${added.length} hari: ${ev['name_ms'] ?? ev['name']}',
           ),
@@ -797,6 +800,7 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
         backgroundColor: colorScheme.surface,
         elevation: 0,
         automaticallyImplyLeading: false,
+        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () {
@@ -808,182 +812,54 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
           },
         ),
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              '${gregMonths[_displayed.month - 1]} ${_displayed.year}',
-              style: TextStyle(
-                color: colorScheme.onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+            IconButton(
+              icon: const Icon(Icons.chevron_left, size: 24),
+              onPressed: _prevMonth,
+              color: colorScheme.onSurface,
+              padding: EdgeInsets.zero,
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.today, color: colorScheme.onSurface),
-            onPressed: () {
-              setState(() {
-                _displayed = DateTime.now();
-              });
-            },
-            tooltip: 'Hari ini',
-          ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            onSelected: (value) {
-              if (value == 'clear_all') {
-                _clearAllEvents();
-              } else if (value == 'clear_month') {
-                _clearMonthEvents();
-              } else if (value == 'toggle_holidays') {
-                setState(() => _showBuiltInHolidays = !_showBuiltInHolidays);
-              } else if (value == 'toggle_hijri_mode') {
-                setState(() => _hijriMode = !_hijriMode);
-                if (_hijriMode) {
-                  _alignToHijriMonth();
-                }
-              }
-            },
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: 'toggle_holidays',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.event,
-                          color:
-                              _showBuiltInHolidays
-                                  ? const Color(0xFF00897B)
-                                  : Colors.grey,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _showBuiltInHolidays
-                              ? 'Sembunyikan Hari Islam'
-                              : 'Tunjukkan Hari Islam',
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'toggle_hijri_mode',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.swap_horiz,
-                          color:
-                              _hijriMode
-                                  ? const Color(0xFF00897B)
-                                  : Colors.grey,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _hijriMode
-                              ? 'Tunjukkan Bulan Gregorian'
-                              : 'Tunjukkan Mengikut Bulan Hijri',
-                        ),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 'clear_month',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.delete_outline, color: Colors.red),
-                        const SizedBox(width: 12),
-                        const Text('Reset peristiwa bulan ini'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'clear_all',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.delete_forever, color: Colors.red),
-                        const SizedBox(width: 12),
-                        const Text('Reset semua peristiwa'),
-                      ],
-                    ),
-                  ),
-                ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Month navigation and holiday chips
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Row(
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left, size: 28),
-                  onPressed: _prevMonth,
-                  color: colorScheme.onSurface,
-                ),
-                if (_showBuiltInHolidays)
-                  Expanded(
-                    child: SizedBox(
-                      height: 32,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        children:
-                            _importantIslamicEvents.map((ev) {
-                              return Container(
-                                margin: const EdgeInsets.only(right: 6),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: (ev['color'] as Color).withOpacity(
-                                    0.15,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: ev['color'] as Color,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      ev['name_ms'] ?? ev['name'],
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                        color: ev['color'] as Color,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
+                Text(
+                  '${gregMonths[_displayed.month - 1]} ${_displayed.year}',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right, size: 28),
-                  onPressed: _nextMonth,
-                  color: colorScheme.onSurface,
+                ),
+                Builder(
+                  builder: (context) {
+                    final hijriDate = HijriCalendar.fromDate(_displayed);
+                    return Text(
+                      '${_hijriMonths[hijriDate.hMonth - 1]} ${hijriDate.hYear}H',
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
-          ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.chevron_right, size: 24),
+              onPressed: _nextMonth,
+              color: colorScheme.onSurface,
+              padding: EdgeInsets.zero,
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
           // Weekday headers
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -1149,43 +1025,98 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                                 ),
                               ),
                               const SizedBox(height: 2),
-                              // Hijri date
-                              Text(
-                                '${h.hDay}',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey.shade500,
-                                  fontWeight: FontWeight.w400,
-                                ),
+                              // Hijri date with month name on 1st
+                              Column(
+                                children: [
+                                  Text(
+                                    '${h.hDay}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  if (h.hDay == 1)
+                                    Text(
+                                      _hijriMonths[h.hMonth - 1],
+                                      style: TextStyle(
+                                        fontSize: 7,
+                                        color: const Color(0xFF00897B),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                ],
                               ),
                               const Spacer(),
-                              // Event indicators
+                              // Event text display (like Google Calendar)
                               if (hasEvents || isHoliday)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (isHoliday)
-                                      Container(
-                                        width: 5,
-                                        height: 5,
-                                        margin: const EdgeInsets.only(right: 2),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              matchedHolidays.first['color']
-                                                  as Color,
-                                          shape: BoxShape.circle,
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                    vertical: 1,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isHoliday)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 2,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                matchedHolidays.first['color']
+                                                    as Color,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            matchedHolidays.first['name_ms'] ??
+                                                matchedHolidays.first['name'],
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    if (hasEvents)
-                                      Container(
-                                        width: 5,
-                                        height: 5,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF00897B),
-                                          shape: BoxShape.circle,
+                                      if (hasEvents &&
+                                          _events[iso] != null &&
+                                          _events[iso]!.isNotEmpty)
+                                        Container(
+                                          margin: EdgeInsets.only(
+                                            top: isHoliday ? 1 : 0,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 2,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF00897B),
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _events[iso]!.first,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                             ],
                           ),
@@ -1573,6 +1504,138 @@ class _KalendarIslamPageState extends State<KalendarIslamPage> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool?>(
+                                    context: context,
+                                    builder:
+                                        (dialogCtx) => AlertDialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              24,
+                                            ),
+                                          ),
+                                          title: Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  8,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red.withOpacity(
+                                                    0.1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.delete_outline,
+                                                  color: Colors.red,
+                                                  size: 24,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              const Expanded(
+                                                child: Text(
+                                                  'Padam Peristiwa',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF00897B),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          content: Text(
+                                            'Anda pasti mahu memadam peristiwa ini?',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.grey.shade700,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.pop(
+                                                    dialogCtx,
+                                                    false,
+                                                  ),
+                                              style: TextButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12,
+                                                    ),
+                                              ),
+                                              child: const Text(
+                                                'Batal',
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed:
+                                                  () => Navigator.pop(
+                                                    dialogCtx,
+                                                    true,
+                                                  ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 24,
+                                                      vertical: 12,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Padam',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+
+                                  if (confirm == true) {
+                                    setState(() {
+                                      list.removeAt(index);
+                                      if (list.isEmpty) {
+                                        _events.remove(key);
+                                      }
+                                    });
+                                    await _saveEvents();
+                                    Navigator.pop(ctx);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          duration: Duration(seconds: 3),
+                                          content: Text(
+                                            'Peristiwa telah dipadam',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),

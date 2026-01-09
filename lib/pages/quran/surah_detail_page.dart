@@ -6,6 +6,7 @@ import '../../models/quran_models.dart';
 import '../homepage/homepage.dart';
 
 import 'package:flutter/foundation.dart';
+
 class SurahDetailPage extends StatefulWidget {
   final Surah surah;
 
@@ -453,7 +454,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
           _onAyahVisible(ayah.numberInSurah);
         },
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 56),
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
@@ -531,7 +532,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
 
               // Ayah Content
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -543,7 +544,7 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                         fontWeight: FontWeight.normal,
                         color: colorScheme.onSurface,
                         fontFamily: 'Amiri',
-                        height: 2.0,
+                        height: 2.4,
                       ),
                       textAlign: TextAlign.right,
                       textDirection: TextDirection.rtl,

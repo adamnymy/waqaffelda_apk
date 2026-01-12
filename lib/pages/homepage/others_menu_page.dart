@@ -3,18 +3,15 @@ import '../prayertimes/prayertimes.dart';
 import '../kiblat/kiblat.dart';
 import '../quran/quranpage.dart';
 import '../zikircounter/zikircounter.dart';
-import '../../utils/page_transitions.dart';
 import '../doaharian/doa_harian_page.dart';
 import '../tahlil/tahlil.dart';
 import '../masjid_terdekat/masjid_terdekat.dart';
 import '../hadis40/hadis40.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../kalendar/kalendar_islam.dart';
 
 class OthersMenuPage extends StatelessWidget {
   const OthersMenuPage({Key? key}) : super(key: key);
 
-  // Show as modal bottom sheet
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -30,276 +27,152 @@ class OthersMenuPage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      height: screenHeight * 0.78,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [const Color(0xFF00897B), const Color(0xFF4DB6AC)],
-        ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(32),
-          topRight: Radius.circular(32),
+      height: screenHeight * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: Column(
         children: [
           // Drag handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 4),
+            margin: const EdgeInsets.only(top: 12, bottom: 16),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.grey.shade300,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Header with gradient
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(
-              screenWidth * 0.05,
-              12,
-              screenWidth * 0.05,
-              20,
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.dashboard_customize_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Menu Utama',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.06,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
+          // Header
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Menu Utama',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Akses pantas ke semua ciri aplikasi',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.035,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.grey.shade600),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
           ),
-          // Content area with white background
+          const SizedBox(height: 8),
+          // Content
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
+            child: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05,
+                vertical: 8,
               ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: 20,
+              children: [
+                // Ibadah Section
+                _buildSectionHeader('Ibadah', Icons.mosque_outlined),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Waktu Solat',
+                  description: 'Jadual waktu solat harian berdasarkan lokasi anda',
+                  icon: Icons.access_time_rounded,
+                  iconBgColor: const Color(0xFF00897B),
+                  page: const PrayerTimesPage(),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Featured section (top 2 items - larger)
-                    Text(
-                      'Pintasan',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildFeaturedCard(
-                            context,
-                            'Waktu Solat',
-                            'assets/icons/menu/waktu_solat.svg',
-                            const Color(0xFF00897B),
-                            const Color(0xFF00897B).withOpacity(0.1),
-                            () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                SmoothPageRoute(page: const PrayerTimesPage()),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildFeaturedCard(
-                            context,
-                            'Al Qur\'an',
-                            'assets/icons/menu/alquran.svg',
-                            const Color(0xFF00897B),
-                            const Color(0xFF00897B).withOpacity(0.1),
-                            () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                SmoothPageRoute(page: const QuranPage()),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // All menus section
-                    Text(
-                      'Semua Menu',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildCompactMenuItem(
-                      context,
-                      'Arah Kiblat',
-                      'Cari arah kiblat dengan mudah',
-                      'assets/icons/menu/kiblat.svg',
-                      const Color(0xFFFF6F00),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const KiblatPage()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Tasbih',
-                      'Kira zikir digital',
-                      'assets/icons/menu/tasbih.svg',
-                      const Color(0xFF5E35B1),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const ZikirCounterPage()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Doa Harian',
-                      'Koleksi doa harian',
-                      'assets/icons/menu/doa.svg',
-                      const Color(0xFFE53935),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DoaHarianPage(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Hadith 40',
-                      'Hadith Nawawi',
-                      'assets/icons/menu/hadis.svg',
-                      const Color(0xFF1976D2),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const Hadis40Page()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Tahlil',
-                      'Bacaan tahlil lengkap',
-                      'assets/icons/menu/tahlil.svg',
-                      const Color(0xFF00897B),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const TahlilPage()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Masjid Terdekat',
-                      'Cari masjid berhampiran',
-                      'assets/icons/menu/masjid.svg',
-                      const Color(0xFF43A047),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const MasjidTerdekatPage()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _buildCompactMenuItem(
-                      context,
-                      'Kalendar Islam',
-                      'Kalendar Hijriah',
-                      'assets/icons/menu/kalendar_islam.svg',
-                      const Color(0xFFFBC02D),
-                      () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          SmoothPageRoute(page: const KalendarIslamPage()),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Arah Kiblat',
+                  description: 'Cari arah kiblat dengan mudah menggunakan kompas digital',
+                  icon: Icons.explore_rounded,
+                  iconBgColor: const Color(0xFFFF6F00),
+                  page: const KiblatPage(),
                 ),
-              ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Tasbih Digital',
+                  description: 'Kira zikir dan tasbih dengan mudah secara digital',
+                  icon: Icons.timer_outlined,
+                  iconBgColor: const Color(0xFF5E35B1),
+                  page: const ZikirCounterPage(),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Doa Harian',
+                  description: 'Koleksi doa harian lengkap untuk amalan seharian',
+                  icon: Icons.auto_stories_rounded,
+                  iconBgColor: const Color(0xFFE53935),
+                  page: const DoaHarianPage(),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Bacaan Tahlil',
+                  description: 'Panduan bacaan tahlil lengkap dengan terjemahan',
+                  icon: Icons.people_outline_rounded,
+                  iconBgColor: const Color(0xFF00897B),
+                  page: const TahlilPage(),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Al-Quran & Ilmu
+                _buildSectionHeader('Al-Quran & Ilmu', Icons.menu_book_rounded),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Al-Quran',
+                  description: 'Baca Al-Quran dengan terjemahan dan tafsir lengkap',
+                  icon: Icons.menu_book,
+                  iconBgColor: const Color(0xFF1565C0),
+                  page: const QuranPage(),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Hadith 40',
+                  description: 'Hadith 40 Imam Nawawi dengan terjemahan Bahasa Melayu',
+                  icon: Icons.import_contacts_rounded,
+                  iconBgColor: const Color(0xFF1976D2),
+                  page: const Hadis40Page(),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Kemudahan
+                _buildSectionHeader('Kemudahan', Icons.location_on_outlined),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Masjid Terdekat',
+                  description: 'Cari masjid atau surau yang berhampiran dengan lokasi anda',
+                  icon: Icons.mosque,
+                  iconBgColor: const Color(0xFF43A047),
+                  page: const MasjidTerdekatPage(),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
+                  context,
+                  title: 'Kalendar Islam',
+                  description: 'Kalendar Hijriah dengan peristiwa penting Islam',
+                  icon: Icons.calendar_month_rounded,
+                  iconBgColor: const Color(0xFFFBC02D),
+                  page: const KalendarIslamPage(),
+                ),
+                
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],
@@ -307,145 +180,84 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 
-  // Featured card - larger, more prominent
-  Widget _buildFeaturedCard(
-    BuildContext context,
-    String title,
-    String iconPath,
-    Color primaryColor,
-    Color backgroundColor,
-    VoidCallback onTap,
-  ) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          height: 140,
-          decoration: BoxDecoration(
-            color:
-                (title == 'Waktu Solat' || title == 'Al Qur\'an')
-                    ? Colors.transparent
-                    : primaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            children: [
-              // Background SVG (for Waktu Solat and Al Qur'an)
-              if (title == 'Waktu Solat')
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: SvgPicture.asset(
-                      'assets/icons/menu/waktu_solat-bg.svg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              if (title == 'Al Qur\'an')
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: SvgPicture.asset(
-                      'assets/icons/menu/alquran-bg.svg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              // Decorative circle (for cards without background)
-              if (title != 'Waktu Solat' && title != 'Al Qur\'an')
-                Positioned(
-                  right: -20,
-                  top: -20,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                ),
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (title != 'Waktu Solat' && title != 'Al Qur\'an')
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: SvgPicture.asset(
-                          iconPath,
-                          width: 48,
-                          height: 48,
-                        ),
-                      ),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.042,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey.shade600),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade800,
           ),
         ),
-      ),
+      ],
     );
   }
 
-  // Compact menu item - list style with icon, title, subtitle
-  Widget _buildCompactMenuItem(
-    BuildContext context,
-    String title,
-    String subtitle,
-    String iconPath,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color iconBgColor,
+    required Widget page,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => page),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.shade200,
+              width: 1,
+            ),
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: SvgPicture.asset(iconPath, fit: BoxFit.contain),
+              // Icon with gradient background
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      iconBgColor,
+                      iconBgColor.withOpacity(0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconBgColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 16),
+              // Title and Description
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,26 +265,24 @@ class OthersMenuPage extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.042,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        color: Colors.grey.shade900,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      subtitle,
+                      description,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.032,
+                        fontSize: 13,
                         color: Colors.grey.shade600,
+                        height: 1.4,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.grey.shade400,
-                size: 16,
               ),
             ],
           ),

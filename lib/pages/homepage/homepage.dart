@@ -616,7 +616,7 @@ class _HomepageState extends State<Homepage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildAppBar(context),
-                  SizedBox(height: screenHeight * 0.005),
+                  SizedBox(height: screenHeight * 0.0025),
 
                   // ✅ 1. MODERN PRAYER CARD (with dates - from kawan, using your colors)
                   Padding(
@@ -629,7 +629,7 @@ class _HomepageState extends State<Homepage> {
 
                   // ✅ 2. COLORFUL HORIZONTAL PRAYER TIMES (from kawan, your size)
                   _buildColorfulHorizontalPrayerCards(),
-                  SizedBox(height: screenHeight * 0.015),
+                  SizedBox(height: screenHeight * 0.01),
 
                   // ✅ 3. QURAN TRACKER (from kawan)
                   Padding(
@@ -638,17 +638,17 @@ class _HomepageState extends State<Homepage> {
                     ),
                     child: _buildQuranTracker(context),
                   ),
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: screenHeight * 0.015),
 
                   // ✅ 4. MENU UTAMA (your code with new colors)
                   _buildIconMenu(context),
-                  SizedBox(height: screenHeight * 0.02),
-                  _buildDivider(),
                   SizedBox(height: screenHeight * 0.015),
+                  _buildDivider(),
+                  SizedBox(height: screenHeight * 0.012),
 
                   // ✅ 5. PELUANG BERSAMA (your code)
                   _buildPeluangBersama(context),
-                  SizedBox(height: screenHeight * 0.015),
+                  SizedBox(height: screenHeight * 0.012),
                   _buildDivider(),
                   SizedBox(height: screenHeight * 0.015),
 
@@ -656,11 +656,11 @@ class _HomepageState extends State<Homepage> {
                   _buildProgramAgihanManfaat(context),
                   SizedBox(height: screenHeight * 0.015),
                   _buildDivider(),
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: screenHeight * 0.015),
 
                   // ✅ 7. AYAT HARI INI (your auto-sliding)
                   _buildAyatHariIni(context),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.025),
                 ],
               ),
             ),
@@ -793,494 +793,190 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  // ✅ MODERN PRAYER CARD (from kawan, using YOUR gradient colors)
-  Widget _buildModernPrayerCard(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+  // ════════════════════════════════════════════════════════════════
+// ✅ COMPLETE PRAYER CARD - FULL CODE
+// ════════════════════════════════════════════════════════════════
+// Copy this ENTIRE function to replace _buildModernPrayerCard() in your homepage.dart
 
-    // Parse prayer info
-    String nextPrayerName = '';
-    String nextPrayerTime = '';
-    if (_nextPrayerText.contains(':') &&
-        _nextPrayerText != 'Loading...' &&
-        _nextPrayerText != 'Tidak dapat memuatkan waktu solat') {
-      final cleaned = _nextPrayerText.replaceAll('Solat Seterusnya: ', '');
-      final parts = cleaned.split(' - ');
-      if (parts.length == 2) {
-        nextPrayerName = parts[0].trim();
-        nextPrayerTime = parts[1].trim();
-      }
+Widget _buildModernPrayerCard(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  // Parse prayer info
+  String nextPrayerName = '';
+  String nextPrayerTime = '';
+  if (_nextPrayerText.contains(':') &&
+      _nextPrayerText != 'Loading...' &&
+      _nextPrayerText != 'Tidak dapat memuatkan waktu solat') {
+    final cleaned = _nextPrayerText.replaceAll('Solat Seterusnya: ', '');
+    final parts = cleaned.split(' - ');
+    if (parts.length == 2) {
+      nextPrayerName = parts[0].trim();
+      nextPrayerTime = parts[1].trim();
     }
+  }
 
-    // Get current date
-    final now = DateTime.now();
-    final months = [
-      'Januari',
-      'Februari',
-      'Mac',
-      'April',
-      'Mei',
-      'Jun',
-      'Julai',
-      'Ogos',
-      'September',
-      'Oktober',
-      'November',
-      'Disember',
-    ];
-    final currentDate = '${now.day} ${months[now.month - 1]} ${now.year}';
+  // Get current date (Gregorian)
+  final now = DateTime.now();
+  final months = [
+    'Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun',
+    'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember',
+  ];
+  final currentDate = '${now.day} ${months[now.month - 1]} ${now.year}';
 
-    // Get Hijri date
-    const hijriMonths = [
-      'Muharram',
-      'Safar',
-      "Rabi'ulawal",
-      "Rabi'ulakhir",
-      'Jamadilawwal',
-      'Jamadilakhir',
-      'Rejab',
-      "Sha'ban",
-      'Ramadan',
-      'Shawwal',
-      'Zulkaedah',
-      'Zulhijjah',
-    ];
-    final hijriCalendar = HijriCalendar.fromDate(now);
-    final hijriMonthName = hijriMonths[hijriCalendar.hMonth - 1];
-    final hijriDate =
-        '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
+  // Get Hijri date
+  const hijriMonths = [
+    'Muharram', 'Safar', "Rabi'ulawal", "Rabi'ulakhir",
+    'Jamadilawwal', 'Jamadilakhir', 'Rejab', "Sha'ban",
+    'Ramadan', 'Shawwal', 'Zulkaedah', 'Zulhijjah',
+  ];
+  final hijriCalendar = HijriCalendar.fromDate(now);
+  final hijriMonthName = hijriMonths[hijriCalendar.hMonth - 1];
+  final hijriDate = '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
 
-    // Show skeleton loading if still loading
-    if (_nextPrayerText == 'Loading...' || _prayerTimes.isEmpty) {
-      // Use a fixed height that matches the actual prayer card footprint
-      return Container(
-        height: screenHeight * 0.26,
-        margin: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.02,
-          vertical: screenHeight * 0.008,
-        ),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF00695C), Color(0xFF00796B), Color(0xFF00897B)],
-            stops: [0.0, 0.5, 1.0],
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.04,
-            vertical: screenHeight * 0.015,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              // Skeleton date row
-              Row(
-                children: [
-                  Container(
-                    width: screenWidth * 0.18,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.02),
-                  Expanded(
-                    child: Container(
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: screenHeight * 0.015),
-              // Skeleton main content
-              Row(
-                children: [
-                  Container(
-                    width: screenWidth * 0.22,
-                    height: screenHeight * 0.11,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.03),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 18,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        Container(
-                          height: 18,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          width: screenWidth * 0.35,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        Container(
-                          height: 18,
-                          width: screenWidth * 0.28,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              // Skeleton bottom row (small badges)
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.02),
-                  Expanded(
-                    child: Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
+  // ════════════════════════════════════════════════════════════════
+  // SKELETON LOADING STATE
+  // ════════════════════════════════════════════════════════════════
+  if (_nextPrayerText == 'Loading...' || _prayerTimes.isEmpty) {
     return Container(
+      height: screenHeight * 0.26,
       margin: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.02,
         vertical: screenHeight * 0.008,
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          // ✅ YOUR colors
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFF00695C), Color(0xFF00796B), Color(0xFF00897B)],
           stops: [0.0, 0.5, 1.0],
         ),
         borderRadius: BorderRadius.circular(20),
+        // ✅ SUBTLE ELEVATED SHADOW
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00695C).withOpacity(0.18),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: const Color(0xFF00695C).withOpacity(0.10),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+            spreadRadius: 0,
+          ),
+        ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.04,
+          vertical: screenHeight * 0.015,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.12,
-                child: SvgPicture.asset(
-                  'assets/images/widget-bg-wsolat.svg',
-                  fit: BoxFit.cover,
+            // Skeleton date row
+            Row(
+              children: [
+                Container(
+                  width: screenWidth * 0.18,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
-              ),
+                SizedBox(width: screenWidth * 0.02),
+                Expanded(
+                  child: Container(
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Container(
-              margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: screenHeight * 0.015,
+            SizedBox(height: screenHeight * 0.015),
+            // Skeleton main content
+            Row(
+              children: [
+                Container(
+                  width: screenWidth * 0.22,
+                  height: screenHeight * 0.11,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ✅ DATE ROW (from kawan)
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 12,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            '$currentDate / $hijriDate',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
-                              fontSize: screenWidth * 0.024,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.01),
-
-                    // Main content
-                    Row(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.35),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.access_time_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.03),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'SOLAT SETERUSNYA',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.95),
-                                  fontSize: screenWidth * 0.028,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.2,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.35),
-                                      offset: const Offset(0, 1.5),
-                                      blurRadius: 3,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                nextPrayerName.isNotEmpty
-                                    ? nextPrayerName.toUpperCase()
-                                    : _nextPrayerText == 'Loading...'
-                                    ? 'MEMUAT...'
-                                    : 'TIDAK TERSEDIA',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: screenWidth * 0.052,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.4,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.45),
-                                      offset: const Offset(0, 2.5),
-                                      blurRadius: 5,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.015),
-                    Container(
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withOpacity(0.0),
-                            Colors.white.withOpacity(0.5),
-                            Colors.white.withOpacity(0.0),
-                          ],
+                SizedBox(width: screenWidth * 0.03),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 18,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                    ),
-                    SizedBox(height: screenHeight * 0.015),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'WAKTU',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: screenWidth * 0.026,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.35),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  nextPrayerTime.isNotEmpty
-                                      ? nextPrayerTime
-                                      : _nextPrayerText ==
-                                          'Tidak dapat memuatkan waktu solat'
-                                      ? 'Ralat API'
-                                      : '--:--',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: screenWidth * 0.058,
-                                    fontWeight: FontWeight.w900,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black.withOpacity(0.35),
-                                        offset: const Offset(0, 2),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      Container(
+                        height: 18,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        width: screenWidth * 0.35,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.14),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        SizedBox(width: screenWidth * 0.03),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'BAKI MASA',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: screenWidth * 0.026,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      const Color(0xFFB8860B).withOpacity(0.4),
-                                      const Color(0xFFDAA520).withOpacity(0.35),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: const Color(
-                                      0xFFDAA520,
-                                    ).withOpacity(0.5),
-                                    width: 1,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFFDAA520,
-                                      ).withOpacity(0.3),
-                                      blurRadius: 6,
-                                      spreadRadius: 0.5,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  _nextPrayerText ==
-                                          'Tidak dapat memuatkan waktu solat'
-                                      ? 'Cuba lagi'
-                                      : _countdown.inSeconds > 0
-                                      ? _formatDuration(_countdown)
-                                      : _nextPrayerText == 'Loading...'
-                                      ? 'Memuat...'
-                                      : '--:--:--',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: screenWidth * 0.046,
-                                    fontWeight: FontWeight.w900,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black.withOpacity(0.35),
-                                        offset: const Offset(0, 2),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      Container(
+                        height: 18,
+                        width: screenWidth * 0.28,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.01),
-                    // ✅ LOCATION ROW (from kawan)
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_rounded,
-                          size: 13,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _currentLocationName,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+            const Spacer(),
+            // Skeleton bottom row
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.02),
+                Expanded(
+                  child: Container(
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1288,188 +984,446 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  // Continue with Part 3...
   // ════════════════════════════════════════════════════════════════
-  // PART 3: COLORFUL PRAYER TIMES, QURAN TRACKER & OTHER WIDGETS
+  // ACTUAL PRAYER CARD
   // ════════════════════════════════════════════════════════════════
-
-  // ✅ COLORFUL HORIZONTAL PRAYER CARDS (from kawan, YOUR size structure)
-  Widget _buildColorfulHorizontalPrayerCards() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    // Show skeleton loading if prayer times are empty
-    if (_prayerTimes.isEmpty) {
-      // Match the visible footprint of the colored prayer times card
-      return Container(
-        height: screenHeight * 0.18,
-        margin: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.04,
-          vertical: screenHeight * 0.015,
+  return Container(
+    margin: EdgeInsets.symmetric(
+      horizontal: screenWidth * 0.02,
+      vertical: screenHeight * 0.008,
+    ),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF00695C), Color(0xFF00796B), Color(0xFF00897B)],
+        stops: [0.0, 0.5, 1.0],
+      ),
+      borderRadius: BorderRadius.circular(20),
+      // ✅ SUBTLE ELEVATED 3D SHADOW
+      boxShadow: [
+        // Primary shadow - gives depth
+        BoxShadow(
+          color: const Color(0xFF00695C).withOpacity(0.18),
+          blurRadius: 20,
+          offset: const Offset(0, 6),
+          spreadRadius: 0,
         ),
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.025,
-          vertical: screenHeight * 0.022,
+        // Secondary shadow - adds softness
+        BoxShadow(
+          color: const Color(0xFF00695C).withOpacity(0.10),
+          blurRadius: 32,
+          offset: const Offset(0, 12),
+          spreadRadius: 0,
         ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 2,
-            ),
-          ],
+        // Top highlight - creates 3D effect
+        BoxShadow(
+          color: Colors.white.withOpacity(0.08),
+          blurRadius: 8,
+          offset: const Offset(0, -2),
+          spreadRadius: 0,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            // Skeleton title
-            Container(
-              height: 20,
-              width: screenWidth * 0.35,
-              margin: EdgeInsets.only(bottom: screenHeight * 0.015),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(4),
+      ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        children: [
+          // Background pattern
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.12,
+              child: SvgPicture.asset(
+                'assets/images/widget-bg-wsolat.svg',
+                fit: BoxFit.cover,
               ),
             ),
-            // Skeleton prayer items
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(5, (index) {
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.005,
+          ),
+          // Inner border for elevated effect
+          Container(
+            margin: const EdgeInsets.all(1.5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18.5),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.15),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.015,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ════════════════════════════════════════════════
+                  // DATE ROW (Gregorian + Hijri)
+                  // ════════════════════════════════════════════════
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 12,
+                        color: Colors.white.withOpacity(0.8),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: screenHeight * 0.07,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '$currentDate / $hijriDate',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: screenWidth * 0.024,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
                           ),
-                          SizedBox(height: 8),
-                          Container(
-                            height: 12,
-                            width: screenWidth * 0.15,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+
+                  // ════════════════════════════════════════════════
+                  // MAIN CONTENT (Icon + Prayer Name)
+                  // ════════════════════════════════════════════════
+                  Row(
+                    children: [
+                      // Clock icon
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.35),
+                            width: 1.5,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.access_time_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      SizedBox(width: screenWidth * 0.03),
+                      // Prayer name
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'SOLAT SETERUSNYA',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.95),
+                                fontSize: screenWidth * 0.028,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.25),
+                                    offset: const Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              nextPrayerName.isNotEmpty
+                                  ? nextPrayerName.toUpperCase()
+                                  : 'MEMUAT...',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.052,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // ════════════════════════════════════════════════
+                  // DIVIDER LINE
+                  // ════════════════════════════════════════════════
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.0),
+                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.0),
                         ],
                       ),
                     ),
-                  );
-                }),
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // ════════════════════════════════════════════════
+                  // BOTTOM ROW (Waktu + Baki Masa)
+                  // ════════════════════════════════════════════════
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // WAKTU (Left)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'WAKTU',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: screenWidth * 0.026,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.25),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                nextPrayerTime.isNotEmpty
+                                    ? nextPrayerTime
+                                    : '--:--',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenWidth * 0.058,
+                                  fontWeight: FontWeight.w900,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.25),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: screenWidth * 0.03),
+                      // BAKI MASA (Right)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'BAKI MASA',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: screenWidth * 0.026,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    const Color(0xFFB8860B).withOpacity(0.4),
+                                    const Color(0xFFDAA520).withOpacity(0.35),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFFDAA520).withOpacity(0.4),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFDAA520).withOpacity(0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                _countdown.inSeconds > 0
+                                    ? _formatDuration(_countdown)
+                                    : '--:--:--',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenWidth * 0.046,
+                                  fontWeight: FontWeight.w900,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.25),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+
+                  // ════════════════════════════════════════════════
+                  // LOCATION ROW - RIGHT ALIGNED ✅
+                  // ════════════════════════════════════════════════
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end, // ✅ RIGHT SIDE
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        size: 13,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _currentLocationName,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      );
-    }
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
-    final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
+  // ✅ COLORFUL HORIZONTAL PRAYER CARDS (from kawan, YOUR size structure)
+  Widget _buildColorfulHorizontalPrayerCards() {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
 
+  // Skeleton loading
+  if (_prayerTimes.isEmpty) {
     return Container(
+      height: screenHeight * 0.15, // ✅ Reduced from 0.18
       margin: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.04,
-        vertical: screenHeight * 0.015,
+        vertical: screenHeight * 0.01, // ✅ Reduced vertical margin
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.025,
+        vertical: screenHeight * 0.015, // ✅ Reduced padding
       ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 15,
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 12,
             offset: const Offset(0, 4),
             spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 25,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
-          // Header Section
+          // Skeleton title
           Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.04,
-              vertical: screenHeight * 0.018,
-            ),
+            height: 16, // ✅ Smaller skeleton
+            width: screenWidth * 0.3,
+            margin: EdgeInsets.only(bottom: screenHeight * 0.01),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  size: screenWidth * 0.045,
-                  color: const Color(0xFF00897B),
-                ),
-                SizedBox(width: screenWidth * 0.02),
-                Text(
-                  'Waktu Solat Hari Ini',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.042,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
-          // Prayer Times Grid
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.02,
-              vertical: screenHeight * 0.018,
-            ),
+          // Skeleton prayer items
+          Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children:
-                  _prayerTimes.map((prayer) {
-                    final bool isNextPrayer =
-                        nextPrayer != null &&
-                        nextPrayer['name'] == prayer['name'];
-                    final bool isPassed = _isPrayerPassed(prayer);
-
-                    return _buildCleanPrayerItem(
-                      prayer['name'] ?? '',
-                      prayer['time'] ?? '--:--',
-                      _getPrayerIcon(prayer['name'] ?? ''),
-                      _getPrayerColor(prayer['name'] ?? ''),
-                      isNextPrayer,
-                      isPassed,
-                      screenWidth,
-                    );
-                  }).toList(),
+              children: List.generate(5, (index) {
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.005,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: screenHeight * 0.06,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          height: 10,
+                          width: screenWidth * 0.12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ),
           ),
         ],
@@ -1477,112 +1431,203 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildCleanPrayerItem(
-    String name,
-    String time,
-    IconData icon,
-    Color prayerColor,
-    bool isNext,
-    bool isPassed,
-    double screenWidth,
-  ) {
-    return Expanded(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icon Container - Clean and Simple
-            Container(
-              width: screenWidth * 0.12,
-              height: screenWidth * 0.12,
-              decoration: BoxDecoration(
-                color:
-                    isNext
-                        ? prayerColor
-                        : isPassed
-                        ? Colors.grey.shade200
-                        : prayerColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border:
-                    isNext ? Border.all(color: prayerColor, width: 2) : null,
-              ),
-              child: Icon(
-                icon,
-                color:
-                    isNext
-                        ? Colors.white
-                        : isPassed
-                        ? Colors.grey.shade400
-                        : prayerColor,
-                size: screenWidth * 0.05,
-              ),
+  final nextPrayer = PrayerTimesService.getNextPrayer(_prayerTimes);
+
+  return Container(
+    margin: EdgeInsets.symmetric(
+      horizontal: screenWidth * 0.04,
+      vertical: screenHeight * 0.01, // ✅ Reduced from 0.015
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.15),
+          blurRadius: 12,
+          offset: const Offset(0, 3),
+          spreadRadius: 0,
+        ),
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.08),
+          blurRadius: 20,
+          offset: const Offset(0, 6),
+          spreadRadius: 1,
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ✅ SMALLER HEADER SECTION
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.04,
+            vertical: screenHeight * 0.012, // ✅ Reduced from 0.018
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade200, width: 1),
             ),
-            SizedBox(height: screenWidth * 0.015),
-            // Prayer Name
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: screenWidth * 0.030,
-                fontWeight: isNext ? FontWeight.w900 : FontWeight.w600,
-                color:
-                    isNext
-                        ? prayerColor
-                        : isPassed
-                        ? Colors.grey.shade500
-                        : Colors.black87,
-                letterSpacing: 0.1,
-                height: 1.2,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.access_time_rounded,
+                size: screenWidth * 0.038, // ✅ Smaller icon (was 0.045)
+                color: const Color(0xFF00897B),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: screenWidth * 0.008),
-            // Prayer Time
-            Text(
-              time,
-              style: TextStyle(
-                fontSize: screenWidth * 0.028,
-                fontWeight: isNext ? FontWeight.w500 : FontWeight.w500,
-                color:
-                    isNext
-                        ? prayerColor
-                        : isPassed
-                        ? Colors.grey.shade400
-                        : Colors.grey.shade700,
-                letterSpacing: 0.2,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            // Next Badge - Simple and Clean
-            if (isNext) ...[
-              SizedBox(height: screenWidth * 0.01),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.018,
-                  vertical: screenWidth * 0.006,
-                ),
-                decoration: BoxDecoration(
-                  color: prayerColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'NEXT',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.020,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
+              SizedBox(width: screenWidth * 0.015), // ✅ Reduced gap
+              Text(
+                'Waktu Solat Hari Ini',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.034, // ✅ REDUCED from 0.042
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],
-          ],
+          ),
         ),
+        // ✅ PRAYER TIMES GRID (more compact)
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.015, // ✅ Reduced from 0.02
+            vertical: screenHeight * 0.014, // ✅ Reduced from 0.018
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: _prayerTimes.map((prayer) {
+              final bool isNextPrayer = nextPrayer != null && 
+                                       nextPrayer['name'] == prayer['name'];
+              final bool isPassed = _isPrayerPassed(prayer);
+
+              return _buildCompactPrayerItem( // ✅ New compact version
+                prayer['name'] ?? '',
+                prayer['time'] ?? '--:--',
+                _getPrayerIcon(prayer['name'] ?? ''),
+                _getPrayerColor(prayer['name'] ?? ''),
+                isNextPrayer,
+                isPassed,
+                screenWidth,
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ✅ NEW: COMPACT PRAYER ITEM (smaller & cleaner)
+Widget _buildCompactPrayerItem(
+  String name,
+  String time,
+  IconData icon,
+  Color prayerColor,
+  bool isNext,
+  bool isPassed,
+  double screenWidth,
+) {
+  return Expanded(
+    child: Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.008), // ✅ Reduced
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ SMALLER ICON CONTAINER
+          Container(
+            width: screenWidth * 0.11, // ✅ Reduced from 0.12
+            height: screenWidth * 0.11,
+            decoration: BoxDecoration(
+              color: isNext
+                  ? prayerColor
+                  : isPassed
+                      ? Colors.grey.shade200
+                      : prayerColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: isNext 
+                  ? Border.all(color: prayerColor, width: 2) 
+                  : null,
+            ),
+            child: Icon(
+              icon,
+              color: isNext
+                  ? Colors.white
+                  : isPassed
+                      ? Colors.grey.shade400
+                      : prayerColor,
+              size: screenWidth * 0.048, // ✅ Reduced from 0.05
+            ),
+          ),
+          SizedBox(height: screenWidth * 0.012), // ✅ Reduced gap
+          
+          // ✅ SMALLER PRAYER NAME
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: screenWidth * 0.028, // ✅ Reduced from 0.030
+              fontWeight: isNext ? FontWeight.w900 : FontWeight.w600,
+              color: isNext
+                  ? prayerColor
+                  : isPassed
+                      ? Colors.grey.shade500
+                      : Colors.black87,
+              letterSpacing: 0.1,
+              height: 1.1,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: screenWidth * 0.006), // ✅ Reduced gap
+          
+          // ✅ SMALLER PRAYER TIME
+          Text(
+            time,
+            style: TextStyle(
+              fontSize: screenWidth * 0.026, // ✅ Reduced from 0.028
+              fontWeight: isNext ? FontWeight.w500 : FontWeight.w500,
+              color: isNext
+                  ? prayerColor
+                  : isPassed
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade700,
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          // ✅ SMALLER NEXT BADGE
+          if (isNext) ...[
+            SizedBox(height: screenWidth * 0.008), // ✅ Reduced gap
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.016, // ✅ Reduced
+                vertical: screenWidth * 0.004, // ✅ Reduced
+              ),
+              decoration: BoxDecoration(
+                color: prayerColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'NEXT',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.018, // ✅ Reduced from 0.020
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ✅ QURAN TRACKER (Compact Design)
   Widget _buildQuranTracker(BuildContext context) {
@@ -1743,213 +1788,210 @@ class _HomepageState extends State<Homepage> {
   // Replace _buildIconMenu() function
 
   Widget _buildIconMenu(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Menu Utama',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.048,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                  letterSpacing: 0.3,
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // ✅ SMALLER TITLE
+            Text(
+              'Menu Utama',
+              style: TextStyle(
+                fontSize: screenWidth * 0.042, // ✅ REDUCED from 0.048
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+                letterSpacing: 0.3,
+              ),
+            ),
+            // ✅ SMALLER "LIHAT LAGI" BUTTON
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF00897B).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20), // ✅ Reduced from 25
+                border: Border.all(
+                  color: const Color(0xFF00897B).withOpacity(0.2),
+                  width: 1,
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00897B).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: const Color(0xFF00897B).withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => OthersMenuPage.show(context),
-                    borderRadius: BorderRadius.circular(25),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.04,
-                        vertical: screenHeight * 0.01,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Lihat Lagi',
-                            style: TextStyle(
-                              color: const Color(0xFF00897B),
-                              fontWeight: FontWeight.w700,
-                              fontSize: screenWidth * 0.035,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.015),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => OthersMenuPage.show(context),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.032, // ✅ Reduced from 0.04
+                      vertical: screenHeight * 0.008, // ✅ Reduced from 0.01
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Lihat Lagi',
+                          style: TextStyle(
                             color: const Color(0xFF00897B),
-                            size: screenWidth * 0.035,
+                            fontWeight: FontWeight.w700,
+                            fontSize: screenWidth * 0.031, // ✅ REDUCED from 0.035
+                            letterSpacing: 0.3,
                           ),
-                        ],
-                      ),
+                        ),
+                        SizedBox(width: screenWidth * 0.012), // ✅ Reduced from 0.015
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: const Color(0xFF00897B),
+                          size: screenWidth * 0.031, // ✅ REDUCED from 0.035
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: screenWidth * 0.04),
+            ),
+          ],
+        ),
+        SizedBox(height: screenWidth * 0.035), // ✅ Reduced from 0.04
 
-          // ✅ ROW 1: WAKTU SOLAT + ARAH KIBLAT (Keep original colors)
-          Row(
-            children: [
-              Expanded(
-                child: _buildLargeCardWithImage(
-                  context,
-                  'Waktu Solat',
-                  'assets/icons/menu/solat_newtest2.png',
-                  const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF00897B), // Teal (original)
-                      Color(0xFF26A69A),
-                      Color(0xFF4DB6AC),
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                  () {
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const PrayerTimesPage()),
-                    );
-                  },
+        // ✅ ROW 1: WAKTU SOLAT + ARAH KIBLAT
+        Row(
+          children: [
+            Expanded(
+              child: _buildLargeCardWithImage(
+                context,
+                'Waktu Solat',
+                'assets/images/solat_newtest2.png',
+                const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF00897B),
+                    Color(0xFF26A69A),
+                    Color(0xFF4DB6AC),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const PrayerTimesPage()),
+                  );
+                },
               ),
-              SizedBox(width: screenWidth * 0.03),
-              Expanded(
-                child: _buildLargeCardWithImage(
-                  context,
-                  'Arah Kiblat',
-                  'assets/icons/menu/kaabah_newtest2.png',
-                  const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFF9A825), // Golden (original)
-                      Color(0xFFFBC02D),
-                      Color(0xFFFFD54F),
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                  () {
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const KiblatPage()),
-                    );
-                  },
+            ),
+            SizedBox(width: screenWidth * 0.025), // ✅ Reduced from 0.03
+            Expanded(
+              child: _buildLargeCardWithImage(
+                context,
+                'Arah Kiblat',
+                'assets/images/kaabah_newtest2.png',
+                const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFF9A825),
+                    Color(0xFFFBC02D),
+                    Color(0xFFFFD54F),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const KiblatPage()),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
 
-          SizedBox(height: screenWidth * 0.03),
+        SizedBox(height: screenWidth * 0.025), // ✅ Reduced from 0.03
 
-          // ✅ ROW 2: AL-QURAN (BLUE) + TASBIH (PURPLE) + HADITH (PINK)
-          Row(
-            children: [
-              // ✅ AL-QURAN - BEAUTIFUL BLUE
-              Expanded(
-                child: _buildSmallerMediumCardWithImage(
-                  context,
-                  'Al Qur\'an',
-                  'assets/icons/menu/Quran_newTest3.png',
-                  const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1976D2), // Deep Blue
-                      Color(0xFF2196F3), // Bright Blue
-                      Color(0xFF42A5F5), // Light Blue
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                  () {
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const QuranPage()),
-                    );
-                  },
+        // ✅ ROW 2: AL-QURAN + TASBIH + HADITH
+        Row(
+          children: [
+            Expanded(
+              child: _buildSmallerMediumCardWithImage(
+                context,
+                'Al Qur\'an',
+                'assets/images/Quran_newTest3.png',
+                const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF1976D2),
+                    Color(0xFF2196F3),
+                    Color(0xFF42A5F5),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const QuranPage()),
+                  );
+                },
               ),
-              SizedBox(width: screenWidth * 0.025),
-
-              // ✅ TASBIH - BEAUTIFUL PURPLE
-              Expanded(
-                child: _buildSmallerMediumCardWithImage(
-                  context,
-                  'Tasbih',
-                  'assets/icons/menu/tasbih_newtest.png',
-                  const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF7B1FA2), // Deep Purple
-                      Color(0xFF9C27B0), // Bright Purple
-                      Color(0xFFAB47BC), // Light Purple
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                  () {
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const ZikirCounterPage()),
-                    );
-                  },
+            ),
+            SizedBox(width: screenWidth * 0.02), // ✅ Reduced from 0.025
+            Expanded(
+              child: _buildSmallerMediumCardWithImage(
+                context,
+                'Tasbih',
+                'assets/images/tasbih_newtest.png',
+                const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF7B1FA2),
+                    Color(0xFF9C27B0),
+                    Color(0xFFAB47BC),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const ZikirCounterPage()),
+                  );
+                },
               ),
-              SizedBox(width: screenWidth * 0.025),
-
-              // ✅ HADITH 40 - BEAUTIFUL PINK
-              Expanded(
-                child: _buildSmallerMediumCardWithImage(
-                  context,
-                  'Hadith 40',
-                  'assets/icons/menu/Hadith_newTest.png',
-                  const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFC2185B), // Deep Pink
-                      Color(0xFFE91E63), // Bright Pink
-                      Color(0xFFEC407A), // Light Pink
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                  () {
-                    Navigator.push(
-                      context,
-                      SmoothPageRoute(page: const Hadis40Page()),
-                    );
-                  },
+            ),
+            SizedBox(width: screenWidth * 0.02), // ✅ Reduced from 0.025
+            Expanded(
+              child: _buildSmallerMediumCardWithImage(
+                context,
+                'Hadith 40',
+                'assets/images/Hadith_newTest.png',
+                const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFC2185B),
+                    Color(0xFFE91E63),
+                    Color(0xFFEC407A),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
+                () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const Hadis40Page()),
+                  );
+                },
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
   // Keep _buildSmallerMediumCardWithImage() and _buildLargeCardWithImage() unchanged
   // They already handle gradients correctly
 

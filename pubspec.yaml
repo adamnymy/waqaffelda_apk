@@ -131,6 +131,18 @@ flutter:
     - assets/icons/menu/alquran-bg.svg
 
 
+    - assets/images/CardAM01.png
+    - assets/images/CardAM001.png
+    - assets/images/CardAM002.png
+    - assets/images/CardAM003.png
+    - assets/images/CardAM004.png
+
+    - assets/images/Hadith_newTest.png
+    - assets/images/kaabah_newtest2.png
+    - assets/images/Quran_newTest3.png
+    - assets/images/solat_newtest2.png
+    - assets/images/tasbih_newtest.png
+
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

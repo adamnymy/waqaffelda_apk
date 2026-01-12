@@ -222,7 +222,7 @@ class _AkaunPageState extends State<AkaunPage> {
           child: Column(
             children: [
               Text(
-                'Versi 1.0.2-beta+3',
+                'Versi 1.0.0',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

@@ -283,7 +283,7 @@ class TentangKamiPage extends StatelessWidget {
                     _buildInfoRow(
                       Icons.verified_rounded,
                       'Versi',
-                      '1.0.2-beta+3',
+                      '1.0.0',
                     ),
                     const SizedBox(height: 16),
                     Divider(

@@ -171,13 +171,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit_outlined, color: colorScheme.primary),
-            tooltip: 'Sasaran Tersuai',
-            onPressed: _showCustomTargetDialog,
-          ),
-        ],
+        actions: [],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -234,10 +228,7 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                     const SizedBox(height: 8),
                     Text(
                       _currentZikirTranslation,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSecondary,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.black),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -844,6 +835,3 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     );
   }
 }
-
-
-

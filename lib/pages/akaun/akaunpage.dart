@@ -72,33 +72,6 @@ class _AkaunPageState extends State<AkaunPage> {
           ),
         ),
         centerTitle: false,
-        actions: [
-          ValueListenableBuilder<ThemeMode>(
-            valueListenable: appThemeMode,
-            builder: (context, mode, _) {
-              return IconButton(
-                tooltip:
-                    mode == ThemeMode.light
-                        ? 'Switch to dark mode'
-                        : 'Switch to light mode',
-                icon: Icon(
-                  mode == ThemeMode.light
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                onPressed: () {
-                  final newMode =
-                      mode == ThemeMode.light
-                          ? ThemeMode.dark
-                          : ThemeMode.light;
-                  appThemeMode.value = newMode;
-                  saveThemeMode(newMode);
-                },
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,

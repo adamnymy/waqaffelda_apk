@@ -23,6 +23,7 @@ class _KiblatPageState extends State<KiblatPage> {
   String? _error;
   bool _loadingLocation = true;
   bool _wasAligned = false; // for one-shot haptic/sound
+  bool _hasShownCalibrationDialog = false; // track if calibration dialog shown
   String _locationName = 'Getting location...';
   double? _distanceToKaaba; // in km
 
@@ -106,6 +107,16 @@ class _KiblatPageState extends State<KiblatPage> {
         });
       }
       return;
+    }
+
+    // Show calibration dialog once after compass is ready
+    if (!_hasShownCalibrationDialog && mounted) {
+      _hasShownCalibrationDialog = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showCalibrationDialog();
+        }
+      });
     }
 
     _compassSub = FlutterCompass.events!.listen(
@@ -461,6 +472,209 @@ class _KiblatPageState extends State<KiblatPage> {
   double _degToRad(double d) => d * math.pi / 180.0;
   double _radToDeg(double r) => r * 180.0 / math.pi;
 
+  void _showCalibrationDialog() {
+    int countdown = 10;
+    Timer? countdownTimer;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            if (countdownTimer == null) {
+              countdownTimer = Timer.periodic(const Duration(seconds: 1), (
+                timer,
+              ) {
+                if (countdown > 0) {
+                  setState(() {
+                    countdown--;
+                  });
+                } else {
+                  timer.cancel();
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                }
+              });
+            }
+
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary.withOpacity(0.05),
+                      colorScheme.secondary.withOpacity(0.05),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.phonelink_setup,
+                        size: 48,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Title
+                    Text(
+                      'Kalibrasi Kompas',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    // Instructions
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue[200]!, width: 1),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[100],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '∞',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  'Gerakkan telefon anda membentuk angka 8 atau simbol infiniti (∞)',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue[900],
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Divider(color: Colors.blue[200]),
+                          const SizedBox(height: 12),
+                          Text(
+                            '• Pusingkan telefon ke semua arah\n• Ulangi beberapa kali untuk ketepatan\n• Jauhkan dari objek magnetik',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[700],
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Info text
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.amber[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber[200]!, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.amber[800],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Kalibrasi membantu kompas memberikan arah yang lebih tepat',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.amber[900],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Countdown timer display
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: colorScheme.primary.withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            countdown.toString(),
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Sila kalibrasi sekarang...',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onBackground.withOpacity(0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   // Get cardinal direction from bearing
   String _getCardinalDirection(double bearing) {
     const directions = [
@@ -509,13 +723,13 @@ class _KiblatPageState extends State<KiblatPage> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+          icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Arah Kiblat',
           style: TextStyle(
-            color: colorScheme.onSurface,
+            color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -525,7 +739,7 @@ class _KiblatPageState extends State<KiblatPage> {
           IconButton(
             icon: Icon(
               Icons.refresh,
-              color: _loadingLocation ? Colors.grey : colorScheme.onSurface,
+              color: _loadingLocation ? Colors.grey : Colors.black,
             ),
             tooltip: 'Refresh Location',
             onPressed:
@@ -681,7 +895,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         'Lokasi Semasa',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          color: Colors.black,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -691,7 +905,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: colorScheme.onSecondary,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ],
@@ -935,7 +1149,7 @@ class _KiblatPageState extends State<KiblatPage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: colorScheme.onSecondary,
+                                          color: Colors.black,
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -1238,6 +1452,3 @@ class KaabaIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-
-

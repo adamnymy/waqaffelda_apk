@@ -1,7 +1,7 @@
 # Waqafer - Muslim Prayer Companion App
 
 <div align="center">
-  <img src="assets/images/app_icon.png" alt="Waqafer Logo" width="120" height="120">
+  <img src="assets/icons/Logo_QAF.png" alt="Waqafer Logo" width="120" height="120">
 
   # 🕌 Waqafer
 

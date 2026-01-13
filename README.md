@@ -7,8 +7,6 @@
 
   **Your Complete Muslim Prayer Companion**
 
-  test
-
   *Accurate Prayer Times • Qiblah Direction • Nearby Mosques • Islamic Content*
 
   [![Flutter](https://img.shields.io/badge/Flutter-3.7.2-blue.svg)](https://flutter.dev/)

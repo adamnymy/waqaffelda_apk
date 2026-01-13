@@ -14,10 +14,7 @@ class TentangKamiPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: Color(0xFF2C3E50),
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF2C3E50)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -40,54 +37,25 @@ class TentangKamiPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header Icon
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF4DB6AC), Color(0xFF26A69A)],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF4DB6AC).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.info_outline_rounded,
-                  size: 48,
-                  color: Colors.white,
-                ),
+              // Header Logo (no background)
+              Image.asset(
+                'assets/images/waqaf_felda_logo.png',
+                width: 180, //size
+                height: 120,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 24),
-              // Title
-              const Text(
-                'Waqaf FELDA',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
-                'Institusi Wakaf Korporat Terulung',
-                textAlign: TextAlign.center,
+                'Kejayaan Dalam Keberkatan',
                 style: TextStyle(
                   fontSize: 16,
-                  color: const Color(0xFF4DB6AC),
-                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade600,
                   letterSpacing: 0.3,
                 ),
               ),
               const SizedBox(height: 32),
-              // Visi Section
+              // Tentang Section
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -107,9 +75,10 @@ class TentangKamiPage extends StatelessWidget {
                   ),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
@@ -118,14 +87,14 @@ class TentangKamiPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
-                            Icons.visibility_rounded,
+                            Icons.info_rounded,
                             size: 20,
                             color: Colors.white,
                           ),
                         ),
                         const SizedBox(width: 12),
                         const Text(
-                          'Visi',
+                          'Tentang',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -136,75 +105,29 @@ class TentangKamiPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Menjadi institusi waqaf korporat terulung di peringkat global.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
-                        height: 1.7,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Misi Section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF4DB6AC).withOpacity(0.1),
-                      const Color(0xFF4DB6AC).withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFF4DB6AC).withOpacity(0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF4DB6AC),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.flag_rounded,
-                            size: 20,
-                            color: Colors.white,
-                          ),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                          height: 1.7,
+                          letterSpacing: 0.2,
                         ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Misi',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                            letterSpacing: 0.3,
+                        children: [
+                          const TextSpan(
+                            text: 'WAQAF FELDA',
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Melestarikan institusi waqaf melalui kemampanan sumber, pelaburan berimpak tinggi dan memperkukuh sosio-ekonomi ummah.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
-                        height: 1.7,
-                        letterSpacing: 0.2,
+                          const TextSpan(
+                            text:
+                                ' bertujuan memupuk budaya memberi dan kebersamaan dalam kalangan peneroka, serta mewujudkan kuasa ekonomi ketiga berasaskan kesukarelawanan.\n\n',
+                          ),
+                          const TextSpan(
+                            text:
+                                'Melalui konsep Wakaf Korporat, WAQAF FELDA menyalurkan pelbagai manfaat bukan sahaja untuk kebajikan, malah sedekah jariah yang memberi keberkatan kepada warga FELDA dan masyarakat Malaysia.',
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -218,10 +141,7 @@ class TentangKamiPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F7FA),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
+                  border: Border.all(color: Colors.grey.shade200, width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,28 +193,18 @@ class TentangKamiPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F7FA),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
+                  border: Border.all(color: Colors.grey.shade200, width: 1),
                 ),
                 child: Column(
                   children: [
-                    _buildInfoRow(
-                      Icons.verified_rounded,
-                      'Versi',
-                      '1.0.0',
-                    ),
+                    _buildInfoRow(Icons.verified_rounded, 'Versi', '1.0.0'),
                     const SizedBox(height: 16),
-                    Divider(
-                      height: 1,
-                      color: Colors.grey.shade300,
-                    ),
+                    Divider(height: 1, color: Colors.grey.shade300),
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       Icons.copyright_rounded,
                       'Hak Cipta',
-                      '© 2025 Waqaf FELDA',
+                      '© 2026 Waqaf FELDA',
                     ),
                   ],
                 ),
@@ -342,4 +252,3 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 }
-

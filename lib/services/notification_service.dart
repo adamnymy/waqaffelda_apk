@@ -61,6 +61,7 @@ void _callbackDispatcher() {
         importance: Importance.high,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         enableVibration: true,
         playSound: true,
         showWhen: true,
@@ -924,6 +925,7 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
+      largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
     );
 
     const iosDetails = DarwinNotificationDetails(

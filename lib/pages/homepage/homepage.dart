@@ -235,14 +235,8 @@ class _HomepageState extends State<Homepage> {
       }
 
       final lastScheduledDate = prefs.getString('last_scheduled_date');
+      final lastScheduledLocation = prefs.getString('last_scheduled_location');
       final today = DateTime.now().toIso8601String().split('T')[0];
-
-      if (lastScheduledDate == today) {
-        print('ℹ️ Notifications already scheduled for today');
-        return;
-      }
-
-      print('📅 Scheduling notifications with user location...');
 
       final locationName = await PrayerTimesService.getLocationName(
         position.latitude,
@@ -251,7 +245,43 @@ class _HomepageState extends State<Homepage> {
 
       await prefs.setString('current_location_name', locationName);
 
+      // If we've already scheduled for today and the location hasn't changed,
+      // skip scheduling. If location changed, force a reschedule so notifications
+      // reflect the new place even on the same day.
+      if (lastScheduledDate == today && lastScheduledLocation == locationName) {
+        print(
+          'ℹ️ Notifications already scheduled for today and location unchanged',
+        );
+        return;
+      }
+
+      print('📅 Scheduling notifications with user location...');
+
       final notificationService = NotificationService();
+
+      // If location changed but schedule already exists for today, force reschedule
+      final locationChanged =
+          lastScheduledLocation != null &&
+          lastScheduledLocation != locationName;
+      if (lastScheduledDate == today && locationChanged) {
+        print(
+          '📍 Location changed from "$lastScheduledLocation" to "$locationName" - forcing reschedule from homepage',
+        );
+        try {
+          await notificationService.forceReschedule(
+            _prayerTimes,
+            locationName: locationName,
+          );
+          await notificationService.cachePrayerTimesMinimal(_prayerTimes);
+          await prefs.setString('last_scheduled_location', locationName);
+          print(
+            '✅ Forced reschedule completed from homepage for $locationName',
+          );
+        } catch (e) {
+          print('❌ Failed to force reschedule from homepage: $e');
+        }
+        return;
+      }
 
       // Try to fetch full monthly prayer times so we can schedule accurate
       // notifications for each of the next 7 days (times change slightly day-to-day)

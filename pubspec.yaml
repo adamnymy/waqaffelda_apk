@@ -143,6 +143,11 @@ flutter:
     - assets/images/solat_newtest2.png
     - assets/images/tasbih_newtest.png
 
+    - assets/icons/tentangkami/WF1.png
+    - assets/icons/tentangkami/WF2.png
+    - assets/icons/tentangkami/WF3.png 
+    - assets/icons/tentangkami/WF4.png
+
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

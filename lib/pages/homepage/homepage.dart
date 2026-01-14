@@ -2510,19 +2510,19 @@ class _HomepageState extends State<Homepage> {
 
     final List<Map<String, dynamic>> programItems = [
       {
-        'image': 'assets/images/CardAM001.png',
+        'image': 'assets/images/Manfaat/AgihanManfaat1.png',
         'badge': 'POPULAR',
         'badgeColor': Color(0xFFFF9800),
-        'showBadge': true, // ✅ Only first card has badge
+        'showBadge': false, // ✅ Only first card has badge
       },
       {
-        'image': 'assets/images/CardAM002.png',
+        'image': 'assets/images/Manfaat/AgihanManfaat2.png',
         'badge': 'BARU',
         'badgeColor': Color(0xFF2196F3),
         'showBadge': false, // ✅ No badge
       },
       {
-        'image': 'assets/images/CardAM003.png',
+        'image': 'assets/images/Manfaat/AgihanManfaat3.png',
         'badge': 'BARU',
         'badgeColor': Color(0xFF9C27B0),
         'showBadge': false, // ✅ No badge

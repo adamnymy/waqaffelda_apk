@@ -63,7 +63,7 @@ class AgihanItem {
   final String status;
   final IconData icon;
   final String? image; // Gambar agihan
-  final String? url;   // Link untuk detail (FB, website, etc)
+  final String? url; // Link untuk detail (FB, website, etc)
 
   const AgihanItem({
     required this.name,
@@ -132,7 +132,11 @@ class _ProgramPageState extends State<ProgramPage>
       date: '20/03/2025',
       icon: Icons.auto_stories_rounded,
       gradient: [Color(0xFF4FACFE), Color(0xFF00F2FE)],
-      highlights: ['Pahala Berterusan', 'Sedekah Jariah', 'Manfaat Berpanjangan'],
+      highlights: [
+        'Pahala Berterusan',
+        'Sedekah Jariah',
+        'Manfaat Berpanjangan',
+      ],
     ),
     ProgramItem(
       title: 'Set Persalinan Akhir',
@@ -166,40 +170,31 @@ class _ProgramPageState extends State<ProgramPage>
       highlights: ['Perubatan', 'Rawatan', 'Hospital'],
       agihanList: [
         AgihanItem(
-          name: 'Bantuan Pembedahan',
-          beneficiary: 'Ahmad bin Ali',
-          amount: 'RM 15,000',
+          name: 'Bantuan Peralatan',
+          beneficiary: 'Kluster Kesihatan',
+          amount: 'RM 74,230',
           status: 'Selesai',
-          icon: Icons.local_hospital_rounded,
+          icon: Icons.medical_services_rounded,
           image: 'assets/images/agihan_pembedahan.jpg',
           url: 'https://www.facebook.com/waqaffelda/posts/pembedahan123',
         ),
         AgihanItem(
-          name: 'Rawatan Dialisis',
-          beneficiary: 'Siti binti Hassan',
-          amount: 'RM 8,500',
+          name: 'Bantuan Rawatan',
+          beneficiary: 'Kluster Kesihatan',
+          amount: 'RM 74,231',
           status: 'Dalam Proses',
-          icon: Icons.medical_services_rounded,
+          icon: Icons.local_hospital_rounded,
           image: 'assets/images/agihan_dialisis.jpg',
           url: 'https://www.facebook.com/waqaffelda/posts/dialisis456',
         ),
         AgihanItem(
-          name: 'Bantuan Ubat-ubatan',
-          beneficiary: 'Muthu a/l Raman',
-          amount: 'RM 3,200',
+          name: 'Bantuan Perubatan',
+          beneficiary: 'Kluster Kesihatan',
+          amount: 'RM 74,230',
           status: 'Selesai',
           icon: Icons.medication_rounded,
           image: 'assets/images/agihan_ubat.jpg',
           url: 'https://www.facebook.com/waqaffelda/posts/ubatan789',
-        ),
-        AgihanItem(
-          name: 'Peralatan Kesihatan OKU',
-          beneficiary: 'Tan Ah Kow',
-          amount: 'RM 5,800',
-          status: 'Dalam Proses',
-          icon: Icons.accessible_rounded,
-          image: 'assets/images/agihan_oku.jpg',
-          url: 'https://www.facebook.com/waqaffelda/posts/oku101',
         ),
       ],
     ),
@@ -376,14 +371,16 @@ class _ProgramPageState extends State<ProgramPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Listen to tab changes for color animation
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       setState(() {
-        _currentTabColor = _tabController.index == 0
-            ? AppColors.primary      // Hijau untuk Peluang Bersama
-            : AppColors.accent;      // Kuning/Emas untuk Agihan Manfaat
+        _currentTabColor =
+            _tabController.index == 0
+                ? AppColors
+                    .primary // Hijau untuk Peluang Bersama
+                : AppColors.accent; // Kuning/Emas untuk Agihan Manfaat
       });
     });
   }
@@ -483,10 +480,10 @@ Jom sertai program ini bersama Waqaf FELDA!
           children: [
             // Fixed Header
             _buildHeader(),
-            
+
             // Fixed Tab Bar
             _buildTabBar(),
-            
+
             // Scrollable Content
             Expanded(
               child: TabBarView(
@@ -518,10 +515,7 @@ Jom sertai program ini bersama Waqaf FELDA!
       decoration: BoxDecoration(
         color: AppColors.bgPrimary,
         border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
       ),
       child: Row(
@@ -558,9 +552,9 @@ Jom sertai program ini bersama Waqaf FELDA!
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFFFD93D),  // Kuning terang
-                    Color(0xFFFFC107),  // Kuning amber
-                    Color(0xFFFFB300),  // Kuning emas terang
+                    Color(0xFFFFD93D), // Kuning terang
+                    Color(0xFFFFC107), // Kuning amber
+                    Color(0xFFFFB300), // Kuning emas terang
                   ],
                 ),
                 borderRadius: BorderRadius.circular(14),
@@ -573,14 +567,14 @@ Jom sertai program ini bersama Waqaf FELDA!
                 ],
               ),
               child: const Icon(
-                Icons.handshake_rounded,  // Icon baru
+                Icons.handshake_rounded, // Icon baru
                 color: Colors.white,
                 size: 22,
               ),
             ),
           ),
           const SizedBox(width: 14),
-          
+
           // Title - Lebih kecil
           Expanded(
             child: Column(
@@ -589,7 +583,7 @@ Jom sertai program ini bersama Waqaf FELDA!
                 const Text(
                   'Program Waqaf',
                   style: TextStyle(
-                    fontSize: 18,  // Dikecilkan dari 22
+                    fontSize: 18, // Dikecilkan dari 22
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                     letterSpacing: -0.3,
@@ -599,14 +593,14 @@ Jom sertai program ini bersama Waqaf FELDA!
                 Text(
                   'Pilih program untuk menyumbang',
                   style: TextStyle(
-                    fontSize: 12,  // Dikecilkan sikit
+                    fontSize: 12, // Dikecilkan sikit
                     color: Colors.grey.shade600,
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // Stats - Auto-update jumlah program
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -627,7 +621,7 @@ Jom sertai program ini bersama Waqaf FELDA!
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFE6A700),  // Kuning gelap untuk text
+                color: Color(0xFFE6A700), // Kuning gelap untuk text
               ),
             ),
           ),
@@ -652,21 +646,31 @@ Jom sertai program ini bersama Waqaf FELDA!
         animation: _tabController.animation!,
         builder: (context, child) {
           // Interpolate color based on tab animation
-          final Color indicatorColor = Color.lerp(
-            const Color(0xFF00897B),  // Teal (Tab 0 - Peluang Bersama)
-            const Color(0xFFFFC107),  // Kuning (Tab 1 - Agihan Manfaat)
-            _tabController.animation!.value,
-          )!;
-          
+          final Color indicatorColor =
+              Color.lerp(
+                const Color(0xFF00897B), // Teal (Tab 0 - Peluang Bersama)
+                const Color(0xFFFFC107), // Kuning (Tab 1 - Agihan Manfaat)
+                _tabController.animation!.value,
+              )!;
+
           return TabBar(
             controller: _tabController,
             indicator: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: _tabController.animation!.value < 0.5
-                    ? [const Color(0xFF00897B), const Color(0xFF26A69A), const Color(0xFF4DB6AC)]  // Teal gradient
-                    : [const Color(0xFFFFD93D), const Color(0xFFFFC107), const Color(0xFFFFB300)], // Kuning gradient
+                colors:
+                    _tabController.animation!.value < 0.5
+                        ? [
+                          const Color(0xFF00897B),
+                          const Color(0xFF26A69A),
+                          const Color(0xFF4DB6AC),
+                        ] // Teal gradient
+                        : [
+                          const Color(0xFFFFD93D),
+                          const Color(0xFFFFC107),
+                          const Color(0xFFFFB300),
+                        ], // Kuning gradient
               ),
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
@@ -729,10 +733,7 @@ Jom sertai program ini bersama Waqaf FELDA!
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       itemCount: peluangBersama.length,
       itemBuilder: (context, index) {
-        return _buildProgramCard(
-          item: peluangBersama[index],
-          index: index,
-        );
+        return _buildProgramCard(item: peluangBersama[index], index: index);
       },
     );
   }
@@ -803,10 +804,7 @@ Jom sertai program ini bersama Waqaf FELDA!
                   ),
                 ],
                 // Subtle border for definition
-                border: Border.all(
-                  color: Colors.grey.shade100,
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.grey.shade100, width: 1),
               ),
               child: Material(
                 color: Colors.transparent,
@@ -832,25 +830,26 @@ Jom sertai program ini bersama Waqaf FELDA!
                               child: Image.asset(
                                 item.image,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: item.gradient,
+                                errorBuilder:
+                                    (_, __, ___) => Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: item.gradient,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          item.icon,
+                                          size: 56,
+                                          color: Colors.white.withOpacity(0.4),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      item.icon,
-                                      size: 56,
-                                      color: Colors.white.withOpacity(0.4),
-                                    ),
-                                  ),
-                                ),
                               ),
                             ),
-                            
+
                             // Gradient Overlay - more elegant
                             Positioned.fill(
                               child: Container(
@@ -867,7 +866,7 @@ Jom sertai program ini bersama Waqaf FELDA!
                                 ),
                               ),
                             ),
-                            
+
                             // Badge (only for first item)
                             if (item.badge != null && index == 0)
                               Positioned(
@@ -885,7 +884,9 @@ Jom sertai program ini bersama Waqaf FELDA!
                                     borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: item.gradient[0].withOpacity(0.4),
+                                        color: item.gradient[0].withOpacity(
+                                          0.4,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -929,7 +930,9 @@ Jom sertai program ini bersama Waqaf FELDA!
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: item.gradient[0].withOpacity(0.25),
+                                        color: item.gradient[0].withOpacity(
+                                          0.25,
+                                        ),
                                         blurRadius: 6,
                                         offset: const Offset(0, 3),
                                       ),
@@ -944,7 +947,8 @@ Jom sertai program ini bersama Waqaf FELDA!
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.title,
@@ -976,26 +980,31 @@ Jom sertai program ini bersama Waqaf FELDA!
                             Wrap(
                               spacing: 6,
                               runSpacing: 6,
-                              children: item.highlights.take(3).map((tag) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.gradient[0].withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    tag,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: item.gradient[0].withOpacity(0.85),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
+                              children:
+                                  item.highlights.take(3).map((tag) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: item.gradient[0].withOpacity(
+                                          0.08,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        tag,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: item.gradient[0].withOpacity(
+                                            0.85,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                             ),
                             const SizedBox(height: 18),
 
@@ -1019,9 +1028,9 @@ Jom sertai program ini bersama Waqaf FELDA!
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => AgihanDetailPage(
-                                          cluster: item,
-                                        ),
+                                        builder:
+                                            (context) =>
+                                                AgihanDetailPage(cluster: item),
                                       ),
                                     );
                                   } else {
@@ -1044,7 +1053,9 @@ Jom sertai program ini bersama Waqaf FELDA!
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      isCluster ? 'Lihat Agihan' : 'Sertai Sekarang',
+                                      isCluster
+                                          ? 'Lihat Agihan'
+                                          : 'Sertai Sekarang',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
@@ -1081,31 +1092,32 @@ Jom sertai program ini bersama Waqaf FELDA!
     HapticFeedback.mediumImpact();
     // Check if this is a cluster (agihan manfaat)
     final bool isCluster = item.agihanList != null;
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ProgramDetailsSheet(
-        item: item,
-        isCluster: isCluster,
-        onJoin: () {
-          if (isCluster) {
-            // Navigate to agihan detail page
-            Navigator.pop(context); // Close bottom sheet first
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AgihanDetailPage(cluster: item),
-              ),
-            );
-          } else {
-            // Open URL for Peluang Bersama
-            _launchURL(item.url);
-          }
-        },
-        onShare: () => _shareProgram(item),
-      ),
+      builder:
+          (context) => _ProgramDetailsSheet(
+            item: item,
+            isCluster: isCluster,
+            onJoin: () {
+              if (isCluster) {
+                // Navigate to agihan detail page
+                Navigator.pop(context); // Close bottom sheet first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AgihanDetailPage(cluster: item),
+                  ),
+                );
+              } else {
+                // Open URL for Peluang Bersama
+                _launchURL(item.url);
+              }
+            },
+            onShare: () => _shareProgram(item),
+          ),
     );
   }
 }
@@ -1171,18 +1183,19 @@ class _ProgramDetailsSheet extends StatelessWidget {
                               item.image,
                               fit: BoxFit.cover,
                               width: double.infinity,
-                              errorBuilder: (_, __, ___) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: item.gradient,
+                              errorBuilder:
+                                  (_, __, ___) => Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: item.gradient,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      item.icon,
+                                      size: 72,
+                                      color: Colors.white.withOpacity(0.4),
+                                    ),
                                   ),
-                                ),
-                                child: Icon(
-                                  item.icon,
-                                  size: 72,
-                                  color: Colors.white.withOpacity(0.4),
-                                ),
-                              ),
                             ),
                           ),
                           // Gradient
@@ -1220,7 +1233,10 @@ class _ProgramDetailsSheet extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(Icons.close_rounded, size: 22),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 22,
+                                ),
                               ),
                             ),
                           ),
@@ -1342,34 +1358,37 @@ class _ProgramDetailsSheet extends StatelessWidget {
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children: item.highlights.map((tag) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        item.gradient[0].withOpacity(0.1),
-                                        item.gradient[1].withOpacity(0.05),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: item.gradient[0].withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    tag,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: item.gradient[0],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
+                              children:
+                                  item.highlights.map((tag) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            item.gradient[0].withOpacity(0.1),
+                                            item.gradient[1].withOpacity(0.05),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: item.gradient[0].withOpacity(
+                                            0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        tag,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: item.gradient[0],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                             ),
                             const SizedBox(height: 32),
                           ],
@@ -1402,17 +1421,20 @@ class _ProgramDetailsSheet extends StatelessWidget {
                                       elevation: 0,
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
-                                          isCluster 
-                                              ? Icons.visibility_rounded 
-                                              : Icons.how_to_reg_rounded, 
+                                          isCluster
+                                              ? Icons.visibility_rounded
+                                              : Icons.how_to_reg_rounded,
                                           size: 20,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          isCluster ? 'Lihat Agihan' : 'Sertai Sekarang',
+                                          isCluster
+                                              ? 'Lihat Agihan'
+                                              : 'Sertai Sekarang',
                                           style: const TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
@@ -1439,11 +1461,14 @@ class _ProgramDetailsSheet extends StatelessWidget {
                                           width: 1.5,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
                                         ),
                                       ),
                                       child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.share_rounded, size: 20),
                                           SizedBox(width: 8),
@@ -1602,16 +1627,14 @@ class AgihanDetailPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Stats
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1650,36 +1673,37 @@ class AgihanDetailPage extends StatelessWidget {
 
             // List of agihan
             Expanded(
-              child: cluster.agihanList == null || cluster.agihanList!.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.inbox_rounded,
-                            size: 80,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Tiada agihan buat masa ini',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w600,
+              child:
+                  cluster.agihanList == null || cluster.agihanList!.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inbox_rounded,
+                              size: 80,
+                              color: Colors.grey.shade300,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            Text(
+                              'Tiada agihan buat masa ini',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: cluster.agihanList!.length,
+                        itemBuilder: (context, index) {
+                          final agihan = cluster.agihanList![index];
+                          return _buildAgihanCard(agihan, cluster.gradient);
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: cluster.agihanList!.length,
-                      itemBuilder: (context, index) {
-                        final agihan = cluster.agihanList![index];
-                        return _buildAgihanCard(agihan, cluster.gradient);
-                      },
-                    ),
             ),
           ],
         ),
@@ -1715,7 +1739,7 @@ class AgihanDetailPage extends StatelessWidget {
 
   Widget _buildAgihanCard(AgihanItem agihan, List<Color> gradient) {
     final bool isSelesai = agihan.status == "Selesai";
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -1728,20 +1752,19 @@ class AgihanDetailPage extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(
-          color: Colors.grey.shade100,
-        ),
+        border: Border.all(color: Colors.grey.shade100),
       ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: agihan.url != null
-              ? () {
-                  HapticFeedback.lightImpact();
-                  _launchURL(agihan.url!);
-                }
-              : null,
+          onTap:
+              agihan.url != null
+                  ? () {
+                    HapticFeedback.lightImpact();
+                    _launchURL(agihan.url!);
+                  }
+                  : null,
           borderRadius: BorderRadius.circular(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1759,18 +1782,19 @@ class AgihanDetailPage extends StatelessWidget {
                         child: Image.asset(
                           agihan.image!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: gradient),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                agihan.icon,
-                                size: 48,
-                                color: Colors.white.withOpacity(0.5),
+                          errorBuilder:
+                              (_, __, ___) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(colors: gradient),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    agihan.icon,
+                                    size: 48,
+                                    color: Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
                         ),
                       ),
                       // Gradient overlay
@@ -1798,9 +1822,10 @@ class AgihanDetailPage extends StatelessWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelesai
-                                ? Colors.green.shade700
-                                : Colors.orange.shade700,
+                            color:
+                                isSelesai
+                                    ? Colors.green.shade700
+                                    : Colors.orange.shade700,
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
@@ -1861,7 +1886,7 @@ class AgihanDetailPage extends StatelessWidget {
                     ],
                   ),
                 ),
-              
+
               // Content Section
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -1915,14 +1940,16 @@ class AgihanDetailPage extends StatelessWidget {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: isSelesai
-                                  ? Colors.green.shade50
-                                  : Colors.orange.shade50,
+                              color:
+                                  isSelesai
+                                      ? Colors.green.shade50
+                                      : Colors.orange.shade50,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isSelesai
-                                    ? Colors.green.shade200
-                                    : Colors.orange.shade200,
+                                color:
+                                    isSelesai
+                                        ? Colors.green.shade200
+                                        : Colors.orange.shade200,
                               ),
                             ),
                             child: Row(
@@ -1933,9 +1960,10 @@ class AgihanDetailPage extends StatelessWidget {
                                       ? Icons.check_circle_rounded
                                       : Icons.pending_rounded,
                                   size: 12,
-                                  color: isSelesai
-                                      ? Colors.green.shade700
-                                      : Colors.orange.shade700,
+                                  color:
+                                      isSelesai
+                                          ? Colors.green.shade700
+                                          : Colors.orange.shade700,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -1943,9 +1971,10 @@ class AgihanDetailPage extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: isSelesai
-                                        ? Colors.green.shade700
-                                        : Colors.orange.shade700,
+                                    color:
+                                        isSelesai
+                                            ? Colors.green.shade700
+                                            : Colors.orange.shade700,
                                   ),
                                 ),
                               ],
@@ -1954,11 +1983,11 @@ class AgihanDetailPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Divider
                     Divider(color: Colors.grey.shade200, height: 1),
                     const SizedBox(height: 12),
-                    
+
                     // Amount & Link button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -149,6 +149,17 @@ flutter:
     - assets/icons/tentangkami/WF3.png 
     - assets/icons/tentangkami/WF4.png
 
+    - assets/images/Manfaat/AgihanManfaat1.png
+    - assets/images/Manfaat/AgihanManfaat2.png
+    - assets/images/Manfaat/AgihanManfaat3.png
+
+    - assets/images/Manfaat/Kluster1.png
+    - assets/images/Manfaat/Kluster2.png
+    - assets/images/Manfaat/Kluster3.png
+    - assets/images/Manfaat/Kluster4.png
+    - assets/images/Manfaat/Kluster5.png
+    - assets/images/Manfaat/Kluster6.png
+
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package

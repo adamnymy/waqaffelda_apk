@@ -54,6 +54,7 @@ class AgihanManfaatItem {
   final String? badge;
   final List<String> highlights;
   final List<AgihanItem> agihanList;
+  final int jumlahPenerima; // Manual setting for beneficiaries count
 
   const AgihanManfaatItem({
     required this.title,
@@ -67,6 +68,7 @@ class AgihanManfaatItem {
     this.badge,
     this.highlights = const [],
     required this.agihanList,
+    required this.jumlahPenerima,
   });
 }
 
@@ -76,85 +78,86 @@ class AgihanManfaatItem {
 
 const List<AgihanManfaatItem> agihanManfaatData = [
   AgihanManfaatItem(
-    title: 'Kluster Kesihatan',
+    title: 'Kluster Kesihatan & Dhaif',
     tagline: 'Bantuan perubatan & rawatan',
     description:
         'Membantu golongan yang memerlukan bantuan perubatan dan rawatan kesihatan. Meringankan beban pesakit dan keluarga.',
-    image: 'assets/images/CardAM001.png',
-    url: 'https://waqaffelda.waqafer.com.my',
+    image: 'assets/images/Manfaat/Kluster1.png',
+    url: 'https://waqaffelda.com.my/portal',
     date: 'Berterusan',
     icon: Icons.medical_services_rounded,
     gradient: [Color(0xFFE53935), Color(0xFFFF5252)],
     badge: 'POPULAR',
     highlights: ['Perubatan', 'Rawatan', 'Hospital'],
+    jumlahPenerima: 2348,
     agihanList: [
       AgihanItem(
         name: 'Bantuan Peralatan',
         beneficiary: 'Kluster Kesihatan',
-        amount: 'RM 74,230',
+        amount: 'RM 78,450',
         status: 'Selesai',
         icon: Icons.medical_services_rounded,
         image: 'assets/images/agihan_pembedahan.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/pembedahan123',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Bantuan Rawatan',
         beneficiary: 'Kluster Kesihatan',
-        amount: 'RM 74,231',
+        amount: 'RM 82,130',
         status: 'Dalam Proses',
         icon: Icons.local_hospital_rounded,
         image: 'assets/images/agihan_dialisis.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/dialisis456',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Bantuan Perubatan',
         beneficiary: 'Kluster Kesihatan',
-        amount: 'RM 74,230',
+        amount: 'RM 62,111',
         status: 'Selesai',
         icon: Icons.medication_rounded,
         image: 'assets/images/agihan_ubat.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/ubatan789',
+        url: 'https://waqaffelda.com.my/portal',
       ),
     ],
   ),
   AgihanManfaatItem(
-    title: 'Kluster Pendidikan',
-    tagline: 'Biasiswa & bantuan pelajaran',
-    description:
-        'Menyediakan biasiswa dan bantuan pendidikan untuk pelajar yang memerlukan. Melahirkan generasi berilmu.',
-    image: 'assets/images/CardAM002.png',
-    url: 'https://waqaffelda.waqafer.com.my',
+    title: 'Kluster Pendidikan & Kerohanian',
+    tagline: 'Bantuan pelajaran',
+    description:'Bantuan pendidikan formal (sekolah) dan tidak formal (madrasah & pondok), sama ada penerimanya adalah institusi seperti sekolah, universiti atau individu',
+    image: 'assets/images/Manfaat/Kluster2.png',
+    url: 'https://waqaffelda.com.my/portal',
     date: 'Berterusan',
     icon: Icons.school_rounded,
     gradient: [Color(0xFF1976D2), Color(0xFF42A5F5)],
-    highlights: ['Biasiswa', 'Pelajar', 'Sekolah'],
+    highlights: ['Pelajar', 'Universiti', 'Sekolah'],
+    jumlahPenerima: 8915,
     agihanList: [
       AgihanItem(
-        name: 'Biasiswa Universiti',
+        name: 'Bantuan Pendidikan Pelajar IPT',
         beneficiary: 'Nurul Aina binti Ahmad',
-        amount: 'RM 12,000',
+        amount: 'RM 38,500',
         status: 'Selesai',
         icon: Icons.school_rounded,
         image: 'assets/images/agihan_biasiswa.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/biasiswa201',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
-        name: 'Bantuan Buku Teks',
+        name: 'Bantuan Sekolah',
         beneficiary: 'Muhammad Hafiz bin Ismail',
-        amount: 'RM 800',
+        amount: 'RM 29,450',
         status: 'Selesai',
         icon: Icons.menu_book_rounded,
         image: 'assets/images/agihan_buku.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/buku202',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
-        name: 'Yuran Sekolah',
+        name: 'Peralatan Belajar',
         beneficiary: 'Aisyah binti Yusof',
-        amount: 'RM 2,500',
+        amount: 'RM 25,230',
         status: 'Dalam Proses',
         icon: Icons.payments_rounded,
         image: 'assets/images/agihan_yuran.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/yuran203',
+        url: 'https://waqaffelda.com.my/portal',
       ),
     ],
   ),
@@ -163,39 +166,40 @@ const List<AgihanManfaatItem> agihanManfaatData = [
     tagline: 'Bantuan kecemasan & pemulihan',
     description:
         'Menyalurkan bantuan segera kepada mangsa bencana alam. Membantu proses pemulihan dan pembinaan semula.',
-    image: 'assets/images/CardAM003.png',
-    url: 'https://waqaffelda.waqafer.com.my',
+    image: 'assets/images/Manfaat/Kluster3.png',
+    url: 'https://waqaffelda.com.my/portal',
     date: 'Berterusan',
     icon: Icons.warning_rounded,
     gradient: [Color(0xFFFF6F00), Color(0xFFFFCA28)],
     highlights: ['Banjir', 'Kecemasan', 'Pemulihan'],
+    jumlahPenerima: 3437,
     agihanList: [
       AgihanItem(
         name: 'Bantuan Mangsa Banjir',
         beneficiary: 'Keluarga Pak Hamid',
-        amount: 'RM 5,000',
+        amount: 'RM 45,800',
         status: 'Selesai',
         icon: Icons.water_damage_rounded,
         image: 'assets/images/agihan_banjir.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/banjir301',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Pemulihan Rumah',
         beneficiary: 'Keluarga Mak Limah',
-        amount: 'RM 18,000',
+        amount: 'RM 32,150',
         status: 'Dalam Proses',
         icon: Icons.home_repair_service_rounded,
         image: 'assets/images/agihan_rumah.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/rumah302',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Bekalan Makanan Kecemasan',
         beneficiary: 'PPS Kuala Lipis',
-        amount: 'RM 8,500',
+        amount: 'RM 26,276',
         status: 'Selesai',
         icon: Icons.fastfood_rounded,
         image: 'assets/images/agihan_makanan.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/makanan303',
+        url: 'https://waqaffelda.com.my/portal',
       ),
     ],
   ),
@@ -204,80 +208,125 @@ const List<AgihanManfaatItem> agihanManfaatData = [
     tagline: 'Modal perniagaan & sara hidup',
     description:
         'Membantu golongan asnaf dengan modal perniagaan kecil dan bantuan sara hidup untuk keluarga yang memerlukan.',
-    image: 'assets/images/CardAM001.png',
-    url: 'https://waqaffelda.waqafer.com.my',
+    image: 'assets/images/Manfaat/Kluster4.png',
+    url: 'https://waqaffelda.com.my/portal',
     date: 'Berterusan',
     icon: Icons.storefront_rounded,
     gradient: [Color(0xFF00897B), Color(0xFF4DB6AC)],
     highlights: ['Modal', 'Perniagaan', 'Asnaf'],
+    jumlahPenerima: 95,
     agihanList: [
       AgihanItem(
         name: 'Modal Perniagaan Kecil',
         beneficiary: 'Puan Aminah',
-        amount: 'RM 10,000',
+        amount: 'RM 850',
         status: 'Selesai',
         icon: Icons.store_rounded,
         image: 'assets/images/agihan_modal.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/modal401',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Bantuan Sara Hidup',
         beneficiary: 'Keluarga Pak Ali',
-        amount: 'RM 3,000',
+        amount: 'RM 1,100',
         status: 'Selesai',
         icon: Icons.family_restroom_rounded,
         image: 'assets/images/agihan_sara.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/sara402',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
         name: 'Peralatan Perniagaan',
         beneficiary: 'Encik Muthu',
-        amount: 'RM 6,500',
+        amount: 'RM 550',
         status: 'Dalam Proses',
         icon: Icons.construction_rounded,
         image: 'assets/images/agihan_peralatan.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/peralatan403',
+        url: 'https://waqaffelda.com.my/portal',
       ),
     ],
   ),
   AgihanManfaatItem(
-    title: 'Kemudahan Awam',
+    title: 'Kluster Kemudahan Awam',
     tagline: 'Infrastruktur & fasiliti',
     description:
-        'Pembinaan dan penyelenggaraan kemudahan awam seperti surau, tandas awam, dan kemudahan OKU.',
-    image: 'assets/images/CardAM002.png',
-    url: 'https://waqaffelda.waqafer.com.my',
+        'Pembinaan dan penyelenggaraan kemudahan awam untuk manfaat komuniti setempat',
+    image: 'assets/images/Manfaat/Kluster5.png',
+    url: 'https://waqaffelda.com.my/portal',
     date: 'Berterusan',
     icon: Icons.location_city_rounded,
     gradient: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
-    highlights: ['Surau', 'Infrastruktur', 'OKU'],
+    highlights: ['Surau', 'Klinik', 'OKU'],
+    jumlahPenerima: 8866,
     agihanList: [
       AgihanItem(
-        name: 'Pembinaan Surau',
+        name: 'Klinik Bergerak',
         beneficiary: 'Kampung Sungai Ruan',
-        amount: 'RM 85,000',
+        amount: 'RM 42,300',
         status: 'Dalam Proses',
         icon: Icons.mosque_rounded,
         image: 'assets/images/agihan_surau.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/surau501',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
-        name: 'Tandas Awam OKU',
+        name: 'Baik Pulih Madrasah/Surau',
         beneficiary: 'Masjid Al-Falah',
-        amount: 'RM 25,000',
+        amount: 'RM 28,150',
         status: 'Selesai',
         icon: Icons.wc_rounded,
         image: 'assets/images/agihan_tandas.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/tandas502',
+        url: 'https://waqaffelda.com.my/portal',
       ),
       AgihanItem(
-        name: 'Landskap Taman',
+        name: 'Penimbang Getah Digital',
         beneficiary: 'Taman Rekreasi Felda',
-        amount: 'RM 15,000',
+        amount: 'RM 18,137',
         status: 'Dalam Proses',
         icon: Icons.park_rounded,
         image: 'assets/images/agihan_taman.jpg',
-        url: 'https://www.facebook.com/waqaffelda/posts/taman503',
+        url: 'https://waqaffelda.com.my/portal',
+      ),
+    ],
+  ),
+  AgihanManfaatItem(
+    title: 'Wakaf Quran',
+    tagline: 'Sedekah jariah yang berterusan',
+    description:
+        'Menyediakan Al-Quran untuk masjid, surau, sekolah dan institusi pendidikan. Setiap kali Al-Quran dibaca, pahala mengalir kepada pewakaf.',
+    image: 'assets/images/Manfaat/Kluster6.png',
+    url: 'https://waqaffelda.com.my/portal',
+    date: 'Berterusan',
+    icon: Icons.auto_stories_rounded,
+    gradient: [Color(0xFF00796B), Color(0xFF26A69A)],
+    badge: 'TERKINI',
+    highlights: ['Al-Quran', 'Pahala Jariah', 'Berkah'],
+    jumlahPenerima: 4600,
+    agihanList: [
+      AgihanItem(
+        name: 'Pelajar Tahfiz',
+        beneficiary: 'Masjid Negeri',
+        amount: 'RM 68,500',
+        status: 'Selesai',
+        icon: Icons.mosque_rounded,
+        image: 'assets/images/agihan_quran_masjid.jpg',
+        url: 'https://waqaffelda.com.my/portal',
+      ),
+      AgihanItem(
+        name: 'Pelajar Sekolah',
+        beneficiary: 'Sekolah Agama',
+        amount: 'RM 72,300',
+        status: 'Dalam Proses',
+        icon: Icons.school_rounded,
+        image: 'assets/images/agihan_quran_sekolah.jpg',
+        url: 'https://waqaffelda.com.my/portal',
+      ),
+      AgihanItem(
+        name: 'Orang Awam',
+        beneficiary: 'Surau Kampung',
+        amount: 'RM 59,200',
+        status: 'Selesai',
+        icon: Icons.auto_stories_rounded,
+        image: 'assets/images/agihan_quran_surau.jpg',
+        url: 'https://waqaffelda.com.my/portal',
       ),
     ],
   ),
@@ -382,22 +431,8 @@ class AgihanManfaatTab extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.black.withOpacity(0.05),
-                                      Colors.black.withOpacity(0.35),
-                                    ],
-                                    stops: const [0.4, 1.0],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (item.badge != null && index == 0)
+                            // Fixed badge display logic
+                            if (item.badge != null)
                               Positioned(
                                 top: 14,
                                 left: 14,
@@ -641,20 +676,22 @@ class _ClusterDetailsSheet extends StatelessWidget {
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                       child: Stack(
                         children: [
+                          // Gradient Background with Icon (instead of image)
                           AspectRatio(
                             aspectRatio: 4 / 3,
-                            child: Image.asset(
-                              item.image,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (_, __, ___) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: item.gradient),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: item.gradient,
                                 ),
+                              ),
+                              child: Center(
                                 child: Icon(
                                   item.icon,
-                                  size: 72,
-                                  color: Colors.white.withOpacity(0.4),
+                                  size: 120,
+                                  color: Colors.white.withOpacity(0.3),
                                 ),
                               ),
                             ),
@@ -667,7 +704,7 @@ class _ClusterDetailsSheet extends StatelessWidget {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withOpacity(0.6),
+                                    Colors.black.withOpacity(0.4),
                                   ],
                                   stops: const [0.4, 1.0],
                                 ),
@@ -1035,7 +1072,7 @@ class AgihanDetailPage extends StatelessWidget {
                         ),
                         _buildStatItem(
                           'Jumlah Penerima',
-                          '${_getUniqueBeneficiaries(cluster.agihanList)}',
+                          _formatNumber(cluster.jumlahPenerima),
                           Icons.people_rounded,
                         ),
                         Container(
@@ -1146,6 +1183,26 @@ class AgihanDetailPage extends StatelessWidget {
       // Format as normal (e.g., RM500)
       return 'RM${amount.toStringAsFixed(0)}';
     }
+  }
+
+  // Helper function untuk format number dengan comma separator
+  String _formatNumber(int number) {
+    if (number == 0) return '0';
+    
+    String numStr = number.toString();
+    String result = '';
+    int count = 0;
+    
+    for (int i = numStr.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        result = ',$result';
+        count = 0;
+      }
+      result = numStr[i] + result;
+      count++;
+    }
+    
+    return result;
   }
 
   // Helper function untuk kira unique beneficiaries

@@ -136,213 +136,188 @@ void _callbackDispatcher() {
   });
 }
 
-/// Fetch fresh prayer times from API and schedule WorkManager tasks.
+/// Fetch fresh prayer times from API and schedule WorkManager tasks for 7 days.
 @pragma('vm:entry-point')
 Future<void> _scheduleFromCachedPrayerTimes() async {
   try {
-    debugPrint('🔄 [BG] Starting background reschedule with fresh API fetch');
+    debugPrint(
+      '🔄 [BG] Starting background reschedule for 7 days with fresh API fetch',
+    );
 
     final prefs = await SharedPreferences.getInstance();
-    List<dynamic> list;
 
-    // Try to fetch fresh prayer times from API
+    // Get last known location from SharedPreferences
+    final lastLat = prefs.getDouble('last_known_lat');
+    final lastLng = prefs.getDouble('last_known_lng');
+
+    // Only proceed if we have valid location
+    if (lastLat == null || lastLng == null) {
+      debugPrint(
+        '⚠️ [BG] No saved location found. Cannot fetch prayer times in background.',
+      );
+      return;
+    }
+
+    debugPrint('📍 [BG] Using saved location: $lastLat, $lastLng');
+
+    // Fetch monthly prayer times to schedule accurate times for next 7 days
     try {
-      debugPrint('🌐 [BG] Attempting to fetch fresh prayer times from API...');
+      final now = DateTime.now();
+      final currentMonth = now.month;
+      final currentYear = now.year;
 
-      // Get last known location from SharedPreferences
-      final lastLat = prefs.getDouble('last_known_lat');
-      final lastLng = prefs.getDouble('last_known_lng');
+      // Determine zone from coordinates
+      final zoneCode = PrayerTimesService.getZoneFromCoordinates(
+        lastLat,
+        lastLng,
+      );
 
-      // Only proceed with API if we have valid location
-      if (lastLat == null || lastLng == null) {
-        debugPrint(
-          '⚠️ [BG] No saved location found. Please open app to set location.',
+      final url =
+          'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&zone=$zoneCode&year=$currentYear&month=${currentMonth.toString().padLeft(2, '0')}';
+
+      debugPrint('🌐 [BG] Fetching monthly data for zone $zoneCode');
+
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception('API returned status code: ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['status'] != 'OK' ||
+          data['prayerTime'] == null ||
+          data['prayerTime'].isEmpty) {
+        throw Exception('Invalid API response format');
+      }
+
+      // Build 7-day schedule
+      final List<Map<String, dynamic>> allPrayerTimes = [];
+
+      for (int day = 0; day < 7; day++) {
+        final targetDate = now.add(Duration(days: day));
+        final dayStr = targetDate.day.toString().padLeft(2, '0');
+
+        // Find the day's data in the monthly response
+        final dayData = (data['prayerTime'] as List).firstWhere(
+          (d) => d['date'].toString().split('-').first == dayStr,
+          orElse: () => null,
         );
 
-        // Fall back to cached prayer times
-        final cached = prefs.getString('cached_prayer_times');
-        if (cached == null) {
-          debugPrint('❌ [BG] No cached prayer times found');
-          return;
-        }
-
-        list = jsonDecode(cached);
-        if (list.isEmpty) {
-          debugPrint('❌ [BG] Cached prayer times list is empty');
-          return;
-        }
-
-        debugPrint('📋 [BG] Using ${list.length} cached prayer times');
-      } else {
-        debugPrint('📍 [BG] Using saved location: $lastLat, $lastLng');
-
-        // Fetch tomorrow's prayer times
-        final tomorrow = DateTime.now().add(const Duration(days: 1));
-        final url =
-            'https://www.e-solat.gov.my/index.php?r=esolatApi/TakwimSolat&period=month&zone=WLY01&year=${tomorrow.year}&month=${tomorrow.month.toString().padLeft(2, '0')}';
-
-        final response = await http
-            .get(Uri.parse(url))
-            .timeout(const Duration(seconds: 10));
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['status'] == 'OK' &&
-              data['prayerTime'] != null &&
-              data['prayerTime'].isNotEmpty) {
-            // Find tomorrow's prayer times
-            final tomorrowDateStr = tomorrow.day.toString().padLeft(2, '0');
-            final tomorrowData = (data['prayerTime'] as List).firstWhere(
-              (day) =>
-                  day['date'].toString().split('-').last == tomorrowDateStr,
-              orElse: () => null,
-            );
-
-            if (tomorrowData != null) {
-              // Convert to our format
-              list = [
-                {'name': 'Subuh', 'time': tomorrowData['fajr']},
-                {'name': 'Zohor', 'time': tomorrowData['dhuhr']},
-                {'name': 'Asar', 'time': tomorrowData['asr']},
-                {'name': 'Maghrib', 'time': tomorrowData['maghrib']},
-                {'name': 'Isyak', 'time': tomorrowData['isha']},
-              ];
-
-              // Save fresh data to cache
-              await prefs.setString('cached_prayer_times', jsonEncode(list));
-              debugPrint(
-                '✅ [BG] Successfully fetched and cached fresh prayer times from API',
-              );
-            } else {
-              throw Exception('Tomorrow\'s data not found in API response');
-            }
-          } else {
-            throw Exception('Invalid API response format');
-          }
+        if (dayData != null) {
+          // Add each prayer for this day
+          final prayers = [
+            {'name': 'Subuh', 'time': dayData['fajr'], 'dayOffset': day},
+            {'name': 'Zohor', 'time': dayData['dhuhr'], 'dayOffset': day},
+            {'name': 'Asar', 'time': dayData['asr'], 'dayOffset': day},
+            {'name': 'Maghrib', 'time': dayData['maghrib'], 'dayOffset': day},
+            {'name': 'Isyak', 'time': dayData['isha'], 'dayOffset': day},
+          ];
+          allPrayerTimes.addAll(prayers);
         } else {
-          throw Exception('API returned status code: ${response.statusCode}');
+          debugPrint('⚠️ [BG] No data found for day +$day ($dayStr)');
         }
       }
-    } catch (apiError) {
-      debugPrint(
-        '⚠️ [BG] API fetch failed: $apiError. Falling back to cache...',
-      );
 
-      // Fall back to cached prayer times
-      final cached = prefs.getString('cached_prayer_times');
-      if (cached == null) {
-        debugPrint('❌ [BG] No cached prayer times found for fallback');
-        return;
+      if (allPrayerTimes.isEmpty) {
+        throw Exception('No prayer times found for next 7 days');
       }
 
-      list = jsonDecode(cached);
-      if (list.isEmpty) {
-        debugPrint('❌ [BG] Cached prayer times list is empty');
-        return;
+      debugPrint('✅ [BG] Fetched ${allPrayerTimes.length} prayers for 7 days');
+
+      // Schedule all prayers
+      int scheduledCount = 0;
+      final tzNow = tz.TZDateTime.now(tz.local);
+
+      for (var prayer in allPrayerTimes) {
+        final prayerName = prayer['name'] as String;
+        final timeString = prayer['time'] as String;
+        final dayOffset = prayer['dayOffset'] as int;
+
+        // Skip Syuruk
+        if (prayerName == 'Syuruk') continue;
+
+        try {
+          final targetDate = tzNow.add(Duration(days: dayOffset));
+          final normalized = _normalizeTimeString(timeString);
+          final toParse = normalized.isNotEmpty ? normalized : timeString;
+          final parsedTime = _parseTimeStringStatic(toParse, targetDate);
+
+          if (parsedTime == null) {
+            debugPrint(
+              '❌ [BG] Failed to parse time for $prayerName: $timeString',
+            );
+            continue;
+          }
+
+          final delaySeconds = parsedTime.difference(tzNow).inSeconds;
+          if (delaySeconds <= 0) {
+            debugPrint('⏭️ [BG] Skipping $prayerName (already passed)');
+            continue;
+          }
+
+          final bgTitle = 'Waktu Solat $prayerName';
+          final bgBody =
+              'Telah masuk waktu solat fardhu $prayerName pada $timeString';
+
+          await Workmanager().registerOneOffTask(
+            'bg_prayer_${prayerName.toLowerCase()}_day${dayOffset}_${tzNow.millisecondsSinceEpoch}',
+            'showPrayerNotification',
+            inputData: {
+              'title': bgTitle,
+              'body': bgBody,
+              'channelId':
+                  NotificationService.prayerConfig[prayerName]?['channelId'] ??
+                  'prayer_default',
+              'scheduledAt': parsedTime.toUtc().toIso8601String(),
+            },
+            initialDelay: Duration(seconds: delaySeconds),
+            constraints: Constraints(
+              networkType: NetworkType.not_required,
+              requiresCharging: false,
+              requiresDeviceIdle: false,
+              requiresBatteryNotLow: false,
+              requiresStorageNotLow: false,
+            ),
+            backoffPolicy: BackoffPolicy.linear,
+            backoffPolicyDelay: const Duration(seconds: 10),
+            existingWorkPolicy: ExistingWorkPolicy.replace,
+          );
+
+          scheduledCount++;
+        } catch (e) {
+          debugPrint('❌ [BG] Error scheduling $prayerName: $e');
+        }
       }
 
-      debugPrint(
-        '📋 [BG] Using ${list.length} cached prayer times as fallback',
+      // Update schedule metadata
+      final today = DateFormat('yyyy-MM-dd').format(now);
+      await prefs.setString('last_scheduled_date', today);
+      final expiryDate = now.add(const Duration(days: 7));
+      await prefs.setString(
+        'schedule_expires_at',
+        DateFormat('yyyy-MM-dd').format(expiryDate),
       );
-    }
 
-    debugPrint('📋 [BG] Processing ${list.length} prayer times for scheduling');
+      debugPrint(
+        '💾 [BG] Updated schedule metadata: valid until ${DateFormat('yyyy-MM-dd').format(expiryDate)}',
+      );
 
-    // Parse times for tomorrow (since this runs at night after all today's prayers passed)
-    final now = tz.TZDateTime.now(tz.local);
-    final tomorrow = now.add(const Duration(days: 1));
-
-    int scheduledCount = 0;
-
-    // Each item should be {name: '', time: ''}
-    for (var item in list) {
+      // Update widget
       try {
-        final prayerName = item['name'] as String;
-        final timeString = item['time'] as String;
-
-        // Skip Syuruk as it's not a prayer time
-        if (prayerName == 'Syuruk') {
-          debugPrint('⏭️ [BG] Skipping $prayerName (not a prayer time)');
-          continue;
-        }
-
-        debugPrint('🕐 [BG] Processing $prayerName: $timeString');
-
-        // Parse time string manually (can't use instance method in isolate)
-        final normalized = _normalizeTimeString(timeString);
-        final toParse = normalized.isNotEmpty ? normalized : timeString;
-        final parsedTime = _parseTimeStringStatic(toParse, tomorrow);
-        if (parsedTime == null) {
-          debugPrint(
-            '❌ [BG] Failed to parse time for $prayerName: $timeString (normalized: $normalized)',
-          );
-          continue;
-        }
-
-        // Calculate delay from now
-        final delaySeconds = parsedTime.difference(now).inSeconds;
-
-        if (delaySeconds <= 0) {
-          debugPrint(
-            '⚠️ [BG] Skipping $prayerName - time already passed (delay: ${delaySeconds}s)',
-          );
-          continue;
-        }
-
-        debugPrint(
-          '✅ [BG] Scheduling $prayerName for $parsedTime (delay: ${delaySeconds}s / ${(delaySeconds / 3600).toStringAsFixed(1)}h)',
-        );
-
-        final bgTitle = 'Waktu Solat $prayerName';
-        final bgBody =
-            'Telah masuk waktu solat fardhu $prayerName pada $timeString';
-
-        await Workmanager().registerOneOffTask(
-          'bg_prayer_${prayerName.toLowerCase()}_${now.millisecondsSinceEpoch}',
-          'showPrayerNotification',
-          inputData: {
-            'title': bgTitle,
-            'body': bgBody,
-            'channelId':
-                NotificationService.prayerConfig[prayerName]?['channelId'] ??
-                'prayer_default',
-            'scheduledAt': parsedTime.toUtc().toIso8601String(),
-          },
-          initialDelay: Duration(seconds: delaySeconds),
-          constraints: Constraints(
-            networkType: NetworkType.not_required,
-            requiresCharging: false,
-            requiresDeviceIdle: false,
-            requiresBatteryNotLow: false,
-            requiresStorageNotLow: false,
-          ),
-          backoffPolicy: BackoffPolicy.linear,
-          backoffPolicyDelay: const Duration(seconds: 10),
-          existingWorkPolicy: ExistingWorkPolicy.replace,
-        );
-
-        scheduledCount++;
+        await WidgetService.updateWidget();
+        debugPrint('🔄 [BG] Widget updated');
       } catch (e) {
-        debugPrint('❌ [BG] Error scheduling from cache: $e');
+        debugPrint('⚠️ [BG] Widget update failed: $e');
       }
-    }
 
-    // Update the last_scheduled_date to tomorrow's date
-    final tomorrowDate = DateFormat('yyyy-MM-dd').format(tomorrow);
-    await prefs.setString('last_scheduled_date', tomorrowDate);
-    debugPrint('💾 [BG] Updated last_scheduled_date to: $tomorrowDate');
-
-    // Update widget with the fresh prayer times data
-    try {
-      await WidgetService.updateWidget();
-      debugPrint('🔄 [BG] Widget updated with fresh prayer times');
+      debugPrint(
+        '✅ [BG] Background 7-day reschedule complete - scheduled $scheduledCount prayers',
+      );
     } catch (e) {
-      debugPrint('⚠️ [BG] Widget update failed: $e');
+      debugPrint('❌ [BG] Failed to fetch/schedule prayer times: $e');
     }
-
-    debugPrint(
-      '✅ [BG] Background reschedule complete - scheduled $scheduledCount prayers for tomorrow',
-    );
   } catch (e) {
     debugPrint('❌ [BG] _scheduleFromCachedPrayerTimes failed: $e');
   }
@@ -509,7 +484,7 @@ class NotificationService {
 
     // Android initialization settings
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@mipmap/ic_notification',
     );
 
     // iOS initialization settings

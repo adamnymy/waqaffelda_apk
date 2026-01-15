@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
 import '../../services/quran_service.dart';
@@ -7,6 +8,7 @@ import 'surah_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/foundation.dart';
+
 class QuranPage extends StatefulWidget {
   const QuranPage({Key? key}) : super(key: key);
 
@@ -26,6 +28,7 @@ class _QuranPageState extends State<QuranPage>
   String errorMessage = '';
   late AnimationController _shimmerController;
   DateTime? _loadStartTime;
+  Set<int> favoriteSurahs = {};
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _QuranPageState extends State<QuranPage>
     // This allows the page transition to complete smoothly
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadQuranData();
+      _loadFavorites();
     });
   }
 
@@ -76,6 +80,59 @@ class _QuranPageState extends State<QuranPage>
         isLoading = false;
       });
       debugPrint('❌ Error loading Quran: $e');
+    }
+  }
+
+  // Load favorite surahs from SharedPreferences
+  Future<void> _loadFavorites() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final favorites = prefs.getStringList('favorite_surahs') ?? [];
+      setState(() {
+        favoriteSurahs = favorites.map((e) => int.parse(e)).toSet();
+      });
+    } catch (e) {
+      debugPrint('❌ Error loading favorites: $e');
+    }
+  }
+
+  // Save favorite surahs to SharedPreferences
+  Future<void> _saveFavorites() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        'favorite_surahs',
+        favoriteSurahs.map((e) => e.toString()).toList(),
+      );
+    } catch (e) {
+      debugPrint('❌ Error saving favorites: $e');
+    }
+  }
+
+  // Toggle favorite status
+  Future<void> _toggleFavorite(int surahNumber) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      if (favoriteSurahs.contains(surahNumber)) {
+        favoriteSurahs.remove(surahNumber);
+      } else {
+        favoriteSurahs.add(surahNumber);
+      }
+    });
+    await _saveFavorites();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            favoriteSurahs.contains(surahNumber)
+                ? 'Ditambah ke favorit'
+                : 'Dikeluarkan dari favorit',
+          ),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -1268,15 +1325,7 @@ class _QuranPageState extends State<QuranPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildTabButton(
-                    'Juzuk',
-                    Icons.format_list_numbered_rounded,
-                    1,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTabButton('Simpan', Icons.bookmark_rounded, 2),
+                  child: _buildTabButton('Favorit', Icons.favorite_rounded, 1),
                 ),
               ],
             ),
@@ -1294,6 +1343,7 @@ class _QuranPageState extends State<QuranPage>
     final isSelected = selectedTabIndex == index;
     return GestureDetector(
       onTap: () {
+        HapticFeedback.selectionClick();
         setState(() {
           selectedTabIndex = index;
         });
@@ -1358,10 +1408,8 @@ class _QuranPageState extends State<QuranPage>
   Widget _buildContent() {
     if (selectedTabIndex == 0) {
       return _buildSurahList();
-    } else if (selectedTabIndex == 1) {
-      return _buildParaList();
     } else {
-      return _buildBookmarkList();
+      return _buildFavoriteList();
     }
   }
 
@@ -1498,6 +1546,7 @@ class _QuranPageState extends State<QuranPage>
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
+            HapticFeedback.lightImpact();
             // Navigate to surah detail page
             Navigator.push(
               context,
@@ -1506,6 +1555,7 @@ class _QuranPageState extends State<QuranPage>
               ),
             );
           },
+          onLongPress: () => _toggleFavorite(surah.number),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -1622,11 +1672,34 @@ class _QuranPageState extends State<QuranPage>
 
                 const SizedBox(width: 12),
 
-                // Arrow Icon
+                // Favorite Button - Tappable and visible
+                IconButton(
+                  onPressed: () => _toggleFavorite(surah.number),
+                  icon: Icon(
+                    favoriteSurahs.contains(surah.number)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color:
+                        favoriteSurahs.contains(surah.number)
+                            ? Colors.red
+                            : colorScheme.onSurface.withOpacity(0.5),
+                    size: 24,
+                  ),
+                  tooltip:
+                      favoriteSurahs.contains(surah.number)
+                          ? 'Keluarkan dari favorit'
+                          : 'Tambah ke favorit',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Arrow Icon for navigation
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   color: colorScheme.primary,
-                  size: 18,
+                  size: 16,
                 ),
               ],
             ),
@@ -1636,316 +1709,56 @@ class _QuranPageState extends State<QuranPage>
     );
   }
 
-  Widget _buildParaList() {
-    final paras = [
-      {
-        'number': 1,
-        'name': 'Alif Lam Mim',
-        'startSurah': 'Al-Fatihah',
-        'startAyat': 1,
-      },
-      {
-        'number': 2,
-        'name': 'Sayaqulu',
-        'startSurah': 'Al-Baqarah',
-        'startAyat': 142,
-      },
-      {
-        'number': 3,
-        'name': 'Tilkal Rusulu',
-        'startSurah': 'Al-Baqarah',
-        'startAyat': 253,
-      },
-      {
-        'number': 4,
-        'name': 'Lan Tana Lu',
-        'startSurah': 'Ali-Imran',
-        'startAyat': 92,
-      },
-      {
-        'number': 5,
-        'name': 'Wal Muhsanat',
-        'startSurah': 'An-Nisa',
-        'startAyat': 24,
-      },
-      {
-        'number': 6,
-        'name': 'La Yuhibbullah',
-        'startSurah': 'An-Nisa',
-        'startAyat': 148,
-      },
-      {
-        'number': 7,
-        'name': 'Wa Iza Sami\'u',
-        'startSurah': 'Al-Ma\'idah',
-        'startAyat': 82,
-      },
-      {
-        'number': 8,
-        'name': 'Wa Lau Annana',
-        'startSurah': 'Al-An\'am',
-        'startAyat': 111,
-      },
-      {
-        'number': 9,
-        'name': 'Qalal Mala',
-        'startSurah': 'Al-A\'raf',
-        'startAyat': 88,
-      },
-      {
-        'number': 10,
-        'name': 'Wa A\'lamu',
-        'startSurah': 'Al-Anfal',
-        'startAyat': 41,
-      },
-      {
-        'number': 11,
-        'name': 'Ya\'tazirun',
-        'startSurah': 'At-Tawbah',
-        'startAyat': 93,
-      },
-      {
-        'number': 12,
-        'name': 'Wa Ma Min Dabbah',
-        'startSurah': 'Hud',
-        'startAyat': 6,
-      },
-      {
-        'number': 13,
-        'name': 'Wa Ma Ubri\'u',
-        'startSurah': 'Yusuf',
-        'startAyat': 53,
-      },
-      {'number': 14, 'name': 'Rubama', 'startSurah': 'Al-Hijr', 'startAyat': 1},
-      {
-        'number': 15,
-        'name': 'Subhanallazi',
-        'startSurah': 'Al-Isra',
-        'startAyat': 1,
-      },
-      {
-        'number': 16,
-        'name': 'Qala Alam',
-        'startSurah': 'Al-Kahf',
-        'startAyat': 75,
-      },
-      {
-        'number': 17,
-        'name': 'Iqtaraba',
-        'startSurah': 'Al-Anbiya',
-        'startAyat': 1,
-      },
-      {
-        'number': 18,
-        'name': 'Qadd Aflaha',
-        'startSurah': 'Al-Mu\'minun',
-        'startAyat': 1,
-      },
-      {
-        'number': 19,
-        'name': 'Wa Qalallazina',
-        'startSurah': 'Al-Furqan',
-        'startAyat': 21,
-      },
-      {
-        'number': 20,
-        'name': 'Amman Khalaqa',
-        'startSurah': 'An-Naml',
-        'startAyat': 60,
-      },
-      {
-        'number': 21,
-        'name': 'Utlu Ma Uhiya',
-        'startSurah': 'Al-Ankabut',
-        'startAyat': 45,
-      },
-      {
-        'number': 22,
-        'name': 'Wa Man Yaqnut',
-        'startSurah': 'Al-Ahzab',
-        'startAyat': 31,
-      },
-      {
-        'number': 23,
-        'name': 'Wa Mali',
-        'startSurah': 'Yaseen',
-        'startAyat': 22,
-      },
-      {
-        'number': 24,
-        'name': 'Fa Mani Azlam',
-        'startSurah': 'Az-Zumar',
-        'startAyat': 32,
-      },
-      {
-        'number': 25,
-        'name': 'Ilaih Yuraddu',
-        'startSurah': 'Fussilat',
-        'startAyat': 47,
-      },
-      {
-        'number': 26,
-        'name': 'Ha Mim',
-        'startSurah': 'Al-Ahqaf',
-        'startAyat': 1,
-      },
-      {
-        'number': 27,
-        'name': 'Qala Fama Khatbukum',
-        'startSurah': 'Adh-Dhariyat',
-        'startAyat': 31,
-      },
-      {
-        'number': 28,
-        'name': 'Qadd Sami Allah',
-        'startSurah': 'Al-Mujadilah',
-        'startAyat': 1,
-      },
-      {
-        'number': 29,
-        'name': 'Tabarakallazi',
-        'startSurah': 'Al-Mulk',
-        'startAyat': 1,
-      },
-      {
-        'number': 30,
-        'name': 'Amma Yatasa\'alun',
-        'startSurah': 'An-Naba',
-        'startAyat': 1,
-      },
-    ];
+  Widget _buildFavoriteList() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (favoriteSurahs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border_rounded,
+              size: 64,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Tiada Surah Favorit',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                'Tekan ikon ♡ pada surah untuk menambah ke favorit',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final favoriteSurahList =
+        allSurahs
+            .where((surah) => favoriteSurahs.contains(surah.number))
+            .toList();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: paras.length,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+      itemCount: favoriteSurahList.length,
       itemBuilder: (context, index) {
-        final para = paras[index];
-        return _buildParaCard(para);
+        return _buildSurahCard(favoriteSurahList[index]);
       },
-    );
-  }
-
-  Widget _buildParaCard(Map<String, dynamic> para) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // Navigate to Para detail page
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Para number badge
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.secondary,
-                        colorScheme.secondary.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '${para['number']}',
-                    style: TextStyle(
-                      color: colorScheme.onSecondary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Para details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        para['name'] as String,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Bermula: ${para['startSurah']}, Ayat ${para['startAyat']}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: colorScheme.onSurface.withOpacity(0.4),
-                  size: 24,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookmarkList() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.bookmarks_rounded,
-            size: 64,
-            color: colorScheme.onSurface.withOpacity(0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Tiada Tandabuku',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tandakan ayat kegemaran anda',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

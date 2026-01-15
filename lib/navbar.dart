@@ -22,7 +22,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   void initState() {
     super.initState();
-    
+
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.transparent,
@@ -100,14 +100,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Expanded(
       child: InkWell(
         onTap: () {
+          HapticFeedback.selectionClick();
           widget.onTap(index);
 
           if (index == 2) {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const WaqafPage(),
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const WaqafPage(),
                 transitionDuration: Duration.zero,
                 reverseTransitionDuration: Duration.zero,
               ),
@@ -127,38 +129,42 @@ class _BottomNavBarState extends State<BottomNavBar> {
               height: isSelected ? 46 : 38,
               decoration: BoxDecoration(
                 // ✅ FULL TEAL GRADIENT CIRCLE (no white center)
-                gradient: isSelected
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF26A69A), // Light Teal
-                          Color(0xFF00796B), // Dark Teal
-                        ],
-                      )
-                    : null,
+                gradient:
+                    isSelected
+                        ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF26A69A), // Light Teal
+                            Color(0xFF00796B), // Dark Teal
+                          ],
+                        )
+                        : null,
                 color: isSelected ? null : Colors.transparent,
                 shape: BoxShape.circle,
                 // ✅ SUBTLE TEAL SHADOW
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF00897B).withOpacity(0.25),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [],
+                boxShadow:
+                    isSelected
+                        ? [
+                          BoxShadow(
+                            color: const Color(0xFF00897B).withOpacity(0.25),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                        : [],
               ),
               child: Center(
                 // ✅ WHITE ICON on teal gradient background
                 child: Icon(
                   icon,
                   size: 20,
-                  color: isSelected 
-                      ? Colors.white // ✅ WHITE icon when selected
-                      : Colors.grey.shade300, // Grey when not selected
+                  color:
+                      isSelected
+                          ? Colors
+                              .white // ✅ WHITE icon when selected
+                          : Colors.grey.shade300, // Grey when not selected
                 ),
               ),
             ),
@@ -166,9 +172,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFF00897B)
-                    : Colors.grey.shade400,
+                color:
+                    isSelected ? const Color(0xFF00897B) : Colors.grey.shade400,
                 fontSize: 8.5,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 letterSpacing: 0.3,

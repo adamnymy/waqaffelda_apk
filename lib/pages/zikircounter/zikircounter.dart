@@ -125,24 +125,106 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('🎉 Tahniah!'),
-          content: Text('Anda telah mencapai sasaran $_target zikir!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _resetCounter();
-              },
-              child: const Text('Mula Semula'),
+        final colorScheme = Theme.of(context).colorScheme;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withOpacity(0.05),
+                  colorScheme.secondary.withOpacity(0.05),
+                ],
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Teruskan'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: colorScheme.primary,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Anda telah mencapai sasaran $_target zikir',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _resetCounter();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(
+                            color: colorScheme.primary,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Mula Semula',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Teruskan',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -171,7 +253,13 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
           ),
         ),
         centerTitle: true,
-        actions: [],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit_outlined, color: colorScheme.primary),
+            onPressed: _showCustomTargetDialog,
+            tooltip: 'Sasaran Tersuai',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -446,10 +534,14 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 340),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -459,344 +551,358 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
                 ],
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header with gradient
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 24,
-                    horizontal: 24,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primary.withOpacity(0.8),
-                      ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with gradient
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 20,
                     ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.flag_circle_outlined,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Sasaran Tersuai',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tetapkan sasaran kiraan anda',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Form content
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Quick select buttons
-                      const Text(
-                        'Pilihan Pantas',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children:
-                            [50, 100, 250, 500, 1000, 2000].map((value) {
-                              return GestureDetector(
-                                onTap:
-                                    () =>
-                                        targetController.text =
-                                            value.toString(),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: colorScheme.primary.withOpacity(
-                                        0.3,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    value.toString(),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Divider
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.grey[300])),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'atau',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                          Expanded(child: Divider(color: Colors.grey[300])),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primary.withOpacity(0.8),
                         ],
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // Custom input
-                      const Text(
-                        'Masukkan Nombor',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey,
-                        ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: targetController,
-                        decoration: InputDecoration(
-                          hintText: 'Contoh: 250',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.format_list_numbered,
-                            color: colorScheme.primary,
+                          child: const Icon(
+                            Icons.flag_circle_outlined,
+                            color: Colors.white,
+                            size: 24,
                           ),
                         ),
-                        keyboardType: TextInputType.number,
-                        autofocus: true,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Action buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                side: BorderSide(
-                                  color: Colors.grey[300]!,
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Batal',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Sasaran Tersuai',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                final targetStr = targetController.text.trim();
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Tetapkan sasaran kiraan anda',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                                if (targetStr.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.error_outline,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text('Sila masukkan nombor'),
-                                        ],
-                                      ),
-                                      backgroundColor: Colors.red[400],
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
+                  // Form content
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quick select buttons
+                        const Text(
+                          'Pilihan Pantas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children:
+                              [50, 100, 250, 500, 1000, 2000].map((value) {
+                                return GestureDetector(
+                                  onTap:
+                                      () =>
+                                          targetController.text =
+                                              value.toString(),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
                                     ),
-                                  );
-                                  return;
-                                }
-
-                                final customTarget = int.tryParse(targetStr);
-                                if (customTarget == null || customTarget <= 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.error_outline,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text('Sila masukkan nombor yang sah'),
-                                        ],
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.primary.withOpacity(
+                                        0.1,
                                       ),
-                                      backgroundColor: Colors.red[400],
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                Navigator.of(context).pop();
-
-                                setState(() {
-                                  _target = customTarget;
-                                });
-                                _updateProgress();
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.2,
-                                            ),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.check_circle,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: colorScheme.primary.withOpacity(
+                                          0.3,
                                         ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Sasaran ditetapkan: $customTarget',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                    backgroundColor: colorScheme.primary,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                    child: Text(
+                                      value.toString(),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.primary,
+                                      ),
                                     ),
                                   ),
                                 );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
+                              }).toList(),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Divider
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.grey[300])),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.check_circle_outline, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Tetapkan',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                'atau',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
+                            Expanded(child: Divider(color: Colors.grey[300])),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Custom input
+                        const Text(
+                          'Masukkan Nombor',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: targetController,
+                          decoration: InputDecoration(
+                            hintText: 'Contoh: 250',
+                            hintStyle: TextStyle(color: Colors.grey[400]),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.format_list_numbered,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          autofocus: true,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Action buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Batal',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  final targetStr =
+                                      targetController.text.trim();
+
+                                  if (targetStr.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Row(
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text('Sila masukkan nombor'),
+                                          ],
+                                        ),
+                                        backgroundColor: Colors.red[400],
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  final customTarget = int.tryParse(targetStr);
+                                  if (customTarget == null ||
+                                      customTarget <= 0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Row(
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text(
+                                              'Sila masukkan nombor yang sah',
+                                            ),
+                                          ],
+                                        ),
+                                        backgroundColor: Colors.red[400],
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  Navigator.of(context).pop();
+
+                                  setState(() {
+                                    _target = customTarget;
+                                  });
+                                  _updateProgress();
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(
+                                                0.2,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Sasaran ditetapkan: $customTarget',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: colorScheme.primary,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle_outline, size: 18),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Tetapkan',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

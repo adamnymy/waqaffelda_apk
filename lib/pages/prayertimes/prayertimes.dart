@@ -9,6 +9,7 @@ import '../../services/notification_service.dart';
 import '../../services/widget_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../homepage/homepage.dart';
+import '../settings/notification_settings_page.dart';
 import '../../utils/page_transitions.dart';
 
 import 'package:flutter/foundation.dart';
@@ -50,6 +51,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     'Isyak': true,
   };
 
+  // Track sound mode for each prayer
+  Map<String, String> soundModes = {
+    'Subuh': 'beep',
+    'Syuruk': 'beep',
+    'Zohor': 'beep',
+    'Asar': 'beep',
+    'Maghrib': 'beep',
+    'Isyak': 'beep',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +74,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     // Prayer times loading will trigger auto-schedule if needed
     _initializeNotifications();
     _loadPrayerTimes();
+    _loadSoundModes();
   }
 
   @override
@@ -186,6 +198,154 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       }
     } catch (e) {
       debugPrint('❌ Error checking reschedule: $e');
+    }
+  }
+
+  /// Load saved sound modes from SharedPreferences
+  Future<void> _loadSoundModes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        for (var prayer in soundModes.keys) {
+          soundModes[prayer] =
+              prefs.getString('sound_mode_${prayer.toLowerCase()}') ?? 'beep';
+        }
+      });
+      debugPrint('🔊 Loaded sound modes: $soundModes');
+    } catch (e) {
+      debugPrint('❌ Error loading sound modes: $e');
+    }
+  }
+
+  /// Toggle sound mode for a specific prayer
+  Future<void> _toggleSoundMode(String prayerName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentMode = soundModes[prayerName] ?? 'beep';
+
+      // Cycle through modes: azan -> beep -> silent -> azan
+      String newMode;
+      switch (currentMode) {
+        case 'azan':
+          newMode = 'beep';
+          break;
+        case 'beep':
+          newMode = 'silent';
+          break;
+        case 'silent':
+          newMode = 'azan';
+          break;
+        default:
+          newMode = 'beep';
+      }
+
+      // Save the new mode
+      await prefs.setString('sound_mode_${prayerName.toLowerCase()}', newMode);
+      setState(() {
+        soundModes[prayerName] = newMode;
+      });
+
+      // Recreate notification channels with new sound mode
+      final notificationService = NotificationService();
+      await notificationService.createNotificationChannels();
+
+      // CRITICAL: Force reschedule notifications to use new sound mode
+      // Only reschedule if we're viewing today's prayers
+      if (_isToday() && prayerTimes.isNotEmpty) {
+        debugPrint(
+          '🔄 Rescheduling notifications with new sound mode for $prayerName',
+        );
+        await notificationService.forceReschedule(
+          prayerTimes,
+          locationName: locationName,
+        );
+      }
+
+      // Show feedback
+      if (mounted) {
+        String modeText;
+        IconData modeIcon;
+        Color modeColor;
+        switch (newMode) {
+          case 'azan':
+            modeText = 'Azan';
+            modeIcon = Icons.volume_up_rounded;
+            modeColor = Colors.deepPurple;
+            break;
+          case 'beep':
+            modeText = 'Bunyi';
+            modeIcon = Icons.notifications_active_rounded;
+            modeColor = Colors.blue;
+            break;
+          case 'silent':
+            modeText = 'Senyap';
+            modeIcon = Icons.volume_off_rounded;
+            modeColor = Colors.grey;
+            break;
+          default:
+            modeText = newMode;
+            modeIcon = Icons.volume_up_rounded;
+            modeColor = Colors.blue;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Container(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(modeIcon, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          prayerName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        Text(
+                          modeText,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            backgroundColor: modeColor,
+            duration: const Duration(milliseconds: 1500),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 8,
+          ),
+        );
+      }
+
+      debugPrint('🔊 Toggled $prayerName: $currentMode -> $newMode');
+    } catch (e) {
+      debugPrint('❌ Error toggling sound mode: \$e');
     }
   }
 
@@ -537,6 +697,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
   }
 
+  /// Get icon based on current sound mode
+  IconData _getSoundIcon(String prayerName) {
+    final mode = soundModes[prayerName] ?? 'beep';
+    switch (mode) {
+      case 'azan':
+        return Icons.volume_up_rounded;
+      case 'beep':
+        return Icons.notifications_active_rounded;
+      case 'silent':
+        return Icons.volume_off_rounded;
+      default:
+        return Icons.volume_up_rounded;
+    }
+  }
+
   /// Schedule prayer time notifications
   Future<void> _scheduleNotifications() async {
     try {
@@ -673,7 +848,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           IconButton(
             icon: const Icon(Icons.settings_rounded, color: Colors.white),
             onPressed: () {
-              // TODO: Navigate to settings page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationSettingsPage(),
+                ),
+              );
             },
           ),
           _isRefreshing
@@ -1166,6 +1346,46 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                 ),
                               ),
                           ],
+                        ),
+                      ),
+                      // Sound Icon (Toggleable)
+                      InkWell(
+                        onTap: () {
+                          _toggleSoundMode(prayer['name']);
+                        },
+                        onLongPress: () {
+                          // Long press opens settings page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => const NotificationSettingsPage(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color:
+                                isNextPrayer
+                                    ? Colors.white.withOpacity(0.2)
+                                    : isPassed
+                                    ? Colors.grey.shade100
+                                    : colorScheme.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            _getSoundIcon(prayer['name']),
+                            size: 18,
+                            color:
+                                isNextPrayer
+                                    ? Colors.white
+                                    : isPassed
+                                    ? Colors.grey.shade400
+                                    : colorScheme.primary,
+                          ),
                         ),
                       ),
                       // Time

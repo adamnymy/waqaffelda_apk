@@ -245,23 +245,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         soundModes[prayerName] = newMode;
       });
 
-      // Recreate notification channels with new sound mode
-      final notificationService = NotificationService();
-      await notificationService.createNotificationChannels();
-
-      // CRITICAL: Force reschedule notifications to use new sound mode
-      // Only reschedule if we're viewing today's prayers
-      if (_isToday() && prayerTimes.isNotEmpty) {
-        debugPrint(
-          '🔄 Rescheduling notifications with new sound mode for $prayerName',
-        );
-        await notificationService.forceReschedule(
-          prayerTimes,
-          locationName: locationName,
-        );
-      }
-
-      // Show feedback
+      // Show feedback immediately to avoid delay
       if (mounted) {
         String modeText;
         IconData modeIcon;
@@ -288,58 +272,22 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
             modeColor = Colors.blue;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Container(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(modeIcon, color: Colors.white, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          prayerName,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Text(
-                          modeText,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            backgroundColor: modeColor,
-            duration: const Duration(milliseconds: 1500),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 8,
-          ),
+        _showAnimatedSnackBar(prayerName, modeText, modeIcon, modeColor);
+      }
+
+      // Recreate notification channels with new sound mode
+      final notificationService = NotificationService();
+      await notificationService.createNotificationChannels();
+
+      // CRITICAL: Force reschedule notifications to use new sound mode
+      // Only reschedule if we're viewing today's prayers
+      if (_isToday() && prayerTimes.isNotEmpty) {
+        debugPrint(
+          '🔄 Rescheduling notifications with new sound mode for $prayerName',
+        );
+        await notificationService.forceReschedule(
+          prayerTimes,
+          locationName: locationName,
         );
       }
 
@@ -712,6 +660,36 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
   }
 
+  /// Show animated pill-shaped snackbar at the top
+  void _showAnimatedSnackBar(
+    String prayerName,
+    String modeText,
+    IconData modeIcon,
+    Color modeColor,
+  ) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => _AnimatedSnackBar(
+        prayerName: prayerName,
+        modeText: modeText,
+        modeIcon: modeIcon,
+        modeColor: modeColor,
+        onDismiss: () => overlayEntry.remove(),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto dismiss after duration
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
+  }
+
   /// Schedule prayer time notifications
   Future<void> _scheduleNotifications() async {
     try {
@@ -845,56 +823,45 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationSettingsPage(),
-                ),
-              );
-            },
-          ),
           _isRefreshing
               ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(3, (index) {
-                      return AnimatedBuilder(
-                        animation: _refreshAnimationController,
-                        builder: (context, child) {
-                          final delay = index * 0.2;
-                          final animValue = (_refreshAnimationController.value -
-                                  delay)
-                              .clamp(0.0, 1.0);
-                          final scale =
-                              0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(3, (index) {
+                        return AnimatedBuilder(
+                          animation: _refreshAnimationController,
+                          builder: (context, child) {
+                            final delay = index * 0.2;
+                            final animValue = (_refreshAnimationController.value -
+                                    delay)
+                                .clamp(0.0, 1.0);
+                            final scale =
+                                0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
 
-                          return Transform.scale(
-                            scale: scale,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                            return Transform.scale(
+                              scale: scale,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 2),
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
+                            );
+                          },
+                        );
+                      }),
+                    ),
                   ),
-                ),
-              )
+                )
               : IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                onPressed: _loadPrayerTimes,
-              ),
+                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                  onPressed: _loadPrayerTimes,
+                ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -1348,46 +1315,47 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                           ],
                         ),
                       ),
-                      // Sound Icon (Toggleable)
-                      InkWell(
-                        onTap: () {
-                          _toggleSoundMode(prayer['name']);
-                        },
-                        onLongPress: () {
-                          // Long press opens settings page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => const NotificationSettingsPage(),
+                      // Sound Icon (Toggleable) - Hidden for Syuruk
+                      if (prayer['name'] != 'Syuruk')
+                        InkWell(
+                          onTap: () {
+                            _toggleSoundMode(prayer['name']);
+                          },
+                          onLongPress: () {
+                            // Long press opens settings page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const NotificationSettingsPage(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 8),
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color:
+                                  isNextPrayer
+                                      ? Colors.white.withOpacity(0.2)
+                                      : isPassed
+                                      ? Colors.grey.shade100
+                                      : colorScheme.primary.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8),
-                          padding: EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color:
-                                isNextPrayer
-                                    ? Colors.white.withOpacity(0.2)
-                                    : isPassed
-                                    ? Colors.grey.shade100
-                                    : colorScheme.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            _getSoundIcon(prayer['name']),
-                            size: 18,
-                            color:
-                                isNextPrayer
-                                    ? Colors.white
-                                    : isPassed
-                                    ? Colors.grey.shade400
-                                    : colorScheme.primary,
+                            child: Icon(
+                              _getSoundIcon(prayer['name']),
+                              size: 18,
+                              color:
+                                  isNextPrayer
+                                      ? Colors.white
+                                      : isPassed
+                                      ? Colors.grey.shade400
+                                      : colorScheme.primary,
+                            ),
                           ),
                         ),
-                      ),
                       // Time
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -1780,6 +1748,121 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Custom animated snackbar widget
+class _AnimatedSnackBar extends StatefulWidget {
+  final String prayerName;
+  final String modeText;
+  final IconData modeIcon;
+  final Color modeColor;
+  final VoidCallback onDismiss;
+
+  const _AnimatedSnackBar({
+    required this.prayerName,
+    required this.modeText,
+    required this.modeIcon,
+    required this.modeColor,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_AnimatedSnackBar> createState() => _AnimatedSnackBarState();
+}
+
+class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: -100,
+      end: 0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 100,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _slideAnimation.value),
+              child: Opacity(
+                opacity: _fadeAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: widget.modeColor.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.modeColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.modeIcon, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${widget.prayerName}: ${widget.modeText}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

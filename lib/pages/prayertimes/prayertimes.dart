@@ -1358,6 +1358,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                         ),
                       // Time
                       Container(
+                        width: 85, // Fixed width to keep audio buttons aligned
                         padding: EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 8,
@@ -1371,18 +1372,20 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                   : colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          prayer['time'] ?? '--:--',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color:
-                                isNextPrayer
-                                    ? Colors.orange.shade700
-                                    : isPassed
-                                    ? Colors.grey.shade600
-                                    : colorScheme.primary,
-                            letterSpacing: 0.5,
+                        child: Center(
+                          child: Text(
+                            prayer['time'] ?? '--:--',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color:
+                                  isNextPrayer
+                                      ? Colors.orange.shade700
+                                      : isPassed
+                                      ? Colors.grey.shade600
+                                      : colorScheme.primary,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),

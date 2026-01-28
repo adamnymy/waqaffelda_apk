@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../navbar.dart';
 import '../homepage/homepage.dart';
 import '../waqaf/waqafpage.dart';
-import '../inbox/inboxpage.dart';
+import '../kedai/kedai.dart';
 import '../akaun/akaunpage.dart';
 import 'peluang_bersama_tab.dart';
 import 'agihan_manfaat_tab.dart';

@@ -4,7 +4,7 @@ import '../../main.dart';
 import '../homepage/homepage.dart';
 import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
-import '../inbox/inboxpage.dart';
+import '../kedai/kedai.dart';
 import 'tentang_kami.dart';
 
 //test

@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
-import '../inbox/inboxpage.dart';
+import '../kedai/kedai.dart';
 import '../akaun/akaunpage.dart';
 import 'package:flutter/services.dart';
 

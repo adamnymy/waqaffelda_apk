@@ -168,7 +168,7 @@ class OthersMenuPage extends StatelessWidget {
                   description: 'Kalendar Hijriah dengan peristiwa penting Islam',
                   icon: Icons.calendar_month_rounded,
                   iconBgColor: const Color(0xFFFBC02D),
-                  page: const KalendarIslamPage(),
+                  page: const CombinedCalendarPage(),
                 ),
                 
                 const SizedBox(height: 20),

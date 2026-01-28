@@ -53,19 +53,139 @@ void _callbackDispatcher() {
         '✅ FlutterLocalNotificationsPlugin initialized in WorkManager',
       );
 
-      // Create notification details
-      final androidDetails = AndroidNotificationDetails(
-        channelId,
-        'Prayer Notifications',
-        channelDescription: 'Prayer time notifications',
-        importance: Importance.high,
-        priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        enableVibration: true,
-        playSound: true,
-        showWhen: true,
-      );
+      // Create notification channel if needed (WorkManager context)
+      // Extract sound mode from channelId (format: prayer_xxx_soundmode)
+      final soundMode =
+          channelId
+              .split('_')
+              .last; // e.g., 'azan', 'beep', 'vibrate', 'silent'
+
+      AndroidNotificationChannel? channel;
+      if (soundMode == 'azan') {
+        channel = AndroidNotificationChannel(
+          channelId,
+          'Prayer Notifications - Azan',
+          description: 'Prayer time notifications with azan',
+          importance: Importance.high,
+          enableVibration: true,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound('azan'),
+          showBadge: true,
+        );
+      } else if (soundMode == 'beep') {
+        channel = AndroidNotificationChannel(
+          channelId,
+          'Prayer Notifications - Beep',
+          description: 'Prayer time notifications with beep',
+          importance: Importance.high,
+          enableVibration: true,
+          playSound: true,
+          showBadge: true,
+        );
+      } else if (soundMode == 'vibrate') {
+        channel = AndroidNotificationChannel(
+          channelId,
+          'Prayer Notifications - Vibrate',
+          description: 'Prayer time notifications with vibration only',
+          importance: Importance.high,
+          enableVibration: true,
+          playSound: false,
+          showBadge: true,
+        );
+      } else if (soundMode == 'silent') {
+        channel = AndroidNotificationChannel(
+          channelId,
+          'Prayer Notifications - Silent',
+          description: 'Silent prayer time notifications',
+          importance: Importance.high,
+          enableVibration: false,
+          playSound: false,
+          showBadge: true,
+        );
+      }
+
+      // Create the channel if it doesn't exist
+      if (channel != null) {
+        await notifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.createNotificationChannel(channel);
+        debugPrint(
+          '✅ Created notification channel in WorkManager: ${channel.id}',
+        );
+      }
+
+      // Create notification details with sound configuration
+      AndroidNotificationDetails androidDetails;
+      if (soundMode == 'azan') {
+        androidDetails = AndroidNotificationDetails(
+          channelId,
+          'Prayer Notifications',
+          channelDescription: 'Prayer time notifications with azan',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          enableVibration: true,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound('azan'),
+          showWhen: true,
+        );
+      } else if (soundMode == 'beep') {
+        androidDetails = AndroidNotificationDetails(
+          channelId,
+          'Prayer Notifications',
+          channelDescription: 'Prayer time notifications with beep',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          enableVibration: true,
+          playSound: true,
+          showWhen: true,
+        );
+      } else if (soundMode == 'vibrate') {
+        androidDetails = AndroidNotificationDetails(
+          channelId,
+          'Prayer Notifications',
+          channelDescription: 'Prayer time notifications with vibration only',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          enableVibration: true,
+          playSound: false,
+          showWhen: true,
+        );
+      } else if (soundMode == 'silent') {
+        androidDetails = AndroidNotificationDetails(
+          channelId,
+          'Prayer Notifications',
+          channelDescription: 'Silent prayer time notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          enableVibration: false,
+          playSound: false,
+          showWhen: true,
+        );
+      } else {
+        // Default fallback
+        androidDetails = AndroidNotificationDetails(
+          channelId,
+          'Prayer Notifications',
+          channelDescription: 'Prayer time notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          enableVibration: true,
+          playSound: true,
+          showWhen: true,
+        );
+      }
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
@@ -261,15 +381,26 @@ Future<void> _scheduleFromCachedPrayerTimes() async {
           final bgBody =
               'Telah masuk waktu solat fardhu $prayerName pada $timeString';
 
+          // Get individual prayer's sound mode
+          final soundMode =
+              prefs.getString('sound_mode_${prayerName.toLowerCase()}') ??
+              'beep';
+          final baseChannelId =
+              NotificationService.prayerConfig[prayerName]?['channelId'] ??
+              'prayer_default';
+          final channelIdWithMode = '${baseChannelId}_$soundMode';
+
+          debugPrint(
+            '  📱 Scheduling $prayerName with mode: $soundMode → $channelIdWithMode',
+          );
+
           await Workmanager().registerOneOffTask(
             'bg_prayer_${prayerName.toLowerCase()}_day${dayOffset}_${tzNow.millisecondsSinceEpoch}',
             'showPrayerNotification',
             inputData: {
               'title': bgTitle,
               'body': bgBody,
-              'channelId':
-                  NotificationService.prayerConfig[prayerName]?['channelId'] ??
-                  'prayer_default',
+              'channelId': channelIdWithMode,
               'scheduledAt': parsedTime.toUtc().toIso8601String(),
             },
             initialDelay: Duration(seconds: delaySeconds),
@@ -505,7 +636,7 @@ class NotificationService {
     );
 
     // Create notification channels for Android
-    await _createNotificationChannels();
+    await createNotificationChannels();
 
     // Initialize WorkManager for background tasks
     await Workmanager().initialize(
@@ -706,25 +837,103 @@ class NotificationService {
   }
 
   /// Create separate notification channels for each prayer
-  Future<void> _createNotificationChannels() async {
+  Future<void> createNotificationChannels() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    debugPrint('🔔 Creating notification channels for all prayers');
+
     for (var entry in prayerConfig.entries) {
+      final prayerName = entry.key; // e.g., 'Subuh', 'Zohor'
       final config = entry.value;
-      final androidChannel = AndroidNotificationChannel(
-        config['channelId'],
-        config['channelName'],
-        description: 'Notifikasi untuk ${config['channelName']}',
-        importance: Importance.high,
-        enableVibration: true,
-        playSound: true,
-        showBadge: true,
-      );
+      final baseChannelId = config['channelId'];
+
+      // Get individual prayer sound mode
+      final soundMode =
+          prefs.getString('sound_mode_${prayerName.toLowerCase()}') ?? 'beep';
+      debugPrint('  📱 $prayerName: $soundMode');
+
+      // Create channel based on sound mode
+      AndroidNotificationChannel androidChannel;
+
+      switch (soundMode) {
+        case 'azan':
+          // Channel with custom azan sound
+          androidChannel = AndroidNotificationChannel(
+            '${baseChannelId}_azan',
+            '${config['channelName']} - Azan',
+            description:
+                'Notifikasi dengan azan untuk ${config['channelName']}',
+            importance: Importance.high,
+            enableVibration: true,
+            playSound: true,
+            sound: RawResourceAndroidNotificationSound('azan'),
+            showBadge: true,
+          );
+          break;
+
+        case 'beep':
+          // Channel with default system sound
+          androidChannel = AndroidNotificationChannel(
+            '${baseChannelId}_beep',
+            '${config['channelName']} - Bunyi',
+            description:
+                'Notifikasi dengan bunyi sistem untuk ${config['channelName']}',
+            importance: Importance.high,
+            enableVibration: true,
+            playSound: true,
+            showBadge: true,
+          );
+          break;
+
+        case 'vibrate':
+          // Channel with vibration only
+          androidChannel = AndroidNotificationChannel(
+            '${baseChannelId}_vibrate',
+            '${config['channelName']} - Getar',
+            description:
+                'Notifikasi getar sahaja untuk ${config['channelName']}',
+            importance: Importance.high,
+            enableVibration: true,
+            playSound: false,
+            showBadge: true,
+          );
+          break;
+
+        case 'silent':
+          // Channel with no sound, no vibration
+          androidChannel = AndroidNotificationChannel(
+            '${baseChannelId}_silent',
+            '${config['channelName']} - Senyap',
+            description: 'Notifikasi senyap untuk ${config['channelName']}',
+            importance: Importance.high,
+            enableVibration: false,
+            playSound: false,
+            showBadge: true,
+          );
+          break;
+
+        default:
+          // Fallback to beep
+          androidChannel = AndroidNotificationChannel(
+            baseChannelId,
+            config['channelName'],
+            description: 'Notifikasi untuk ${config['channelName']}',
+            importance: Importance.high,
+            enableVibration: true,
+            playSound: true,
+            showBadge: true,
+          );
+      }
 
       await _notifications
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
           >()
           ?.createNotificationChannel(androidChannel);
+
+      debugPrint('✅ Created channel: ${androidChannel.id}');
     }
+
     // Create a test channel used by scheduled test notifications
     final testChannel = AndroidNotificationChannel(
       'test_channel',
@@ -741,7 +950,7 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(testChannel);
-    debugPrint('✅ Notification channels created');
+    debugPrint('✅ All notification channels created for all prayers');
   }
 
   /// Request notification permission
@@ -1090,6 +1299,17 @@ class NotificationService {
       throw Exception('Unknown prayer: $prayerName');
     }
 
+    // Get sound mode for this prayer
+    final prefs = await SharedPreferences.getInstance();
+    final soundMode =
+        prefs.getString('sound_mode_${prayerName.toLowerCase()}') ?? 'beep';
+    final baseChannelId = config['channelId'];
+    final channelIdWithMode = '${baseChannelId}_$soundMode';
+
+    debugPrint(
+      '🔊 Scheduling $prayerName with sound mode: $soundMode → $channelIdWithMode',
+    );
+
     final now = tz.TZDateTime.now(tz.local);
     // Normalize time string to handle merged code variants
     final normalized = _normalizeTimeString(timeString);
@@ -1183,7 +1403,7 @@ class NotificationService {
         prayerName,
         dynamicTitle,
         dynamicBody,
-        config['channelId'],
+        channelIdWithMode,
       );
 
       if (success) {
@@ -1233,7 +1453,7 @@ class NotificationService {
         inputData: {
           'title': dynamicTitle,
           'body': dynamicBody,
-          'channelId': config['channelId'],
+          'channelId': channelIdWithMode,
           'scheduledAt': scheduledTime.toUtc().toIso8601String(),
         },
         initialDelay: Duration(seconds: delaySeconds),

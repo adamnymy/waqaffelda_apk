@@ -9,6 +9,7 @@ import '../../services/notification_service.dart';
 import '../../services/widget_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../homepage/homepage.dart';
+import '../settings/notification_settings_page.dart';
 import '../../utils/page_transitions.dart';
 
 import 'package:flutter/foundation.dart';
@@ -50,6 +51,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     'Isyak': true,
   };
 
+  // Track sound mode for each prayer
+  Map<String, String> soundModes = {
+    'Subuh': 'beep',
+    'Syuruk': 'beep',
+    'Zohor': 'beep',
+    'Asar': 'beep',
+    'Maghrib': 'beep',
+    'Isyak': 'beep',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +74,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     // Prayer times loading will trigger auto-schedule if needed
     _initializeNotifications();
     _loadPrayerTimes();
+    _loadSoundModes();
   }
 
   @override
@@ -186,6 +198,102 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       }
     } catch (e) {
       debugPrint('❌ Error checking reschedule: $e');
+    }
+  }
+
+  /// Load saved sound modes from SharedPreferences
+  Future<void> _loadSoundModes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        for (var prayer in soundModes.keys) {
+          soundModes[prayer] =
+              prefs.getString('sound_mode_${prayer.toLowerCase()}') ?? 'beep';
+        }
+      });
+      debugPrint('🔊 Loaded sound modes: $soundModes');
+    } catch (e) {
+      debugPrint('❌ Error loading sound modes: $e');
+    }
+  }
+
+  /// Toggle sound mode for a specific prayer
+  Future<void> _toggleSoundMode(String prayerName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentMode = soundModes[prayerName] ?? 'beep';
+
+      // Cycle through modes: azan -> beep -> silent -> azan
+      String newMode;
+      switch (currentMode) {
+        case 'azan':
+          newMode = 'beep';
+          break;
+        case 'beep':
+          newMode = 'silent';
+          break;
+        case 'silent':
+          newMode = 'azan';
+          break;
+        default:
+          newMode = 'beep';
+      }
+
+      // Save the new mode
+      await prefs.setString('sound_mode_${prayerName.toLowerCase()}', newMode);
+      setState(() {
+        soundModes[prayerName] = newMode;
+      });
+
+      // Show feedback immediately to avoid delay
+      if (mounted) {
+        String modeText;
+        IconData modeIcon;
+        Color modeColor;
+        switch (newMode) {
+          case 'azan':
+            modeText = 'Azan';
+            modeIcon = Icons.volume_up_rounded;
+            modeColor = Colors.deepPurple;
+            break;
+          case 'beep':
+            modeText = 'Bunyi';
+            modeIcon = Icons.notifications_active_rounded;
+            modeColor = Colors.blue;
+            break;
+          case 'silent':
+            modeText = 'Senyap';
+            modeIcon = Icons.volume_off_rounded;
+            modeColor = Colors.grey;
+            break;
+          default:
+            modeText = newMode;
+            modeIcon = Icons.volume_up_rounded;
+            modeColor = Colors.blue;
+        }
+
+        _showAnimatedSnackBar(prayerName, modeText, modeIcon, modeColor);
+      }
+
+      // Recreate notification channels with new sound mode
+      final notificationService = NotificationService();
+      await notificationService.createNotificationChannels();
+
+      // CRITICAL: Force reschedule notifications to use new sound mode
+      // Only reschedule if we're viewing today's prayers
+      if (_isToday() && prayerTimes.isNotEmpty) {
+        debugPrint(
+          '🔄 Rescheduling notifications with new sound mode for $prayerName',
+        );
+        await notificationService.forceReschedule(
+          prayerTimes,
+          locationName: locationName,
+        );
+      }
+
+      debugPrint('🔊 Toggled $prayerName: $currentMode -> $newMode');
+    } catch (e) {
+      debugPrint('❌ Error toggling sound mode: \$e');
     }
   }
 
@@ -537,6 +645,51 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
   }
 
+  /// Get icon based on current sound mode
+  IconData _getSoundIcon(String prayerName) {
+    final mode = soundModes[prayerName] ?? 'beep';
+    switch (mode) {
+      case 'azan':
+        return Icons.volume_up_rounded;
+      case 'beep':
+        return Icons.notifications_active_rounded;
+      case 'silent':
+        return Icons.volume_off_rounded;
+      default:
+        return Icons.volume_up_rounded;
+    }
+  }
+
+  /// Show animated pill-shaped snackbar at the top
+  void _showAnimatedSnackBar(
+    String prayerName,
+    String modeText,
+    IconData modeIcon,
+    Color modeColor,
+  ) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => _AnimatedSnackBar(
+        prayerName: prayerName,
+        modeText: modeText,
+        modeIcon: modeIcon,
+        modeColor: modeColor,
+        onDismiss: () => overlayEntry.remove(),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto dismiss after duration
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
+  }
+
   /// Schedule prayer time notifications
   Future<void> _scheduleNotifications() async {
     try {
@@ -670,51 +823,45 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_rounded, color: Colors.white),
-            onPressed: () {
-              // TODO: Navigate to settings page
-            },
-          ),
           _isRefreshing
               ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(3, (index) {
-                      return AnimatedBuilder(
-                        animation: _refreshAnimationController,
-                        builder: (context, child) {
-                          final delay = index * 0.2;
-                          final animValue = (_refreshAnimationController.value -
-                                  delay)
-                              .clamp(0.0, 1.0);
-                          final scale =
-                              0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(3, (index) {
+                        return AnimatedBuilder(
+                          animation: _refreshAnimationController,
+                          builder: (context, child) {
+                            final delay = index * 0.2;
+                            final animValue = (_refreshAnimationController.value -
+                                    delay)
+                                .clamp(0.0, 1.0);
+                            final scale =
+                                0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
 
-                          return Transform.scale(
-                            scale: scale,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                            return Transform.scale(
+                              scale: scale,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 2),
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
+                            );
+                          },
+                        );
+                      }),
+                    ),
                   ),
-                ),
-              )
+                )
               : IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                onPressed: _loadPrayerTimes,
-              ),
+                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                  onPressed: _loadPrayerTimes,
+                ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -1168,6 +1315,47 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                           ],
                         ),
                       ),
+                      // Sound Icon (Toggleable) - Hidden for Syuruk
+                      if (prayer['name'] != 'Syuruk')
+                        InkWell(
+                          onTap: () {
+                            _toggleSoundMode(prayer['name']);
+                          },
+                          onLongPress: () {
+                            // Long press opens settings page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const NotificationSettingsPage(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 8),
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color:
+                                  isNextPrayer
+                                      ? Colors.white.withOpacity(0.2)
+                                      : isPassed
+                                      ? Colors.grey.shade100
+                                      : colorScheme.primary.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              _getSoundIcon(prayer['name']),
+                              size: 18,
+                              color:
+                                  isNextPrayer
+                                      ? Colors.white
+                                      : isPassed
+                                      ? Colors.grey.shade400
+                                      : colorScheme.primary,
+                            ),
+                          ),
+                        ),
                       // Time
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -1560,6 +1748,121 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Custom animated snackbar widget
+class _AnimatedSnackBar extends StatefulWidget {
+  final String prayerName;
+  final String modeText;
+  final IconData modeIcon;
+  final Color modeColor;
+  final VoidCallback onDismiss;
+
+  const _AnimatedSnackBar({
+    required this.prayerName,
+    required this.modeText,
+    required this.modeIcon,
+    required this.modeColor,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_AnimatedSnackBar> createState() => _AnimatedSnackBarState();
+}
+
+class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: -100,
+      end: 0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 100,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _slideAnimation.value),
+              child: Opacity(
+                opacity: _fadeAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: widget.modeColor.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.modeColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.modeIcon, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${widget.prayerName}: ${widget.modeText}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

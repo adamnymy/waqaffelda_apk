@@ -1358,9 +1358,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                         ),
                       // Time
                       Container(
-                        width: 85, // Fixed width to keep audio buttons aligned
+                        width: 95, // Fixed width to fit AM/PM without wrapping
                         padding: EdgeInsets.symmetric(
-                          horizontal: 14,
+                          horizontal: 12,
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
@@ -1375,8 +1375,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                         child: Center(
                           child: Text(
                             prayer['time'] ?? '--:--',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               color:
                                   isNextPrayer
@@ -1384,7 +1386,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                                       : isPassed
                                       ? Colors.grey.shade600
                                       : colorScheme.primary,
-                              letterSpacing: 0.5,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ),

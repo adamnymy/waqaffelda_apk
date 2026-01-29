@@ -669,9 +669,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
   ) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
+    final GlobalKey<_AnimatedSnackBarState> snackbarKey = GlobalKey();
 
     overlayEntry = OverlayEntry(
       builder: (context) => _AnimatedSnackBar(
+        key: snackbarKey,
         prayerName: prayerName,
         modeText: modeText,
         modeIcon: modeIcon,
@@ -682,10 +684,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
 
     overlay.insert(overlayEntry);
 
-    // Auto dismiss after duration
-    Future.delayed(const Duration(milliseconds: 1800), () {
-      if (overlayEntry.mounted) {
-        overlayEntry.remove();
+    // Auto dismiss after duration with fade out animation
+    Future.delayed(const Duration(milliseconds: 1800), () async {
+      if (overlayEntry.mounted && snackbarKey.currentState != null) {
+        await snackbarKey.currentState!.dismiss();
+        if (overlayEntry.mounted) {
+          overlayEntry.remove();
+        }
       }
     });
   }
@@ -1768,12 +1773,13 @@ class _AnimatedSnackBar extends StatefulWidget {
   final VoidCallback onDismiss;
 
   const _AnimatedSnackBar({
+    Key? key,
     required this.prayerName,
     required this.modeText,
     required this.modeIcon,
     required this.modeColor,
     required this.onDismiss,
-  });
+  }) : super(key: key);
 
   @override
   State<_AnimatedSnackBar> createState() => _AnimatedSnackBarState();
@@ -1799,6 +1805,7 @@ class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInBack,
     ));
 
     _fadeAnimation = Tween<double>(
@@ -1807,9 +1814,15 @@ class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOut,
+      reverseCurve: Curves.easeIn,
     ));
 
     _controller.forward();
+  }
+
+  /// Trigger fade out animation
+  Future<void> dismiss() async {
+    await _controller.reverse();
   }
 
   @override

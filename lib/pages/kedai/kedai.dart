@@ -163,64 +163,8 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                           children: [
                             _buildFeatureItem(Icons.volunteer_activism_rounded, 'Produk Wakaf Eksklusif'),
                             const SizedBox(height: 16),
-                            _buildFeatureItem(Icons.local_shipping_rounded, 'Penghantaran Percuma'),
-                            const SizedBox(height: 16),
                             _buildFeatureItem(Icons.verified_rounded, 'Barangan Berkualiti'),
                           ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // Notify Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(Icons.notifications_active, color: Colors.white, size: 18),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Expanded(
-                                      child: Text(
-                                        'Anda akan dimaklumkan apabila kedai dibuka!',
-                                        style: TextStyle(fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                backgroundColor: const Color(0xFF11998E),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.all(16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF11998E),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            elevation: 0,
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.notifications_rounded, size: 20),
-                              SizedBox(width: 10),
-                              Text('Beritahu Saya', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
                         ),
                       ),
                       

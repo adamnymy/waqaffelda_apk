@@ -60,6 +60,7 @@ class _AkaunPageState extends State<AkaunPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -73,21 +74,24 @@ class _AkaunPageState extends State<AkaunPage> {
         ),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              // Bahagian Profil Pengguna
-              _buildProfileHeader(),
-              const SizedBox(height: 32),
-              // Menu Tetapan
-              _buildSettingsList(),
-              const SizedBox(height: 100),
-            ],
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                // Bahagian Profil Pengguna
+                _buildProfileHeader(),
+                const SizedBox(height: 32),
+                // Menu Tetapan
+                _buildSettingsList(),
+                const SizedBox(height: 100),
+              ],
+            ),
           ),
         ),
       ),

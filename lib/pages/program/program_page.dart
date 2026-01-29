@@ -82,7 +82,9 @@ class _ProgramPageState extends State<ProgramPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
+      extendBody: true,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             _buildHeader(),

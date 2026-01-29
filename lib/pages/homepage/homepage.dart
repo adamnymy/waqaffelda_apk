@@ -498,7 +498,7 @@ class _HomepageState extends State<Homepage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
-      extendBody: false,
+      extendBody: true,
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Stack(

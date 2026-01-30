@@ -512,7 +512,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Tambah Peristiwa',
+                        'Tambah Program',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -520,13 +520,31 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '${date.day}/${date.month}/${date.year}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
+                      Builder(builder: (context) {
+                        final h = HijriCalendar.fromDate(date);
+                        final hijriMonthName = _hijriMonths[h.hMonth - 1];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${date.day}/${date.month}/${date.year}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${h.hDay} $hijriMonthName ${h.hYear} H',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: const Color(0xFF00897B),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -536,7 +554,11 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
             TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: 'Tajuk peristiwa',
+                hintText: 'Tajuk program',
+                hintStyle: TextStyle(
+                  color: Colors.grey.shade400,
+                  fontSize: 14,
+                ),
                 filled: true,
                 fillColor: Colors.grey.shade50,
                 border: OutlineInputBorder(
@@ -556,50 +578,63 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
             ),
             const SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.pop(ctx),
+                  onPressed: () {
+                    controller.clear();
+                  },
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
-                  child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                  child: const Text('Reset', style: TextStyle(color: Colors.red)),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF00897B), Color(0xFF26A69A)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF00897B).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final text = controller.text.trim();
-                      if (text.isEmpty) return;
-                      setState(() {
-                        _events.putIfAbsent(dateKey, () => []).add(text);
-                      });
-                      _saveEvents();
-                      Navigator.pop(ctx);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
+                      child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF00897B), Color(0xFF26A69A)],
+                        ),
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00897B).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final text = controller.text.trim();
+                          if (text.isEmpty) return;
+                          setState(() {
+                            _events.putIfAbsent(dateKey, () => []).add(text);
+                          });
+                          _saveEvents();
+                          Navigator.pop(ctx);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Simpan', style: TextStyle(color: Colors.white)),
                       ),
                     ),
-                    child: const Text('Simpan', style: TextStyle(color: Colors.white)),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -869,17 +904,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                 children: [
                                   Icon(Icons.event, color: _showBuiltInHolidays ? const Color(0xFF00897B) : Colors.grey),
                                   const SizedBox(width: 12),
-                                  Text(_showBuiltInHolidays ? 'Sembunyikan Hari Islam' : 'Tunjukkan Hari Islam'),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'toggle_hijri_mode',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.swap_horiz, color: _hijriMode ? const Color(0xFF00897B) : Colors.grey),
-                                  const SizedBox(width: 12),
-                                  Text(_hijriMode ? 'Tunjukkan Bulan Gregorian' : 'Tunjukkan Mengikut Bulan Hijri'),
+                                  Text(_showBuiltInHolidays ? 'Sembunyikan Perayaan' : 'Tunjukkan Perayaan'),
                                 ],
                               ),
                             ),
@@ -890,7 +915,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                 children: [
                                   const Icon(Icons.delete_outline, color: Colors.red),
                                   const SizedBox(width: 12),
-                                  const Text('Reset peristiwa bulan ini'),
+                                  const Text('Reset program bulan ini'),
                                 ],
                               ),
                             ),
@@ -900,7 +925,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                 children: [
                                   const Icon(Icons.delete_forever, color: Colors.red),
                                   const SizedBox(width: 12),
-                                  const Text('Reset semua peristiwa'),
+                                  const Text('Reset semua program'),
                                 ],
                               ),
                             ),
@@ -974,15 +999,92 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        '${gregMonths[_displayed.month - 1]} ${_displayed.year}',
-                                        style: TextStyle(
-                                          fontSize: isMobile ? 16 : 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF00897B),
-                                          letterSpacing: 0.5,
-                                        ),
-                                        textAlign: TextAlign.center,
+                                      // Month and Year Dropdowns
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Month Dropdown
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: isMobile ? 10 : 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFF00897B).withOpacity(0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: DropdownButton<int>(
+                                              value: _displayed.month,
+                                              underline: const SizedBox(),
+                                              isDense: true,
+                                              style: TextStyle(
+                                                fontSize: isMobile ? 13 : 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFF00897B),
+                                              ),
+                                              items: List.generate(
+                                                12,
+                                                (index) => DropdownMenuItem<int>(
+                                                  value: index + 1,
+                                                  child: Text(gregMonths[index]),
+                                                ),
+                                              ),
+                                              onChanged: (month) {
+                                                if (month != null) {
+                                                  setState(() {
+                                                    _displayed = DateTime(_displayed.year, month, 1);
+                                                  });
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(width: isMobile ? 8 : 12),
+                                          // Year Dropdown
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: isMobile ? 10 : 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFF00897B).withOpacity(0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: DropdownButton<int>(
+                                              value: _displayed.year,
+                                              underline: const SizedBox(),
+                                              isDense: true,
+                                              style: TextStyle(
+                                                fontSize: isMobile ? 13 : 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFF00897B),
+                                              ),
+                                              items: List.generate(
+                                                21, // 10 years before and after current year
+                                                (index) {
+                                                  final year = DateTime.now().year - 10 + index;
+                                                  return DropdownMenuItem<int>(
+                                                    value: year,
+                                                    child: Text(year.toString()),
+                                                  );
+                                                },
+                                              ),
+                                              onChanged: (year) {
+                                                if (year != null) {
+                                                  setState(() {
+                                                    _displayed = DateTime(year, _displayed.month, 1);
+                                                  });
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       SizedBox(height: isMobile ? 4 : 6),
                                       Builder(builder: (context) {
@@ -1692,13 +1794,31 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '${date.day}/${date.month}/${date.year}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
+                      Builder(builder: (context) {
+                        final h = HijriCalendar.fromDate(date);
+                        final hijriMonthName = _hijriMonths[h.hMonth - 1];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${date.day}/${date.month}/${date.year}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${h.hDay} $hijriMonthName ${h.hYear} H',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: const Color(0xFF00897B),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -1768,7 +1888,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                     Icon(Icons.info_outline, color: Colors.grey.shade400),
                     const SizedBox(width: 12),
                     Text(
-                      'Tiada peristiwa.',
+                      'Tiada program.',
                       style: TextStyle(
                         color: Colors.grey.shade600,
                         fontSize: 15,

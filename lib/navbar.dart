@@ -117,12 +117,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isSelected 
-                  ? const Color(0xFF00897B) // Teal when selected
-                  : Colors.grey.shade300, // Grey when not selected
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutBack,
+              transform: Matrix4.translationValues(
+                0,
+                isSelected ? -4 : 0,
+                0,
+              ),
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                scale: isSelected ? 1.15 : 1.0,
+                child: Icon(
+                  icon,
+                  size: 22,
+                  color: isSelected 
+                      ? const Color(0xFF00897B) // Teal when selected
+                      : Colors.grey.shade300, // Grey when not selected
+                ),
+              ),
             ),
             const SizedBox(height: 1), // ✅ Dikecilkan dari 5 ke 1
             Text(

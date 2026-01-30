@@ -44,10 +44,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
         top: 10,
       ),
       child: Container(
-        height: 85,
+        height: 70,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(35),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),
@@ -64,14 +64,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(35),
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.grey.withOpacity(0.1),
                 width: 1.5,
               ),
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(35),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -117,46 +117,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutCubic,
-              width: isSelected ? 52 : 44,
-              height: isSelected ? 52 : 44,
-              decoration: BoxDecoration(
-                // ✅ FULL TEAL GRADIENT CIRCLE (no white center)
-                gradient: isSelected
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF26A69A), // Light Teal
-                          Color(0xFF00796B), // Dark Teal
-                        ],
-                      )
-                    : null,
-                color: isSelected ? null : Colors.transparent,
-                shape: BoxShape.circle,
-                // ✅ SUBTLE TEAL SHADOW
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF00897B).withOpacity(0.25),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: isSelected 
-                      ? Colors.white // ✅ WHITE icon when selected
-                      : Colors.grey.shade300, // Grey when not selected
-                ),
-              ),
+            Icon(
+              icon,
+              size: 22,
+              color: isSelected 
+                  ? const Color(0xFF00897B) // Teal when selected
+                  : Colors.grey.shade300, // Grey when not selected
             ),
             const SizedBox(height: 1), // ✅ Dikecilkan dari 5 ke 1
             Text(

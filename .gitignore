@@ -46,3 +46,6 @@ app.*.map.json
 
 # Keystore properties (do not commit secrets)
 android/key.properties
+
+# Firebase config (do not commit)
+android/app/google-services.json

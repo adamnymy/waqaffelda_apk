@@ -151,55 +151,6 @@ flutter build appbundle --release
 
 ---
 
-## 🏗️ Architecture
-
-```
-lib/
-├── main.dart                 # App entry point
-├── navbar.dart              # Bottom navigation
-├── splash_screen.dart       # Splash screen
-├── auth/                    # Authentication
-│   └── login_page.dart     # Login screen
-├── models/                  # Data models
-│   ├── quran_models.dart   # Quran data structures
-│   └── tahlil_model.dart   # Tahlil/Yasin models
-├── pages/                   # App screens
-│   ├── homepage/           # Main dashboard
-│   ├── prayertimes/        # Prayer times page
-│   ├── kiblat/             # Qiblah compass
-│   ├── masjid_terdekat/    # Nearby mosques
-│   ├── quran/              # Quran reader
-│   ├── hadis40/            # 40 Hadith Nawawi
-│   ├── doaharian/          # Daily prayers (Doa)
-│   ├── tahlil/             # Tahlil & Yasin
-│   ├── program/            # Islamic programs & events
-│   ├── waqaf/              # Waqf donations
-│   ├── kedai/              # Store/Shop
-│   ├── kalendar/           # Islamic calendar
-│   ├── akaun/              # Account/Profile
-│   ├── settings/           # App settings
-│   └── zikircounter/       # Digital tasbih counter
-├── services/                # Business logic
-│   ├── prayer_times_service.dart
-│   ├── notification_service.dart
-│   ├── quran_service.dart
-│   ├── tahlil_service.dart
-│   └── widget_service.dart  # Home widget service
-├── utils/                   # Utilities
-│   └── page_transitions.dart
-├── widgets/                 # Reusable components
-│   └── google_maps_location_picker.dart
-└── assets/                  # Static assets
-    ├── data/               # JSON data files
-    ├── icons/              # SVG icons
-    ├── images/             # Images
-    ├── fonts/              # Custom fonts (Inter)
-    ├── audio/              # Audio files
-    └── quran/              # Quran metadata
-```
-
----
-
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:

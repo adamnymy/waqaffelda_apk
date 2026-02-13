@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../models/tahlil_model.dart';
 import '../../services/tahlil_service.dart';
 
+/// Tahlil & Yasin Page
+/// Displays complete Tahlil and Yasin prayers with navigation
+/// Features: section navigation, zikir counter, page sliding
 class TahlilPage extends StatefulWidget {
   const TahlilPage({super.key});
 
@@ -34,6 +37,8 @@ class _TahlilPageState extends State<TahlilPage> {
     super.dispose();
   }
 
+  /// Loads Tahlil and Yasin data from JSON file
+  /// Creates keys for each section for navigation
   Future<void> _loadData() async {
     try {
       final data = await TahlilService.loadTahlilData();
@@ -53,6 +58,8 @@ class _TahlilPageState extends State<TahlilPage> {
     }
   }
 
+  /// Scrolls to specific section using PageController
+  /// Used by table of contents for navigation
   void _scrollToSection(int index) {
     if (_tahlilData == null ||
         index < 0 ||

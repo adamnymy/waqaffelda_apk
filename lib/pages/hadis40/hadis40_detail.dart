@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
+/// Hadith Detail Page
+/// Displays full hadith with Arabic text and Malay translation
+/// Features: adjustable font size, formatted Arabic text
 class HadisDetailPage extends StatefulWidget {
   final Map<String, dynamic> hadis;
   final List<Color> colorSet;
@@ -131,6 +134,8 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
     );
   }
 
+  /// Builds title card showing hadith title, reference, and narrator
+  /// Displays with white background and shadow
   Widget _buildTitleCard() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -215,6 +220,8 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
     );
   }
 
+  /// Builds Arabic text section with yellow gradient background
+  /// Displays right-to-left Arabic text with Amiri font
   Widget _buildArabicSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,6 +295,8 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
     );
   }
 
+  /// Builds translation section with teal header
+  /// Shows Malay translation of the hadith
   Widget _buildTranslationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,6 +358,8 @@ class _HadisDetailPageState extends State<HadisDetailPage> {
     );
   }
 
+  /// Converts regular numbers to Arabic-Indic numerals
+  /// Used in the app bar badge
   String _toArabicNumber(int number) {
     const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return number

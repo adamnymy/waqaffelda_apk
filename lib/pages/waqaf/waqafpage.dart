@@ -5,6 +5,9 @@ import '../program/program_page.dart';
 import '../kedai/kedai.dart';
 import '../akaun/akaunpage.dart';
 
+/// Waqaf Page - Coming Soon
+/// Placeholder for future waqaf (endowment) features
+/// Shows "Coming Soon" message with planned features
 class WaqafPage extends StatefulWidget {
   const WaqafPage({Key? key}) : super(key: key);
 
@@ -12,7 +15,8 @@ class WaqafPage extends StatefulWidget {
   _WaqafPageState createState() => _WaqafPageState();
 }
 
-class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMixin {
+class _WaqafPageState extends State<WaqafPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 2;
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
@@ -24,7 +28,7 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
       duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
@@ -36,6 +40,8 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
     super.dispose();
   }
 
+  /// Handles bottom navigation bar taps
+  /// Navigates between main app pages
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
 
@@ -119,9 +125,19 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('WAQAF FELDA', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        Text(
+                          'WAQAF FELDA',
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
                         SizedBox(height: 4),
-                        Text('Wakaf Saya', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Wakaf Saya',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                     Container(
@@ -130,12 +146,16 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.volunteer_activism_rounded, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.volunteer_activism_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ],
                 ),
               ),
-              
+
               // Coming Soon Content
               Expanded(
                 child: SingleChildScrollView(
@@ -144,7 +164,7 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Animated Icon
                       ScaleTransition(
                         scale: _pulseAnimation,
@@ -169,12 +189,15 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Status Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(30),
@@ -202,9 +225,9 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Main Title
                       const Text(
                         'Akan Datang',
@@ -215,9 +238,9 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                           letterSpacing: 0.5,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Description Text - Enhanced
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -238,15 +261,16 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                                 ),
                               ),
                               TextSpan(
-                                text: ' — pantau sumbangan wakaf anda dan lihat impak kebaikan yang telah anda lakukan.',
+                                text:
+                                    ' — pantau sumbangan wakaf anda dan lihat impak kebaikan yang telah anda lakukan.',
                               ),
                             ],
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Feature Preview Cards - No border
                       Container(
                         padding: const EdgeInsets.all(18),
@@ -256,17 +280,29 @@ class _WaqafPageState extends State<WaqafPage> with SingleTickerProviderStateMix
                         ),
                         child: Column(
                           children: [
-                            _buildFeatureItem(Icons.history_rounded, 'Sejarah Sumbangan Wakaf'),
+                            _buildFeatureItem(
+                              Icons.history_rounded,
+                              'Sejarah Sumbangan Wakaf',
+                            ),
                             const SizedBox(height: 12),
-                            _buildFeatureItem(Icons.pie_chart_rounded, 'Statistik & Rekod'),
+                            _buildFeatureItem(
+                              Icons.pie_chart_rounded,
+                              'Statistik & Rekod',
+                            ),
                             const SizedBox(height: 12),
-                            _buildFeatureItem(Icons.emoji_events_rounded, 'Ganjaran & Pencapaian'),
+                            _buildFeatureItem(
+                              Icons.emoji_events_rounded,
+                              'Ganjaran & Pencapaian',
+                            ),
                             const SizedBox(height: 12),
-                            _buildFeatureItem(Icons.receipt_long_rounded, 'Sijil Wakaf Digital'),
+                            _buildFeatureItem(
+                              Icons.receipt_long_rounded,
+                              'Sijil Wakaf Digital',
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 100),
                     ],
                   ),

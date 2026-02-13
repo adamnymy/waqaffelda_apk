@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'hadis40_detail.dart';
 
 import 'package:flutter/foundation.dart';
+
+/// 40 Hadith Nawawi Page
+/// Displays list of 40 famous hadiths with filtering and search
+/// Features: category filter, font size adjustment, Arabic numbering
 class Hadis40Page extends StatefulWidget {
   const Hadis40Page({Key? key}) : super(key: key);
 
@@ -39,6 +43,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     super.dispose();
   }
 
+  /// Loads hadith data from JSON file in assets
+  /// Parses and animates the display after loading
   Future<void> _loadHadis() async {
     try {
       final String response = await rootBundle.loadString(
@@ -150,6 +156,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
+  /// Builds horizontal filter chips for hadith number ranges
+  /// Allows filtering by ranges: Semua, 1-10, 11-20, 21-30, 31-42
   Widget _buildFilterChips() {
     final filters = ['Semua', '1-10', '11-20', '21-30', '31-42'];
 
@@ -199,6 +207,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
+  /// Builds loading indicator with circular progress
+  /// Shown while data is being fetched from JSON
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -239,6 +249,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
+  /// Builds the main list of hadith cards with fade animation
+  /// Displays filtered hadith based on selected category
   Widget _buildHadisList() {
     final filteredList = _getFilteredHadis();
 
@@ -254,6 +266,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
+  /// Filters hadith list based on selected range
+  /// Returns all hadith if 'Semua' selected, otherwise filters by number range
   List<Map<String, dynamic>> _getFilteredHadis() {
     if (selectedFilter == 'Semua') return hadisList;
 
@@ -273,6 +287,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     }).toList();
   }
 
+  /// Builds individual hadith card with glassmorphic design
+  /// Shows hadith number, title, narrator, and reference
   Widget _buildGlassMorphicCard(Map<String, dynamic> hadis, int index) {
     final colors = [
       [const Color(0xFF00897B), const Color(0xFF4DB6AC)],
@@ -454,6 +470,8 @@ class _Hadis40PageState extends State<Hadis40Page>
     );
   }
 
+  /// Converts regular numbers to Arabic-Indic numerals
+  /// Used to display hadith numbers in Arabic style
   String _toArabicNumber(int number) {
     const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return number

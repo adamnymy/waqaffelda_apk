@@ -10,6 +10,9 @@ import 'package:geocoding/geocoding.dart';
 
 import 'package:flutter/foundation.dart';
 
+/// Nearby Mosques Finder Page
+/// Shows mosques on Google Maps near user location
+/// Features: distance calculation, directions, search radius filter
 class MasjidTerdekatPage extends StatefulWidget {
   const MasjidTerdekatPage({Key? key}) : super(key: key);
 
@@ -59,6 +62,8 @@ class _MasjidTerdekatPageState extends State<MasjidTerdekatPage>
     super.dispose();
   }
 
+  /// Initializes user location and requests necessary permissions
+  /// Fetches current position to display on map
   Future<void> _initLocation() async {
     setState(() {
       _isLoading = true;

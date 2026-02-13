@@ -70,13 +70,21 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       vsync: this,
     )..repeat();
     _setCurrentDate();
+    // ========================================
+    // DO NOT TOUCH THIS CODE
     // Initialize notifications first, then load prayer times
-    // Prayer times loading will trigger auto-schedule if needed
+    // CRITICAL: Prayer times loading will trigger auto-schedule if needed
+    // ========================================
     _initializeNotifications();
     _loadPrayerTimes();
     _loadSoundModes();
   }
 
+  // ========================================
+  // DO NOT TOUCH THIS CODE
+  // Lifecycle handler - CRITICAL for date change detection
+  // Reschedules notifications when app resumes if date has changed
+  // ========================================
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -88,7 +96,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     }
   }
 
+  /// ========================================
+  /// DO NOT TOUCH THIS CODE
   /// Check and reschedule notifications if date changed
+  /// CRITICAL: Ensures notifications stay accurate when date changes
+  /// Builds 7-day prayer schedule with accurate times
+  /// ========================================
   Future<void> _checkAndReschedule() async {
     if (prayerTimes.isEmpty) return;
 
@@ -672,14 +685,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
     final GlobalKey<_AnimatedSnackBarState> snackbarKey = GlobalKey();
 
     overlayEntry = OverlayEntry(
-      builder: (context) => _AnimatedSnackBar(
-        key: snackbarKey,
-        prayerName: prayerName,
-        modeText: modeText,
-        modeIcon: modeIcon,
-        modeColor: modeColor,
-        onDismiss: () => overlayEntry.remove(),
-      ),
+      builder:
+          (context) => _AnimatedSnackBar(
+            key: snackbarKey,
+            prayerName: prayerName,
+            modeText: modeText,
+            modeIcon: modeIcon,
+            modeColor: modeColor,
+            onDismiss: () => overlayEntry.remove(),
+          ),
     );
 
     overlay.insert(overlayEntry);
@@ -830,43 +844,43 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
         actions: [
           _isRefreshing
               ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(3, (index) {
-                        return AnimatedBuilder(
-                          animation: _refreshAnimationController,
-                          builder: (context, child) {
-                            final delay = index * 0.2;
-                            final animValue = (_refreshAnimationController.value -
-                                    delay)
-                                .clamp(0.0, 1.0);
-                            final scale =
-                                0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (index) {
+                      return AnimatedBuilder(
+                        animation: _refreshAnimationController,
+                        builder: (context, child) {
+                          final delay = index * 0.2;
+                          final animValue = (_refreshAnimationController.value -
+                                  delay)
+                              .clamp(0.0, 1.0);
+                          final scale =
+                              0.5 + (0.5 * (1 - (animValue * 2 - 1).abs()));
 
-                            return Transform.scale(
-                              scale: scale,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 2),
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
+                          return Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
                               ),
-                            );
-                          },
-                        );
-                      }),
-                    ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
                   ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                  onPressed: _loadPrayerTimes,
                 ),
+              )
+              : IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                onPressed: _loadPrayerTimes,
+              ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -1332,7 +1346,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (context) => const NotificationSettingsPage(),
+                                    (context) =>
+                                        const NotificationSettingsPage(),
                               ),
                             );
                           },
@@ -1799,23 +1814,21 @@ class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
       vsync: this,
     );
 
-    _slideAnimation = Tween<double>(
-      begin: -100,
-      end: 0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-      reverseCurve: Curves.easeInBack,
-    ));
+    _slideAnimation = Tween<double>(begin: -100, end: 0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+        reverseCurve: Curves.easeInBack,
+      ),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-      reverseCurve: Curves.easeIn,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
 
     _controller.forward();
   }
@@ -1843,10 +1856,7 @@ class _AnimatedSnackBarState extends State<_AnimatedSnackBar>
           builder: (context, child) {
             return Transform.translate(
               offset: Offset(0, _slideAnimation.value),
-              child: Opacity(
-                opacity: _fadeAnimation.value,
-                child: child,
-              ),
+              child: Opacity(opacity: _fadeAnimation.value, child: child),
             );
           },
           child: Material(

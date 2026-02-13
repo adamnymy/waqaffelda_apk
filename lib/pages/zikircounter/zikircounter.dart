@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Digital Zikir Counter Page
+/// Interactive counter for Islamic remembrance (zikir)
+/// Features: preset zikir, custom zikir, target setting, haptic feedback
 class ZikirCounterPage extends StatefulWidget {
   const ZikirCounterPage({Key? key}) : super(key: key);
 
@@ -70,6 +73,8 @@ class _ZikirCounterPageState extends State<ZikirCounterPage>
     }
   }
 
+  /// Selects a zikir type and resets counter
+  /// Updates display with chosen Arabic text and translation
   void _selectZikir(String zikir, String translation) {
     setState(() {
       _currentZikir = zikir;

@@ -24,13 +24,17 @@ import 'widgets/ayat_hari_ini_widget.dart';
 // Utils
 import 'utils/prayer_helpers.dart';
 
+/// Main Homepage
+/// Displays prayer times, Quran tracker, menu grid, and Islamic content
+/// Features: prayer countdown, location-based times, notifications
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
 
   @override
   _HomepageState createState() => _HomepageState();
 
-  // ✅ Static method to save Quran progress
+  /// Saves user's Quran reading progress to SharedPreferences
+  /// Used by Quran page to track last read surah and ayah
   static Future<void> saveQuranProgress({
     required int surahNumber,
     required int ayahNumber,

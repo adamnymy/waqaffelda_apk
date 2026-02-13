@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// About Us Page
+/// Displays information about WAQAF FELDA and the Waqafer app
+/// Shows logo, mission, features, and contact information
 class TentangKamiPage extends StatelessWidget {
   const TentangKamiPage({Key? key}) : super(key: key);
 
@@ -20,7 +23,11 @@ class TentangKamiPage extends StatelessWidget {
               color: const Color(0xFF4DB6AC).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4DB6AC), size: 20),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              color: Color(0xFF4DB6AC),
+              size: 20,
+            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -92,7 +99,7 @@ class TentangKamiPage extends StatelessWidget {
 
                   // Contact Section
                   _buildContactSection(),
-                  
+
                   SizedBox(height: screenHeight * 0.03),
                 ],
               ),
@@ -103,6 +110,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds the main about card with WAQAF FELDA mission statement
+  /// Displayed with gradient teal background
   Widget _buildMainAboutCard() {
     return Container(
       width: double.infinity,
@@ -111,10 +120,7 @@ class TentangKamiPage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF4DB6AC),
-            const Color(0xFF26A69A),
-          ],
+          colors: [const Color(0xFF4DB6AC), const Color(0xFF26A69A)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -127,11 +133,7 @@ class TentangKamiPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.info_rounded,
-            size: 32,
-            color: Colors.white,
-          ),
+          const Icon(Icons.info_rounded, size: 32, color: Colors.white),
           const SizedBox(height: 20),
           Text(
             'WAQAF FELDA bertujuan memupuk budaya memberi dan kebersamaan dalam kalangan peneroka, serta mewujudkan kuasa ekonomi ketiga berasaskan kesukarelawanan.',
@@ -144,11 +146,7 @@ class TentangKamiPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 1,
-            width: 60,
-            color: Colors.white.withOpacity(0.4),
-          ),
+          Container(height: 1, width: 60, color: Colors.white.withOpacity(0.4)),
           const SizedBox(height: 16),
           Text(
             'Melalui konsep Wakaf Korporat, WAQAF FELDA menyalurkan pelbagai manfaat bukan sahaja untuk kebajikan, malah sedekah jariah yang memberi keberkatan kepada warga FELDA dan masyarakat Malaysia.',
@@ -165,6 +163,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds card highlighting the real-time notification feature
+  /// Shows notification icon and feature description
   Widget _buildRealtimeNotificationCard() {
     return Container(
       width: double.infinity,
@@ -224,6 +224,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds card explaining what the Waqafer mobile app is
+  /// Contains app description and purpose
   Widget _buildWaqaferCard() {
     return Container(
       width: double.infinity,
@@ -282,6 +284,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds card displaying app version, copyright, and establishment year
+  /// Shows information in rows with icons
   Widget _buildAppInfoCard() {
     return Container(
       width: double.infinity,
@@ -328,6 +332,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds a single information row with icon, label, and value
+  /// Used in app info card to display details
   Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
     return Row(
       children: [
@@ -370,6 +376,8 @@ class TentangKamiPage extends StatelessWidget {
     );
   }
 
+  /// Builds contact section with email address
+  /// Displayed with dark background at the bottom
   Widget _buildContactSection() {
     return Container(
       width: double.infinity,
@@ -387,11 +395,7 @@ class TentangKamiPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.email_rounded,
-            size: 36,
-            color: Colors.white,
-          ),
+          const Icon(Icons.email_rounded, size: 36, color: Colors.white),
           const SizedBox(height: 12),
           const Text(
             'Hubungi Kami',

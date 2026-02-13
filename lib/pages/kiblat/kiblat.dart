@@ -9,6 +9,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// Qibla Direction Finder Page
+/// Shows compass pointing to Kaaba in Mecca
+/// Features: real-time compass, distance calculation, calibration guide
 class KiblatPage extends StatefulWidget {
   const KiblatPage({Key? key}) : super(key: key);
 
@@ -43,7 +46,8 @@ class _KiblatPageState extends State<KiblatPage> {
     _init();
   }
 
-  /// Smooth heading using moving average to reduce jitter
+  /// Smooths compass heading using moving average to reduce jitter
+  /// Uses circular mean to handle 0°/360° boundary correctly
   double _smoothHeading(double newHeading) {
     // Add new reading to history
     _headingHistory.add(newHeading);
@@ -84,7 +88,8 @@ class _KiblatPageState extends State<KiblatPage> {
     return diff.abs() >= _minHeadingChange;
   }
 
-  // Start compass subscription only after location is obtained
+  /// Starts listening to compass sensor updates
+  /// Only works on Android/iOS devices with compass hardware
   void _startCompassSubscription() {
     // Guard: Only subscribe to compass on mobile platforms
     if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {

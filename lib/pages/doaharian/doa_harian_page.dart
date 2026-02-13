@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
+/// Daily Prayers (Doa Harian) Page
+/// Displays a list of daily Islamic prayers with Arabic text and Malay translation
+/// Features: search, category filtering, and favorites
 class DoaHarianPage extends StatefulWidget {
   const DoaHarianPage({Key? key}) : super(key: key);
 
@@ -38,6 +41,8 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     super.dispose();
   }
 
+  /// Loads doa data from JSON file in assets
+  /// Parses and converts data to list of doa objects
   Future<void> _loadDoaData() async {
     try {
       setState(() {
@@ -77,6 +82,8 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     }
   }
 
+  /// Converts string icon name to IconData
+  /// Maps icon names from JSON to Flutter Material icons
   IconData _getIconFromString(String iconName) {
     switch (iconName) {
       case 'wb_sunny':
@@ -104,6 +111,8 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     }
   }
 
+  /// Converts string color name to Color object
+  /// Maps color names from JSON to Flutter Color values
   Color _getColorFromString(String colorName) {
     switch (colorName) {
       case 'orange':
@@ -131,6 +140,8 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     }
   }
 
+  /// Returns filtered list of doa based on category and search query
+  /// Filters by selected category and search text
   List<Map<String, dynamic>> get _filteredDoaList {
     return _doaList.where((doa) {
       final matchesCategory =
@@ -144,6 +155,8 @@ class _DoaHarianPageState extends State<DoaHarianPage> {
     }).toList();
   }
 
+  /// Toggles favorite status for a doa
+  /// Adds or removes doa from favorites set
   void _toggleFavorite(String id) {
     setState(() {
       if (_favorites.contains(id)) {

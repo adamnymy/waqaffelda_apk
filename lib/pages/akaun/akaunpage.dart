@@ -7,7 +7,8 @@ import '../waqaf/waqafpage.dart';
 import '../kedai/kedai.dart';
 import 'tentang_kami.dart';
 
-//test
+/// Account/Profile Page
+/// Displays user information in guest mode and app information
 class AkaunPage extends StatefulWidget {
   const AkaunPage({Key? key}) : super(key: key);
 
@@ -16,9 +17,11 @@ class AkaunPage extends StatefulWidget {
 }
 
 class _AkaunPageState extends State<AkaunPage> {
-  int _currentIndex = 4; // Tetapkan indeks semasa untuk AkaunPage
+  int _currentIndex = 4; // Set current index for AkaunPage in bottom navigation
   final ScrollController _scrollController = ScrollController();
 
+  /// Handles bottom navigation bar tab taps
+  /// Navigates to different pages based on selected index
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
 
@@ -45,7 +48,8 @@ class _AkaunPageState extends State<AkaunPage> {
     }
   }
 
-  // Helper untuk mencipta route tanpa animasi
+  /// Creates a page route without transition animation
+  /// Used for smooth navigation between bottom nav pages
   PageRouteBuilder _createPageRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -104,7 +108,8 @@ class _AkaunPageState extends State<AkaunPage> {
     );
   }
 
-  // Widget untuk header profil
+  /// Builds the profile header section with gradient background
+  /// Displays guest mode icon and user status
   Widget _buildProfileHeader() {
     return Container(
       width: double.infinity,
@@ -169,7 +174,8 @@ class _AkaunPageState extends State<AkaunPage> {
     );
   }
 
-  // Widget untuk senarai menu
+  /// Builds the settings/menu list section
+  /// Contains app information and version details
   Widget _buildSettingsList() {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -223,7 +229,8 @@ class _AkaunPageState extends State<AkaunPage> {
     );
   }
 
-  // Widget untuk setiap item dalam senarai menu
+  /// Builds individual menu item card with icon, title, and subtitle
+  /// Navigates to respective page when tapped
   Widget _buildSettingsItem({
     required IconData icon,
     required String title,

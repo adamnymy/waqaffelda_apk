@@ -27,6 +27,9 @@ class AppColors {
 // PROGRAM PAGE - MAIN
 // ══════════════════════════════════════════════════════════════════════════════
 
+/// Programs Page with tabs
+/// Shows two tabs: "Peluang Bersama" and "Agihan Manfaat"
+/// Displays WAQAF FELDA programs and benefits distribution
 class ProgramPage extends StatefulWidget {
   const ProgramPage({Key? key}) : super(key: key);
 
@@ -53,6 +56,8 @@ class _ProgramPageState extends State<ProgramPage>
     super.dispose();
   }
 
+  /// Handles bottom navigation bar taps
+  /// Navigates between main app sections
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
     HapticFeedback.selectionClick();
@@ -92,10 +97,7 @@ class _ProgramPageState extends State<ProgramPage>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: const [
-                  PeluangBersamaTab(),
-                  AgihanManfaatTab(),
-                ],
+                children: const [PeluangBersamaTab(), AgihanManfaatTab()],
               ),
             ),
           ],
@@ -196,10 +198,7 @@ class _ProgramPageState extends State<ProgramPage>
                 const SizedBox(height: 2),
                 Text(
                   'Pilih program untuk menyumbang',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -249,11 +248,12 @@ class _ProgramPageState extends State<ProgramPage>
       child: AnimatedBuilder(
         animation: _tabController.animation!,
         builder: (context, child) {
-          final Color indicatorColor = Color.lerp(
-            const Color(0xFF00897B),
-            const Color(0xFFFFC107),
-            _tabController.animation!.value,
-          )!;
+          final Color indicatorColor =
+              Color.lerp(
+                const Color(0xFF00897B),
+                const Color(0xFFFFC107),
+                _tabController.animation!.value,
+              )!;
 
           return TabBar(
             controller: _tabController,
@@ -261,17 +261,18 @@ class _ProgramPageState extends State<ProgramPage>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: _tabController.animation!.value < 0.5
-                    ? [
-                        const Color(0xFF00897B),
-                        const Color(0xFF26A69A),
-                        const Color(0xFF4DB6AC),
-                      ]
-                    : [
-                        const Color(0xFFFFD93D),
-                        const Color(0xFFFFC107),
-                        const Color(0xFFFFB300),
-                      ],
+                colors:
+                    _tabController.animation!.value < 0.5
+                        ? [
+                          const Color(0xFF00897B),
+                          const Color(0xFF26A69A),
+                          const Color(0xFF4DB6AC),
+                        ]
+                        : [
+                          const Color(0xFFFFD93D),
+                          const Color(0xFFFFC107),
+                          const Color(0xFFFFB300),
+                        ],
               ),
               borderRadius: BorderRadius.circular(10),
               boxShadow: [

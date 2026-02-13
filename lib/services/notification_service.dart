@@ -12,7 +12,11 @@ import 'package:home_widget/home_widget.dart';
 import 'widget_service.dart';
 import 'prayer_times_service.dart';
 
-/// WorkManager callback dispatcher - must be a top-level function
+/// ========================================
+/// DO NOT TOUCH THIS CODE
+/// WorkManager callback dispatcher - CRITICAL for background notifications
+/// This must be a top-level function for Android WorkManager to function
+/// ========================================
 @pragma('vm:entry-point')
 void _callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
@@ -256,7 +260,11 @@ void _callbackDispatcher() {
   });
 }
 
+/// ========================================
+/// DO NOT TOUCH THIS CODE
 /// Fetch fresh prayer times from API and schedule WorkManager tasks for 7 days.
+/// CRITICAL: Background task that reschedules notifications at 11:50 PM daily
+/// ========================================
 @pragma('vm:entry-point')
 Future<void> _scheduleFromCachedPrayerTimes() async {
   try {
@@ -605,11 +613,15 @@ class NotificationService {
     return delay;
   }
 
-  /// Initialize notification service
+  /// ========================================
+  /// DO NOT TOUCH THIS CODE
+  /// Initialize notification service - CRITICAL startup sequence
+  /// Initializes timezone, WorkManager, notification channels, and daily reschedule task
+  /// ========================================
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Initialize timezone
+    // Initialize timezone - MUST use Asia/Kuala_Lumpur for Malaysian prayer times
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kuala_Lumpur'));
 
@@ -638,14 +650,21 @@ class NotificationService {
     // Create notification channels for Android
     await createNotificationChannels();
 
-    // Initialize WorkManager for background tasks
+    // ========================================
+    // DO NOT TOUCH THIS CODE
+    // Initialize WorkManager for background tasks - CRITICAL for 24-hour scheduling
+    // ========================================
     await Workmanager().initialize(
       _callbackDispatcher,
       isInDebugMode: false, // Production mode - no debug notifications
     );
 
+    // ========================================
+    // DO NOT TOUCH THIS CODE
     // Register daily background task to auto-reschedule prayer times
-    // This runs every 24 hours to schedule tomorrow's notifications
+    // This runs every 24 hours at 11:50 PM to schedule tomorrow's notifications
+    // CRITICAL: Without this, notifications won't work after midnight
+    // ========================================
     await Workmanager().registerPeriodicTask(
       'daily_rescheduler', // Unique task name
       'daily_rescheduler', // Task type (matches callback dispatcher)
@@ -836,7 +855,11 @@ class NotificationService {
     return _parseTimeString(timeStr);
   }
 
+  /// ========================================
+  /// DO NOT TOUCH THIS CODE
   /// Create separate notification channels for each prayer
+  /// CRITICAL: Creates channels with proper sound modes (azan, beep, vibrate, silent)
+  /// ========================================
   Future<void> createNotificationChannels() async {
     final prefs = await SharedPreferences.getInstance();
 

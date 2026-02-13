@@ -39,15 +39,23 @@ Future<ThemeMode> loadThemeMode() async {
   }
 }
 
+// ========================================
+// DO NOT TOUCH THIS CODE
+// Main app initialization - CRITICAL for notifications
+// ========================================
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Add this
-  WebViewPlatform.instance; // Add this
+  WidgetsFlutterBinding.ensureInitialized(); // Required for async operations
+  WebViewPlatform.instance; // Initialize WebView platform
 
   // Load saved theme mode
   final savedThemeMode = await loadThemeMode();
   appThemeMode.value = savedThemeMode;
 
+  // ========================================
+  // DO NOT TOUCH THIS CODE
   // Set up notification tap handler before initializing
+  // CRITICAL: Handles navigation when user taps notification
+  // ========================================
   NotificationService.onNotificationTapped = () {
     debugPrint('🔔 Notification tapped - navigating to Prayer Times page');
     // Use a delay to ensure the app UI is ready
@@ -63,7 +71,11 @@ void main() async {
     });
   };
 
+  // ========================================
+  // DO NOT TOUCH THIS CODE
   // Initialize notification service on app startup
+  // CRITICAL: Must be called before app starts for notifications to work
+  // ========================================
   try {
     final notificationService = NotificationService();
     await notificationService.initialize();

@@ -5,6 +5,9 @@ import '../program/program_page.dart';
 import '../waqaf/waqafpage.dart';
 import '../akaun/akaunpage.dart';
 
+/// Kedai (Store) Page - Coming Soon
+/// Placeholder page for future e-commerce features
+/// Shows "Coming Soon" message with planned features
 class InboxPage extends StatefulWidget {
   const InboxPage({Key? key}) : super(key: key);
 
@@ -12,7 +15,8 @@ class InboxPage extends StatefulWidget {
   _InboxPageState createState() => _InboxPageState();
 }
 
-class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMixin {
+class _InboxPageState extends State<InboxPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 3;
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
@@ -24,7 +28,7 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
@@ -36,15 +40,60 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
     super.dispose();
   }
 
+  /// Handles bottom navigation bar taps
+  /// Navigates between main app pages
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;
-    setState(() { _currentIndex = index; });
+    setState(() {
+      _currentIndex = index;
+    });
     switch (index) {
-      case 0: Navigator.pushReplacement(context, PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const Homepage(), transitionDuration: Duration.zero, reverseTransitionDuration: Duration.zero)); break;
-      case 1: Navigator.pushReplacement(context, PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const ProgramPage(), transitionDuration: Duration.zero, reverseTransitionDuration: Duration.zero)); break;
-      case 2: Navigator.pushReplacement(context, PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const WaqafPage(), transitionDuration: Duration.zero, reverseTransitionDuration: Duration.zero)); break;
-      case 3: break;
-      case 4: Navigator.pushReplacement(context, PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const AkaunPage(), transitionDuration: Duration.zero, reverseTransitionDuration: Duration.zero)); break;
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const Homepage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const ProgramPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const WaqafPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        break;
+      case 3:
+        break;
+      case 4:
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const AkaunPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        break;
     }
   }
 
@@ -74,9 +123,19 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('WAQAF FELDA', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        Text(
+                          'WAQAF FELDA',
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
                         SizedBox(height: 4),
-                        Text('Kedai', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Kedai',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                     Container(
@@ -85,12 +144,16 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.store_rounded, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.store_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ],
                 ),
               ),
-              
+
               // Coming Soon Content
               Expanded(
                 child: SingleChildScrollView(
@@ -99,7 +162,7 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Animated Icon
                       ScaleTransition(
                         scale: _pulseAnimation,
@@ -124,9 +187,9 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Coming Soon Text
                       const Text(
                         'Akan Datang',
@@ -137,9 +200,9 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                           letterSpacing: 1,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       Text(
                         'Kami sedang menyediakan sesuatu yang istimewa untuk anda!',
                         textAlign: TextAlign.center,
@@ -149,9 +212,9 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                           height: 1.5,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // Feature Preview Cards
                       Container(
                         padding: const EdgeInsets.all(20),
@@ -161,13 +224,19 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
                         ),
                         child: Column(
                           children: [
-                            _buildFeatureItem(Icons.volunteer_activism_rounded, 'Produk Wakaf Eksklusif'),
+                            _buildFeatureItem(
+                              Icons.volunteer_activism_rounded,
+                              'Produk Wakaf Eksklusif',
+                            ),
                             const SizedBox(height: 16),
-                            _buildFeatureItem(Icons.verified_rounded, 'Barangan Berkualiti'),
+                            _buildFeatureItem(
+                              Icons.verified_rounded,
+                              'Barangan Berkualiti',
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -177,7 +246,10 @@ class _InboxPageState extends State<InboxPage> with SingleTickerProviderStateMix
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(currentIndex: _currentIndex, onTap: _onTabTapped),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+      ),
     );
   }
 

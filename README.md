@@ -3,7 +3,7 @@
 <div align="center">
   <img src="assets/icons/Logo_QAF.png" alt="Waqafer Logo" width="100" height="120">
 
-  # 🕌 Waqafer
+  # WAQAFER
 
   **Your Complete Muslim Prayer Companion**
 

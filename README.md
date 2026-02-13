@@ -189,17 +189,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **JAKIM** for providing accurate prayer times API
+- **Quran.com** for Quran content and API
 - **Google Maps** for mosque location services
 - **Flutter Community** for amazing packages
 - **Islamic content** sourced from authentic references
 
 ---
 
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/adamnymy/waqafer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/adamnymy/waqafer/discussions)
-- **Email**: adamhjumain@gmail.com
+**Contact**: adamhjumain@gmail.com
 
 ---
 

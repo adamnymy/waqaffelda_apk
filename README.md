@@ -200,20 +200,6 @@ lib/
 
 ---
 
-## 🔧 Configuration
-
-### Google Maps Setup
-1. Get API key from [Google Cloud Console](https://console.cloud.google.com/)
-2. Add to `android/app/src/main/AndroidManifest.xml`:
-   ```xml
-   <meta-data
-       android:name="com.google.android.geo.API_KEY"
-       android:value="YOUR_API_KEY"/>
-   ```
-3. Restrict API key to your app's SHA-1 fingerprint
-
----
-
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:

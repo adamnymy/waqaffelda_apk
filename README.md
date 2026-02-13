@@ -77,8 +77,12 @@
 
 ## 🚀 Installation
 
-### From Google Play Store (Beta)
-1. Join our [beta testing program](https://play.google.com/store/apps/tester)
+### From Google Play Store
+**Now Available on Google Play!**
+
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=app.waqaffelda.waqafer)
+
+1. Visit the [Google Play Store](https://play.google.com/store/apps/details?id=app.waqaffelda.waqafer)
 2. Download and install the app
 3. Grant necessary permissions for location and notifications
 
@@ -207,14 +211,6 @@ lib/
        android:value="YOUR_API_KEY"/>
    ```
 3. Restrict API key to your app's SHA-1 fingerprint
-
-### App Signing
-1. Create production keystore:
-   ```bash
-   keytool -genkey -v -keystore waqafer-production-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias waqafer
-   ```
-2. Update `android/key.properties` with keystore details
-3. Build signed release: `flutter build appbundle --release`
 
 ---
 

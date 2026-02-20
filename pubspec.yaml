@@ -86,11 +86,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
 
-    - assets/images/masjidnegara.jpg
     - assets/images/waqaf_quran.png
     - assets/images/infak_spa.png
-    - assets/images/infak_subuh.jpeg
-    - assets/images/nabawi(sulthan-auliya).jpg
     - assets/images/widget-bg-wsolat.svg
     - assets/images/widget-bg-wsolat-v2.svg
     - assets/quran/surah_metadata.json
@@ -102,10 +99,6 @@ flutter:
     - assets/images/SPAT1.png
     - assets/images/WQT1.png
     - assets/images/IST2.png
-    - assets/images/IB1.png
-    - assets/images/IG1.png
-    - assets/images/IG2.png
-    - assets/images/IG3.png
     - assets/images/infak-subuh.png
     - assets/images/waqaf_felda_logo.png
     - assets/images/LogoWaqafer.png
@@ -132,12 +125,6 @@ flutter:
     - assets/icons/menu/alquran-bg.svg
 
 
-    - assets/images/CardAM01.png
-    - assets/images/CardAM001.png
-    - assets/images/CardAM002.png
-    - assets/images/CardAM003.png
-    - assets/images/CardAM004.png
-
     - assets/images/Hadith_newTest.png
     - assets/images/kaabah_newtest2.png
     - assets/images/Quran_newTest3.png
@@ -159,6 +146,13 @@ flutter:
     - assets/images/Manfaat/Kluster4.png
     - assets/images/Manfaat/Kluster5.png
     - assets/images/Manfaat/Kluster6.png
+
+    #Header Baru
+    - assets/images/HeaderMasjid.svg
+    - assets/images/HeaderMasjid2.svg
+    - assets/images/HeaderMasjid8.svg
+    - assets/images/HeaderMasjid9.svg
+    - assets/images/HeaderMasjid10.svg
 
 
   # For details regarding adding assets from package dependencies, see

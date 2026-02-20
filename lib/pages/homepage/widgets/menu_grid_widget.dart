@@ -299,16 +299,50 @@ class MenuGridWidget extends StatelessWidget {
                         child: Container(
                           width: screenWidth * 0.16,
                           height: screenWidth * 0.16,
-                          child: Image.asset(
-                            imagePath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.image_not_supported,
-                                color: Colors.white.withOpacity(0.5),
-                                size: screenWidth * 0.08,
-                              );
-                            },
+                          decoration: BoxDecoration(
+                            // ✅ Glow effect behind icon
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.4),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.2),
+                                blurRadius: 25,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // ✅ Outline layer (slightly larger, behind)
+                              Positioned.fill(
+                                child: Image.asset(
+                                  imagePath,
+                                  fit: BoxFit.contain,
+                                  color: Colors.white.withOpacity(0.5),
+                                  colorBlendMode: BlendMode.srcATop,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const SizedBox();
+                                  },
+                                ),
+                              ),
+                              // ✅ Main icon
+                              Positioned.fill(
+                                child: Image.asset(
+                                  imagePath,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.white.withOpacity(0.5),
+                                      size: screenWidth * 0.08,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -410,16 +444,50 @@ class MenuGridWidget extends StatelessWidget {
                       child: Container(
                         width: screenWidth * 0.16,
                         height: screenWidth * 0.16,
-                        child: Image.asset(
-                          imagePath,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.image_not_supported,
-                              color: Colors.white.withOpacity(0.5),
-                              size: screenWidth * 0.08,
-                            );
-                          },
+                        decoration: BoxDecoration(
+                          // ✅ Glow effect behind icon
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.4),
+                              blurRadius: 18,
+                              spreadRadius: 3,
+                            ),
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.2),
+                              blurRadius: 30,
+                              spreadRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // ✅ Outline layer (slightly larger, behind)
+                            Positioned.fill(
+                              child: Image.asset(
+                                imagePath,
+                                fit: BoxFit.contain,
+                                color: Colors.white.withOpacity(0.5),
+                                colorBlendMode: BlendMode.srcATop,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const SizedBox();
+                                },
+                              ),
+                            ),
+                            // ✅ Main icon
+                            Positioned.fill(
+                              child: Image.asset(
+                                imagePath,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.white.withOpacity(0.5),
+                                    size: screenWidth * 0.08,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

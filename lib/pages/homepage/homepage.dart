@@ -12,11 +12,12 @@ import '../akaun/akaunpage.dart';
 import 'package:flutter/services.dart';
 
 // Widgets
+import 'widgets/homepage_header.dart';
 import 'widgets/homepage_appbar.dart';
-import 'widgets/prayer_card_widget.dart';
-import 'widgets/prayer_times_row.dart';
+import 'widgets/prayer_card_widget_new.dart';
+import 'widgets/prayer_times_row_new.dart';
 import 'widgets/quran_tracker_widget.dart';
-import 'widgets/menu_grid_widget.dart';
+import 'widgets/menu_grid_widget_new.dart';
 import 'widgets/peluang_bersama_widget.dart';
 import 'widgets/agihan_manfaat_widget.dart';
 import 'widgets/ayat_hari_ini_widget.dart';
@@ -495,6 +496,19 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  void _onNotificationPressed() {
+    // Navigate to notifications page (using InboxPage as notifications)
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder:
+            (context, animation, secondaryAnimation) => const InboxPage(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -505,85 +519,49 @@ class _HomepageState extends State<Homepage> {
       extendBody: true,
       body: SingleChildScrollView(
         controller: _scrollController,
-        child: Stack(
-          children: [
-            Container(
-              height: screenHeight * 0.25 + statusBarHeight,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF66B2B2),
-                    Color(0xFF99C8C8),
-                    Color(0xFFCCDFDF),
-                    Color(0xFFE6F0F0),
-                    Color(0xFFFFFFFF),
-                  ],
-                  stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HomepageHeader(
+                currentLocationName: _currentLocationName,
+                nextPrayerText: _nextPrayerText,
+                onNotificationPressed: _onNotificationPressed,
+              ),
+              SizedBox(height: screenHeight * 0.01),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.05,
                 ),
+                child: const QuranTrackerWidget(),
               ),
-            ),
-            SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const HomepageAppBar(),
-                  SizedBox(height: screenHeight * 0.0025),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.03,
-                    ),
-                    child: PrayerCardWidget(
-                      nextPrayerText: _nextPrayerText,
-                      countdown: _countdown,
-                      currentLocationName: _currentLocationName,
-                      formatDuration: _formatDuration,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.0025),
-                  PrayerTimesRow(
-                    prayerTimes: _prayerTimes,
-                    getPrayerColor: PrayerHelpers.getPrayerColor,
-                    getPrayerIcon: PrayerHelpers.getPrayerIcon,
-                    isPrayerPassed: PrayerHelpers.isPrayerPassed,
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.05,
-                    ),
-                    child: const QuranTrackerWidget(),
-                  ),
-                  SizedBox(height: screenHeight * 0.015),
-                  const MenuGridWidget(),
-                  SizedBox(height: screenHeight * 0.015),
-                  _buildDivider(),
-                  SizedBox(height: screenHeight * 0.012),
-                  const PeluangBersamaWidget(),
-                  SizedBox(height: screenHeight * 0.012),
-                  _buildDivider(),
-                  SizedBox(height: screenHeight * 0.015),
-                  const AgihanManfaatWidget(),
-                  SizedBox(height: screenHeight * 0.015),
-                  _buildDivider(),
-                  SizedBox(height: screenHeight * 0.015),
-                  AyatHariIniWidget(
-                    pageController: _ayatPageController,
-                    currentAyatIndex: _currentAyatIndex,
-                    ayatList: _ayatList,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentAyatIndex = index;
-                      });
-                    },
-                  ),
-                  SizedBox(height: screenHeight * 0.12),
-                ],
+              SizedBox(height: screenHeight * 0.02),
+              const MenuGridWidgetNew(),
+              SizedBox(height: screenHeight * 0.02),
+              _buildDivider(),
+              SizedBox(height: screenHeight * 0.015),
+              const PeluangBersamaWidget(),
+              SizedBox(height: screenHeight * 0.015),
+              _buildDivider(),
+              SizedBox(height: screenHeight * 0.015),
+              const AgihanManfaatWidget(),
+              SizedBox(height: screenHeight * 0.015),
+              _buildDivider(),
+              SizedBox(height: screenHeight * 0.015),
+              AyatHariIniWidget(
+                pageController: _ayatPageController,
+                currentAyatIndex: _currentAyatIndex,
+                ayatList: _ayatList,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentAyatIndex = index;
+                  });
+                },
               ),
-            ),
-          ],
+              SizedBox(height: screenHeight * 0.14),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavBar(

@@ -16,11 +16,10 @@ import 'widgets/homepage_header.dart';
 import 'widgets/homepage_appbar.dart';
 import 'widgets/prayer_card_widget_new.dart';
 import 'widgets/prayer_times_row_new.dart';
-import 'widgets/quran_tracker_widget.dart';
-import 'widgets/menu_grid_widget_new.dart';
 import 'widgets/peluang_bersama_widget.dart';
 import 'widgets/agihan_manfaat_widget.dart';
 import 'widgets/ayat_hari_ini_widget.dart';
+import 'widgets/notifications_page.dart';
 
 // Utils
 import 'utils/prayer_helpers.dart';
@@ -497,12 +496,12 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _onNotificationPressed() {
-    // Navigate to notifications page (using InboxPage as notifications)
+    // Navigate to notifications page
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder:
-            (context, animation, secondaryAnimation) => const InboxPage(),
+            (context, animation, secondaryAnimation) => const NotificationsPage(),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -527,18 +526,10 @@ class _HomepageState extends State<Homepage> {
               HomepageHeader(
                 currentLocationName: _currentLocationName,
                 nextPrayerText: _nextPrayerText,
+                countdown: _countdown,
                 onNotificationPressed: _onNotificationPressed,
               ),
-              SizedBox(height: screenHeight * 0.01),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.05,
-                ),
-                child: const QuranTrackerWidget(),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              const MenuGridWidgetNew(),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: screenHeight * 0.015),
               _buildDivider(),
               SizedBox(height: screenHeight * 0.015),
               const PeluangBersamaWidget(),

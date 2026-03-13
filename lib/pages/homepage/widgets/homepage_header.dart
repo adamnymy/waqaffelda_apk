@@ -4,12 +4,14 @@ import 'package:hijri/hijri_calendar.dart';
 class HomepageHeader extends StatelessWidget {
   final String currentLocationName;
   final String nextPrayerText;
+  final Duration countdown;
   final VoidCallback onNotificationPressed;
 
   const HomepageHeader({
     Key? key,
     required this.currentLocationName,
     required this.nextPrayerText,
+    required this.countdown,
     required this.onNotificationPressed,
   }) : super(key: key);
 
@@ -132,25 +134,72 @@ class HomepageHeader extends StatelessWidget {
             ],
           ),
           SizedBox(height: screenHeight * 0.016),
-          // Prayer time display
+          // Prayer time display - Time only
           if (nextPrayerName.isNotEmpty && nextPrayerTime.isNotEmpty)
-            Text(
-              '$nextPrayerName $nextPrayerTime',
-              style: TextStyle(
-                fontSize: screenWidth * 0.032,
-                fontWeight: FontWeight.w600,
-                color: Colors.black.withOpacity(0.7),
-                letterSpacing: 0.2,
+            Center(
+              child: Text(
+                nextPrayerTime,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  letterSpacing: 0.2,
+                  height: 1.0,
+                ),
               ),
             )
           else
-            Text(
-              'Memuat waktu solat...',
-              style: TextStyle(
-                fontSize: screenWidth * 0.032,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
-                letterSpacing: 0.2,
+            Center(
+              child: Text(
+                '--:--',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey,
+                  letterSpacing: 0.2,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          SizedBox(height: screenHeight * 0.018),
+          // Countdown display
+          if (nextPrayerName.isNotEmpty && countdown.inSeconds > 0)
+            Center(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${nextPrayerName[0].toUpperCase()}${nextPrayerName.substring(1).toLowerCase()}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.032,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black.withOpacity(0.7),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' ${countdown.inHours} jam ${countdown.inMinutes % 60} minit ${countdown.inSeconds % 60} saat lagi',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.032,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black.withOpacity(0.7),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Center(
+              child: Text(
+                'Memuat waktu solat...',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.032,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                  letterSpacing: 0.2,
+                ),
               ),
             ),
         ],

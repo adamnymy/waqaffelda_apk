@@ -13,18 +13,24 @@ class AgihanManfaatWidget extends StatelessWidget {
     final List<Map<String, dynamic>> programItems = [
       {
         'image': 'assets/images/Manfaat/AgihanManfaat1.png',
+        'title': 'Agihan Manfaat Bulan Ramadan',
+        'description': 'Agihan Manfaat Gelandangan di sekitar Kuala Lumpur',
         'badge': 'POPULAR',
         'badgeColor': const Color(0xFFFF9800),
         'showBadge': false,
       },
       {
         'image': 'assets/images/Manfaat/AgihanManfaat2.png',
+        'title': 'Ziarah Kasih',
+        'description': 'Program Ziarah Kasih bersama Warga peneroka FELDA',
         'badge': 'BARU',
         'badgeColor': const Color(0xFF2196F3),
         'showBadge': false,
       },
       {
         'image': 'assets/images/Manfaat/AgihanManfaat3.png',
+        'title': 'Program Anak Kanser Kidz',
+        'description': '',
         'badge': 'BARU',
         'badgeColor': const Color(0xFF9C27B0),
         'showBadge': false,
@@ -122,22 +128,23 @@ class AgihanManfaatWidget extends StatelessWidget {
             ],
           ),
           SizedBox(height: screenWidth * 0.04),
-          SizedBox(
-            height: screenHeight * 0.20,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: programItems.length,
-              itemBuilder: (context, index) {
-                return _buildCard(
+          Column(
+            children: [
+              for (int i = 0; i < programItems.length; i++) ...[
+                _buildCard(
                   context,
-                  programItems[index]['image'],
-                  programItems[index]['badge'],
-                  programItems[index]['badgeColor'],
-                  programItems[index]['showBadge'],
+                  programItems[i]['image'],
+                  programItems[i]['title'],
+                  programItems[i]['description'],
+                  programItems[i]['badge'],
+                  programItems[i]['badgeColor'],
+                  programItems[i]['showBadge'],
                   screenWidth,
-                );
-              },
-            ),
+                ),
+                if (i < programItems.length - 1)
+                  SizedBox(height: screenWidth * 0.08),
+              ],
+            ],
           ),
         ],
       ),
@@ -147,80 +154,116 @@ class AgihanManfaatWidget extends StatelessWidget {
   Widget _buildCard(
     BuildContext context,
     String imagePath,
+    String title,
+    String description,
     String badge,
     Color badgeColor,
     bool showBadge,
     double screenWidth,
   ) {
-    return Container(
-      width: screenWidth * 0.7,
-      margin: EdgeInsets.only(right: screenWidth * 0.04),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: const Color(0xFFF9A825).withOpacity(0.3),
-                  child: Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: Colors.white,
-                      size: screenWidth * 0.12,
-                    ),
-                  ),
-                );
-              },
-            ),
-            if (showBadge)
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: badgeColor.withOpacity(0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Image dimensions: 16:9 aspect ratio
+    final imageWidth = screenWidth * 0.45;
+    final imageHeight = imageWidth * 9 / 16;
+    
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Image on the left (16:9 aspect ratio)
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                width: imageWidth,
+                height: imageHeight,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: imageWidth,
+                    height: imageHeight,
+                    color: const Color(0xFFF9A825).withOpacity(0.2),
+                    child: Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey,
+                        size: screenWidth * 0.06,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: screenWidth * 0.028,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                    ),
+                  );
+                },
+              ),
+              if (showBadge)
+                Positioned(
+                  top: 6,
+                  left: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: badgeColor.withOpacity(0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: screenWidth * 0.022,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
+        SizedBox(width: screenWidth * 0.04),
+        // Text content on the right
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.035,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: screenHeight * 0.006),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.026,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade700,
+                  letterSpacing: 0.1,
+                  height: 1.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

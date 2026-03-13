@@ -20,7 +20,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   List<Ayah> ayahs = [];
   bool isLoading = true;
   String errorMessage = '';
-  Set<int> bookmarkedAyahs = {}; // Store bookmarked ayah numbers
   double arabicFontSize = 28.0;
   double translationFontSize = 16.0;
   int currentVisibleAyah = 1; // Track currently visible ayah
@@ -75,30 +74,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
       });
       debugPrint('❌ Error loading ayahs: $e');
     }
-  }
-
-  void _toggleBookmark(int ayahNumber) {
-    setState(() {
-      if (bookmarkedAyahs.contains(ayahNumber)) {
-        bookmarkedAyahs.remove(ayahNumber);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tandabuku dialih keluar'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      } else {
-        bookmarkedAyahs.add(ayahNumber);
-        // Save progress when bookmarking
-        _saveProgress(ayahNumber);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ditambah ke tandabuku'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
-    });
   }
 
   void _onAyahVisible(int ayahNumber) {
@@ -432,8 +407,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
   }
 
   Widget _buildAyahCard(Ayah ayah, ColorScheme colorScheme, bool isFirstCard) {
-    final isBookmarked = bookmarkedAyahs.contains(ayah.numberInSurah);
-
     return VisibilityDetector(
       key: Key('ayah_${ayah.numberInSurah}'),
       onVisibilityChanged: (VisibilityInfo info) {
@@ -511,20 +484,6 @@ class _SurahDetailPageState extends State<SurahDetailPage> {
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurface.withOpacity(0.8),
                       ),
-                    ),
-                    const Spacer(),
-                    // Bookmark Button
-                    IconButton(
-                      icon: Icon(
-                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color:
-                            isBookmarked
-                                ? colorScheme.secondary
-                                : colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                      onPressed: () => _toggleBookmark(ayah.numberInSurah),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),

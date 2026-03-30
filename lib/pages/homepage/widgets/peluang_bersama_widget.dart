@@ -65,57 +65,43 @@ class PeluangBersamaWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00897B).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: const Color(0xFF00897B).withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const ProgramPage(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                                const ProgramPage(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Lihat Lagi',
+                        style: TextStyle(
+                          color: const Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w700,
+                          fontSize: screenWidth * 0.035,
+                          letterSpacing: 0.3,
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFF9CA3AF),
+                          decorationThickness: 1.5,
                         ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(25),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.04,
-                        vertical: screenHeight * 0.01,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Lihat Lagi',
-                            style: TextStyle(
-                              color: const Color(0xFF00897B),
-                              fontWeight: FontWeight.w700,
-                              fontSize: screenWidth * 0.035,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.015),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: const Color(0xFF00897B),
-                            size: screenWidth * 0.035,
-                          ),
-                        ],
+                      SizedBox(width: screenWidth * 0.015),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: const Color(0xFF9CA3AF),
+                        size: screenWidth * 0.035,
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),

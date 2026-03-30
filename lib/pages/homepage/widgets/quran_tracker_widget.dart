@@ -58,140 +58,136 @@ class QuranTrackerWidget extends StatelessWidget {
         final lastRead = snapshot.data ?? {};
         final surahName = lastRead['surahName'] ?? 'Al-Fatihah';
         final ayahNumber = lastRead['ayahNumber'] ?? 1;
+        final progress = (lastRead['progress'] as double?) ?? 0.0;
         final hasRead = lastRead['hasRead'] ?? false;
+        final progressPercentage = (progress * 100).toStringAsFixed(0);
 
-        return GestureDetector(
-          onTap: () async {
-            await Navigator.push(
-              context,
-              SmoothPageRoute(page: const QuranPage()),
-            );
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.04,
-              vertical: screenWidth * 0.035,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFFFF9800).withOpacity(0.12),
-                  const Color(0xFFFBC02D).withOpacity(0.08),
-                ],
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+          child: GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                SmoothPageRoute(page: const QuranPage()),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.only(
+                left: screenWidth * 0.03,
+                right: screenWidth * 0.03,
+                top: screenWidth * 0.025,
+                bottom: screenWidth * 0.04,
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFFF9800).withOpacity(0.25),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF9800).withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFFD4B896).withOpacity(0.3),
+                    const Color(0xFFE8D7C3).withOpacity(0.2),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(screenWidth * 0.025),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFFF9800).withOpacity(0.25),
-                      width: 1,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(screenWidth * 0.035),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4A90A4).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.menu_book_rounded,
+                      color: Color(0xFF4A90A4),
+                      size: 28,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.menu_book_rounded,
-                    color: Color(0xFFFF9800),
-                    size: 22,
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.03),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        surahName,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: screenWidth * 0.038,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: screenWidth * 0.015),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Ayat $ayahNumber',
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: screenWidth * 0.032,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                  SizedBox(width: screenWidth * 0.04),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Quran Completion',
+                          style: TextStyle(
+                            color: Colors.grey.shade800,
+                            fontSize: screenWidth * 0.035,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Inter',
                           ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.025,
-                              vertical: screenWidth * 0.012,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFFF9800),
-                                  Color(0xFFF57C00),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFF9800)
-                                      .withOpacity(0.2),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  hasRead
-                                      ? Icons.play_arrow_rounded
-                                      : Icons.auto_stories_rounded,
-                                  color: Colors.white,
-                                  size: screenWidth * 0.035,
-                                ),
-                                SizedBox(width: screenWidth * 0.015),
-                                Text(
-                                  hasRead ? 'Teruskan' : 'Mula Baca',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: screenWidth * 0.032,
-                                    fontWeight: FontWeight.bold,
+                        ),
+                        SizedBox(height: screenWidth * 0.03),
+                        Text(
+                          '$surahName, Ayat $ayahNumber',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: screenWidth * 0.03,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Inter',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: screenWidth * 0.035),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  minHeight: screenWidth * 0.028,
+                                  backgroundColor: const Color(
+                                    0xFFD4B896,
+                                  ).withOpacity(0.2),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    const Color(0xFFD4B896),
                                   ),
                                 ),
-                              ],
+                              ),
+                            ),
+                            SizedBox(width: screenWidth * 0.03),
+                            Text(
+                              '$progressPercentage%',
+                              style: TextStyle(
+                                color: const Color(0xFFD4B896),
+                                fontSize: screenWidth * 0.032,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Inter',
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: screenWidth * 0.03),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.032,
+                              vertical: screenWidth * 0.015,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4B896),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              hasRead ? 'Teruskan' : 'Mula Baca',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.03,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Inter',
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

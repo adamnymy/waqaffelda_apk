@@ -106,6 +106,7 @@ flutter:
     - assets/images/waqaf_felda_logo.png
     - assets/images/LogoWaqafer.png
     - assets/images/NewLogoWF.png
+    - assets/images/homepage_header_bg.svg
     
     # Menu icons (moved to menu folder)
     - assets/icons/menu/alquran.svg

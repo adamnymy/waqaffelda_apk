@@ -13,13 +13,12 @@ import 'package:flutter/services.dart';
 
 // Widgets
 import 'widgets/homepage_header.dart';
-import 'widgets/homepage_appbar.dart';
-import 'widgets/prayer_card_widget_new.dart';
-import 'widgets/prayer_times_row_new.dart';
 import 'widgets/peluang_bersama_widget.dart';
 import 'widgets/agihan_manfaat_widget.dart';
 import 'widgets/ayat_hari_ini_widget.dart';
 import 'widgets/notifications_page.dart';
+import 'widgets/menu_grid_widget.dart';
+import 'widgets/quran_tracker_widget.dart';
 
 // Utils
 import 'utils/prayer_helpers.dart';
@@ -59,6 +58,7 @@ class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   final ScrollController _scrollController = ScrollController();
 
+  bool _isLoadingPrayerTimes = true;
   String _nextPrayerText = 'Loading...';
   Timer? _timer;
   Timer? _countdownTimer;
@@ -181,6 +181,11 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadPrayerTimes() async {
     _countdownTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _isLoadingPrayerTimes = true;
+      });
+    }
     try {
       Position? position = await PrayerTimesService.getCurrentLocation();
       if (position != null) {
@@ -193,6 +198,7 @@ class _HomepageState extends State<Homepage> {
           if (mounted) {
             setState(() {
               _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
+              _isLoadingPrayerTimes = false;
             });
           }
           _updateNextPrayer();
@@ -359,6 +365,7 @@ class _HomepageState extends State<Homepage> {
       setState(() {
         _nextPrayerText = 'Tidak dapat memuatkan waktu solat';
         _countdown = Duration.zero;
+        _isLoadingPrayerTimes = false;
       });
     }
     _countdownTimer?.cancel();
@@ -501,7 +508,8 @@ class _HomepageState extends State<Homepage> {
       context,
       PageRouteBuilder(
         pageBuilder:
-            (context, animation, secondaryAnimation) => const NotificationsPage(),
+            (context, animation, secondaryAnimation) =>
+                const NotificationsPage(),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -511,7 +519,6 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -523,13 +530,27 @@ class _HomepageState extends State<Homepage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HomepageHeader(
-                currentLocationName: _currentLocationName,
-                nextPrayerText: _nextPrayerText,
-                countdown: _countdown,
-                onNotificationPressed: _onNotificationPressed,
+              Container(
+                child: Column(
+                  children: [
+                    HomepageHeader(
+                      currentLocationName: _currentLocationName,
+                      nextPrayerText: _nextPrayerText,
+                      countdown: _countdown,
+                      onNotificationPressed: _onNotificationPressed,
+                      prayerTimes: _prayerTimes,
+                      isLoading: _isLoadingPrayerTimes,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    _buildDivider(),
+                  ],
+                ),
               ),
               SizedBox(height: screenHeight * 0.015),
+              const MenuGridWidget(),
+              SizedBox(height: screenHeight * 0.02),
+              const QuranTrackerWidget(),
+              SizedBox(height: screenHeight * 0.02),
               _buildDivider(),
               SizedBox(height: screenHeight * 0.015),
               const PeluangBersamaWidget(),

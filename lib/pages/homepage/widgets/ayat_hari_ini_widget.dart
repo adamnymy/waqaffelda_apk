@@ -41,26 +41,12 @@ class _AyatHariIniWidgetState extends State<AyatHariIniWidget> {
                   letterSpacing: 0.3,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00897B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF00897B).withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  '${widget.currentAyatIndex + 1}/${widget.ayatList.length}',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.028,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF00897B),
-                  ),
+              Text(
+                '${widget.currentAyatIndex + 1}/${widget.ayatList.length}',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.028,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade500,
                 ),
               ),
             ],
@@ -105,7 +91,6 @@ class _AyatHariIniWidgetState extends State<AyatHariIniWidget> {
       ),
     );
   }
-
 
   Map<String, dynamic> _getCardColors(int index) {
     switch (index) {
@@ -154,6 +139,82 @@ class _AyatHariIniWidgetState extends State<AyatHariIniWidget> {
     }
   }
 
+  String _getDecorativeShapeType(int index, {required String position}) {
+    final shapePatterns = [
+      {
+        'topRight': 'circle',
+        'bottomLeft': 'square',
+        'bottomRight': 'roundedRect',
+      },
+      {'topRight': 'square', 'bottomLeft': 'circle', 'bottomRight': 'diamond'},
+      {
+        'topRight': 'roundedRect',
+        'bottomLeft': 'diamond',
+        'bottomRight': 'circle',
+      },
+      {
+        'topRight': 'diamond',
+        'bottomLeft': 'roundedRect',
+        'bottomRight': 'square',
+      },
+      {'topRight': 'circle', 'bottomLeft': 'diamond', 'bottomRight': 'square'},
+    ];
+
+    final pattern = shapePatterns[index % shapePatterns.length];
+    return pattern[position]!;
+  }
+
+  Widget _buildDecorativeShape({
+    required String shapeType,
+    required Color color,
+    required double size,
+  }) {
+    switch (shapeType) {
+      case 'circle':
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        );
+      case 'square':
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.zero,
+          ),
+        );
+      case 'roundedRect':
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(size * 0.3),
+          ),
+        );
+      case 'diamond':
+        return Transform.rotate(
+          angle: 0.785, // 45 degrees
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.zero,
+            ),
+          ),
+        );
+      default:
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        );
+    }
+  }
+
   Widget _buildAyatCard(
     BuildContext context,
     String ayatText,
@@ -181,103 +242,114 @@ class _AyatHariIniWidgetState extends State<AyatHariIniWidget> {
           fit: StackFit.expand,
           children: [
             // Background color
-            Container(
-              color: colors['bg'],
-            ),
+            Container(color: colors['bg']),
             // Decorative shape - top right
-          Positioned(
-            top: -20,
-            right: -20,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+            Positioned(
+              top: -20,
+              right: -20,
+              child: _buildDecorativeShape(
+                shapeType: _getDecorativeShapeType(
+                  cardIndex,
+                  position: 'topRight',
+                ),
                 color: colors['accent'].withOpacity(0.25),
+                size: 120,
               ),
             ),
-          ),
-          // Decorative shape - bottom right
-          Positioned(
-            bottom: -15,
-            right: -15,
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+            // Decorative shape - bottom left
+            Positioned(
+              bottom: -15,
+              left: -15,
+              child: _buildDecorativeShape(
+                shapeType: _getDecorativeShapeType(
+                  cardIndex,
+                  position: 'bottomLeft',
+                ),
+                color: colors['accent'].withOpacity(0.20),
+                size: 100,
+              ),
+            ),
+            // Decorative shape - bottom right
+            Positioned(
+              bottom: -15,
+              right: -15,
+              child: _buildDecorativeShape(
+                shapeType: _getDecorativeShapeType(
+                  cardIndex,
+                  position: 'bottomRight',
+                ),
                 color: colors['accent'].withOpacity(0.15),
+                size: 90,
               ),
             ),
-          ),
-          // Content with padding
-          Padding(
-            padding: EdgeInsets.all(screenWidth * 0.06),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Quote icon
-                Icon(
-                  Icons.format_quote_rounded,
-                  color: colors['icon'].withOpacity(0.4),
-                  size: screenWidth * 0.06,
-                ),
-                SizedBox(height: screenHeight * 0.005),
-                // Ayat text - centered and italic
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      ayatText,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.028,
-                        fontWeight: FontWeight.w700,
-                        color: colors['text'],
-                        height: 1.5,
-                        letterSpacing: 0.2,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+            // Content with padding
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.06),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Quote icon
+                  Icon(
+                    Icons.format_quote_rounded,
+                    color: colors['icon'].withOpacity(0.4),
+                    size: screenWidth * 0.06,
                   ),
-                ),
-                SizedBox(height: screenHeight * 0.008),
-                // Source badge at bottom
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.04,
-                    vertical: screenHeight * 0.008,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors['accent'].withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.menu_book_rounded,
-                        color: colors['icon'],
-                        size: screenWidth * 0.025,
-                      ),
-                      SizedBox(width: screenWidth * 0.02),
-                      Text(
-                        source,
+                  SizedBox(height: screenHeight * 0.005),
+                  // Ayat text - centered and italic
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        ayatText,
                         style: TextStyle(
-                          fontSize: screenWidth * 0.020,
+                          fontSize: screenWidth * 0.028,
                           fontWeight: FontWeight.w700,
                           color: colors['text'],
+                          height: 1.5,
                           letterSpacing: 0.2,
+                          fontStyle: FontStyle.italic,
                         ),
+                        textAlign: TextAlign.center,
+                        maxLines: 5,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  SizedBox(height: screenHeight * 0.008),
+                  // Source badge at bottom
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenHeight * 0.008,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors['accent'].withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.menu_book_rounded,
+                          color: colors['icon'],
+                          size: screenWidth * 0.025,
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          source,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.020,
+                            fontWeight: FontWeight.w700,
+                            color: colors['text'],
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
           ],
         ),
       ),

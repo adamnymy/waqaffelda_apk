@@ -99,6 +99,14 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
+    // Set status bar color to match header
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Color(0xFF0F766E),
+        statusBarBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
     _loadInitialLocationName();
     _initializeNotifications().then((_) {
       _loadPrayerTimes();
@@ -526,6 +534,7 @@ class _HomepageState extends State<Homepage> {
       body: SingleChildScrollView(
         controller: _scrollController,
         child: SafeArea(
+          top: false,
           bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,8 +550,6 @@ class _HomepageState extends State<Homepage> {
                       prayerTimes: _prayerTimes,
                       isLoading: _isLoadingPrayerTimes,
                     ),
-                    SizedBox(height: screenHeight * 0.02),
-                    _buildDivider(),
                   ],
                 ),
               ),

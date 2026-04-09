@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/intl.dart';
+import '../../utils/hijri_utils.dart';
 import '../../services/prayer_times_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/widget_service.dart';
@@ -410,8 +411,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage>
       'Zulhijjah',
     ];
 
-    // Calculate Hijri date using the hijri package
-    final hijriCalendar = HijriCalendar.fromDate(now);
+    // Calculate Hijri date using the hijri package (adjusted for Malaysia)
+    final hijriCalendar = getMalaysiaHijriCalendar(now);
     final hijriMonthName = customHijriMonths[hijriCalendar.hMonth - 1];
     hijriDate = '${hijriCalendar.hDay} $hijriMonthName ${hijriCalendar.hYear}';
   }

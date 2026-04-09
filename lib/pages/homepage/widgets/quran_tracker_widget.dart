@@ -27,13 +27,10 @@ class QuranTrackerWidget extends StatelessWidget {
         }
       }
 
-      final progress = lastSurahNumber / 114.0;
-
       return {
         'surahName': lastSurah?.englishName ?? 'Al-Fatihah',
         'surahNumber': lastSurahNumber,
         'ayahNumber': lastAyahNumber,
-        'progress': progress,
         'hasRead': hasRead,
       };
     } catch (e) {
@@ -42,7 +39,6 @@ class QuranTrackerWidget extends StatelessWidget {
         'surahName': 'Al-Fatihah',
         'surahNumber': 1,
         'ayahNumber': 1,
-        'progress': 0.0,
         'hasRead': false,
       };
     }
@@ -58,9 +54,7 @@ class QuranTrackerWidget extends StatelessWidget {
         final lastRead = snapshot.data ?? {};
         final surahName = lastRead['surahName'] ?? 'Al-Fatihah';
         final ayahNumber = lastRead['ayahNumber'] ?? 1;
-        final progress = (lastRead['progress'] as double?) ?? 0.0;
         final hasRead = lastRead['hasRead'] ?? false;
-        final progressPercentage = (progress * 100).toStringAsFixed(0);
 
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -83,8 +77,8 @@ class QuranTrackerWidget extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFFD4B896).withOpacity(0.3),
-                    const Color(0xFFE8D7C3).withOpacity(0.2),
+                    const Color(0xFF0F766E).withOpacity(0.15),
+                    const Color(0xFF0F766E).withOpacity(0.08),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -94,12 +88,12 @@ class QuranTrackerWidget extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(screenWidth * 0.035),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4A90A4).withOpacity(0.15),
+                      color: const Color(0xFF0F766E).withOpacity(0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.menu_book_rounded,
-                      color: Color(0xFF4A90A4),
+                      color: Color(0xFF0F766E),
                       size: 28,
                     ),
                   ),
@@ -112,7 +106,7 @@ class QuranTrackerWidget extends StatelessWidget {
                         Text(
                           'Quran Completion',
                           style: TextStyle(
-                            color: Colors.grey.shade800,
+                            color: const Color(0xFF0F766E),
                             fontSize: screenWidth * 0.035,
                             fontWeight: FontWeight.w700,
                             fontFamily: 'Inter',
@@ -122,7 +116,7 @@ class QuranTrackerWidget extends StatelessWidget {
                         Text(
                           '$surahName, Ayat $ayahNumber',
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color: const Color(0xFF0F766E).withOpacity(0.7),
                             fontSize: screenWidth * 0.03,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'Inter',
@@ -131,36 +125,6 @@ class QuranTrackerWidget extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: screenWidth * 0.035),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: LinearProgressIndicator(
-                                  value: progress,
-                                  minHeight: screenWidth * 0.028,
-                                  backgroundColor: const Color(
-                                    0xFFD4B896,
-                                  ).withOpacity(0.2),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    const Color(0xFFD4B896),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: screenWidth * 0.03),
-                            Text(
-                              '$progressPercentage%',
-                              style: TextStyle(
-                                color: const Color(0xFFD4B896),
-                                fontSize: screenWidth * 0.032,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Inter',
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenWidth * 0.03),
                         Align(
                           alignment: Alignment.centerRight,
                           child: Container(
@@ -169,7 +133,7 @@ class QuranTrackerWidget extends StatelessWidget {
                               vertical: screenWidth * 0.015,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFD4B896),
+                              color: const Color(0xFFFF9800),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

@@ -127,6 +127,7 @@ flutter:
     - assets/icons/Logo_QAF.png
     - assets/icons/menu/waktu_solat-bg.svg
     - assets/icons/menu/alquran-bg.svg
+    - assets/icons/menu/mosque_silhouette.svg
 
     - assets/images/Hadith_newTest.png
     - assets/images/kaabah_newtest2.png

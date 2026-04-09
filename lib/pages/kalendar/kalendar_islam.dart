@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../homepage/homepage.dart';
 import '../../utils/page_transitions.dart';
+import '../../utils/hijri_utils.dart';
 
 // Weekday header widget - responsive for mobile
 class _WeekdayHeader extends StatelessWidget {
@@ -475,14 +476,14 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
 
   void _alignToHijriMonth() {
     // Find Gregorian date which corresponds to hijri day 1 for the hijri month containing _displayed
-    final h = HijriCalendar.fromDate(_displayed);
+    final h = getMalaysiaHijriCalendar(_displayed);
     final targetMonth = h.hMonth;
     final targetYear = h.hYear;
 
     // search backward up to 60 days
     for (int i = 0; i < 60; i++) {
       final dt = _displayed.subtract(Duration(days: i));
-      final hh = HijriCalendar.fromDate(dt);
+      final hh = getMalaysiaHijriCalendar(dt);
       if (hh.hMonth == targetMonth && hh.hDay == 1 && hh.hYear == targetYear) {
         setState(() {
           _displayed = DateTime(dt.year, dt.month, 1);
@@ -494,7 +495,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
     // search forward up to 60 days
     for (int i = 1; i < 60; i++) {
       final dt = _displayed.add(Duration(days: i));
-      final hh = HijriCalendar.fromDate(dt);
+      final hh = getMalaysiaHijriCalendar(dt);
       if (hh.hMonth == targetMonth && hh.hDay == 1 && hh.hYear == targetYear) {
         setState(() {
           _displayed = DateTime(dt.year, dt.month, 1);
@@ -571,7 +572,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                           const SizedBox(height: 4),
                           Builder(
                             builder: (context) {
-                              final h = HijriCalendar.fromDate(date);
+                              final h = getMalaysiaHijriCalendar(date);
                               final hijriMonthName = _hijriMonths[h.hMonth - 1];
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,7 +739,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
 
       if (isHijri) {
         // Hijri-based events
-        final h = HijriCalendar.fromDate(dt);
+        final h = getMalaysiaHijriCalendar(dt);
         if (h.hMonth == ev['month']) {
           if (ev['range'] == true) {
             final start = ev['day'] as int;
@@ -871,7 +872,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
       grid.add(DateTime(_displayed.year, _displayed.month, d));
     while (grid.length % 7 != 0) grid.add(null);
 
-    final hijriMonthName = (HijriCalendar.fromDate(_displayed)).hMonth;
+    final hijriMonthName = (getMalaysiaHijriCalendar(_displayed)).hMonth;
     // For display, use Gregorian month name
     const gregMonths = [
       'Januari',
@@ -1259,7 +1260,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                       SizedBox(height: isMobile ? 4 : 6),
                                       Builder(
                                         builder: (context) {
-                                          final h = HijriCalendar.fromDate(
+                                          final h = getMalaysiaHijriCalendar(
                                             _displayed,
                                           );
                                           final monthName =
@@ -1441,7 +1442,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                                 final dt = grid[idx];
                                 if (dt == null) return const SizedBox.shrink();
                                 final iso = _iso(dt);
-                                final h = HijriCalendar.fromDate(dt);
+                                final h = getMalaysiaHijriCalendar(dt);
                                 final isToday =
                                     DateTime.now().year == dt.year &&
                                     DateTime.now().month == dt.month &&
@@ -1939,7 +1940,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
     final list = _events[key] ?? [];
 
     // compute matched holidays for this date (both Hijri and Gregorian)
-    final h = HijriCalendar.fromDate(date);
+    final h = getMalaysiaHijriCalendar(date);
     final List<Map<String, dynamic>> holidayObjects = [];
     for (final ev in _importantIslamicEvents) {
       final isHijri =
@@ -2204,7 +2205,7 @@ class _CombinedCalendarPageState extends State<CombinedCalendarPage> {
                           const SizedBox(height: 4),
                           Builder(
                             builder: (context) {
-                              final h = HijriCalendar.fromDate(date);
+                              final h = getMalaysiaHijriCalendar(date);
                               final hijriMonthName = _hijriMonths[h.hMonth - 1];
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -35,7 +35,7 @@ class MenuGridWidget extends StatelessWidget {
       },
       {
         'name': 'Tasbih',
-        'icon': Icons.repeat_rounded,
+        'icon': Icons.grain,
         'color': const Color(0xFF818C9A),
         'page': const ZikirCounterPage(),
       },

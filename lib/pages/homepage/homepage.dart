@@ -12,13 +12,14 @@ import '../akaun/akaunpage.dart';
 import 'package:flutter/services.dart';
 
 // Widgets
-import 'widgets/homepage_header.dart';
+import 'widgets/homepage_appbar.dart';
+import 'widgets/prayer_card_widget.dart';
+import 'widgets/prayer_times_row.dart';
+import 'widgets/quran_tracker_widget.dart';
+import 'widgets/menu_grid_widget.dart';
 import 'widgets/peluang_bersama_widget.dart';
 import 'widgets/agihan_manfaat_widget.dart';
 import 'widgets/ayat_hari_ini_widget.dart';
-import 'widgets/notifications_page.dart';
-import 'widgets/menu_grid_widget.dart';
-import 'widgets/quran_tracker_widget.dart';
 
 // Utils
 import 'utils/prayer_helpers.dart';
@@ -58,7 +59,6 @@ class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   final ScrollController _scrollController = ScrollController();
 
-  bool _isLoadingPrayerTimes = true;
   String _nextPrayerText = 'Loading...';
   Timer? _timer;
   Timer? _countdownTimer;
@@ -99,14 +99,6 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
-    // Set status bar color to match header
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Color(0xFF0F766E),
-        statusBarBrightness: Brightness.light,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
     _loadInitialLocationName();
     _initializeNotifications().then((_) {
       _loadPrayerTimes();
@@ -189,11 +181,6 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _loadPrayerTimes() async {
     _countdownTimer?.cancel();
-    if (mounted) {
-      setState(() {
-        _isLoadingPrayerTimes = true;
-      });
-    }
     try {
       Position? position = await PrayerTimesService.getCurrentLocation();
       if (position != null) {
@@ -206,7 +193,6 @@ class _HomepageState extends State<Homepage> {
           if (mounted) {
             setState(() {
               _prayerTimes = PrayerTimesService.parsePrayerTimes(prayerData);
-              _isLoadingPrayerTimes = false;
             });
           }
           _updateNextPrayer();
@@ -373,7 +359,6 @@ class _HomepageState extends State<Homepage> {
       setState(() {
         _nextPrayerText = 'Tidak dapat memuatkan waktu solat';
         _countdown = Duration.zero;
-        _isLoadingPrayerTimes = false;
       });
     }
     _countdownTimer?.cancel();
@@ -510,77 +495,89 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
-  void _onNotificationPressed() {
-    // Navigate to notifications page
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder:
-            (context, animation, secondaryAnimation) =>
-                const NotificationsPage(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: Colors.white,
       extendBody: true,
       body: SingleChildScrollView(
         controller: _scrollController,
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                child: Column(
-                  children: [
-                    HomepageHeader(
-                      currentLocationName: _currentLocationName,
-                      nextPrayerText: _nextPrayerText,
-                      countdown: _countdown,
-                      onNotificationPressed: _onNotificationPressed,
-                      prayerTimes: _prayerTimes,
-                      isLoading: _isLoadingPrayerTimes,
-                    ),
+        child: Stack(
+          children: [
+            // Golden header background
+            Container(
+              height: screenHeight * 0.36 + statusBarHeight,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF8A6520),
+                    Color(0xFFC49B28),
+                    Color(0xFFD4A843),
                   ],
+                  stops: [0.0, 0.55, 1.0],
                 ),
               ),
-              SizedBox(height: screenHeight * 0.015),
-              const MenuGridWidget(),
-              SizedBox(height: screenHeight * 0.02),
-              const QuranTrackerWidget(),
-              SizedBox(height: screenHeight * 0.02),
-              _buildDivider(),
-              SizedBox(height: screenHeight * 0.015),
-              const PeluangBersamaWidget(),
-              SizedBox(height: screenHeight * 0.015),
-              _buildDivider(),
-              SizedBox(height: screenHeight * 0.015),
-              const AgihanManfaatWidget(),
-              SizedBox(height: screenHeight * 0.015),
-              _buildDivider(),
-              SizedBox(height: screenHeight * 0.015),
-              AyatHariIniWidget(
-                pageController: _ayatPageController,
-                currentAyatIndex: _currentAyatIndex,
-                ayatList: _ayatList,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentAyatIndex = index;
-                  });
-                },
+            ),
+            SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  HomepageAppBar(locationName: _currentLocationName),
+                  SizedBox(height: screenHeight * 0.03),
+                  PrayerCardWidget(
+                    nextPrayerText: _nextPrayerText,
+                    countdown: _countdown,
+                    currentLocationName: _currentLocationName,
+                    formatDuration: _formatDuration,
+                  ),
+                  SizedBox(height: screenHeight * 0.0025),
+                  PrayerTimesRow(
+                    prayerTimes: _prayerTimes,
+                    getPrayerColor: PrayerHelpers.getPrayerColor,
+                    getPrayerIcon: PrayerHelpers.getPrayerIcon,
+                    isPrayerPassed: PrayerHelpers.isPrayerPassed,
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+                  const MenuGridWidget(),
+                  SizedBox(height: screenHeight * 0.015),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width * 0.05,
+                    ),
+                    child: const QuranTrackerWidget(),
+                  ),
+                  SizedBox(height: screenHeight * 0.015),
+                  _buildDivider(),
+                  SizedBox(height: screenHeight * 0.012),
+                  const PeluangBersamaWidget(),
+                  SizedBox(height: screenHeight * 0.012),
+                  _buildDivider(),
+                  SizedBox(height: screenHeight * 0.015),
+                  const AgihanManfaatWidget(),
+                  SizedBox(height: screenHeight * 0.015),
+                  _buildDivider(),
+                  SizedBox(height: screenHeight * 0.015),
+                  AyatHariIniWidget(
+                    pageController: _ayatPageController,
+                    currentAyatIndex: _currentAyatIndex,
+                    ayatList: _ayatList,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentAyatIndex = index;
+                      });
+                    },
+                  ),
+                  SizedBox(height: screenHeight * 0.12),
+                ],
               ),
-              SizedBox(height: screenHeight * 0.14),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavBar(
@@ -592,6 +589,6 @@ class _HomepageState extends State<Homepage> {
   }
 
   Widget _buildDivider() {
-    return Container(height: 0.5, color: Colors.black.withOpacity(0.1));
+    return Container(height: 0.5, color: const Color(0xFFF0F0F0));
   }
 }

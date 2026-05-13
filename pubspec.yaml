@@ -107,6 +107,7 @@ flutter:
     - assets/images/LogoWaqafer.png
     - assets/images/NewLogoWF.png
     - assets/images/homepage_header_bg.svg
+    - assets/images/mosque_silhouette.svg
     
     # Menu icons (moved to menu folder)
     - assets/icons/menu/alquran.svg

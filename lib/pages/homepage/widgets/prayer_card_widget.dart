@@ -55,87 +55,92 @@ class PrayerCardWidget extends StatelessWidget {
           horizontal: screenWidth * 0.05,
           vertical: screenHeight * 0.02,
         ),
-        child: Column(
-          children: [
-            Container(
-              height: screenWidth * 0.18,
-              width: screenWidth * 0.55,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(12),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Large prayer time skeleton
+              Container(
+                height: screenWidth * 0.12,
+                width: screenWidth * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.012),
-            Container(
-              height: screenWidth * 0.04,
-              width: screenWidth * 0.65,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+              SizedBox(height: screenHeight * 0.008),
+              // Prayer name + countdown skeleton
+              Container(
+                height: screenWidth * 0.04,
+                width: screenWidth * 0.6,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: screenHeight * 0.015,
-      ),
+      padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-          // Large prayer time
-          Text(
-            nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: screenWidth * 0.085,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -1,
-              height: 1.0,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  offset: const Offset(0, 3),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.008),
-          // Prayer name + countdown
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: nextPrayerName.isNotEmpty
-                      ? '$nextPrayerName  '
-                      : 'Memuat...  ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: screenWidth * 0.038,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
+            // Large prayer time
+            Text(
+              nextPrayerTime.isNotEmpty ? nextPrayerTime : '--:--',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: screenWidth * 0.12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+                height: 1.0,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    offset: const Offset(0, 3),
+                    blurRadius: 8,
                   ),
-                ),
-                TextSpan(
-                  text: countdownText,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: screenWidth * 0.034,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: screenHeight * 0.008),
+            // Prayer name + countdown
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text:
+                        nextPrayerName.isNotEmpty
+                            ? '$nextPrayerName  '
+                            : 'Memuat...  ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.038,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  TextSpan(
+                    text: countdownText,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: screenWidth * 0.034,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

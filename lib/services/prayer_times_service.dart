@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/foundation.dart';
+
 class PrayerTimesService {
   // Get prayer times using e-solat.gov.my official data
   static Future<Map<String, dynamic>?> getPrayerTimesForMalaysia(
@@ -45,7 +46,13 @@ class PrayerTimesService {
       );
 
       final response = await http
-          .get(Uri.parse(url))
+          .get(
+            Uri.parse(url),
+            headers: {
+              'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            },
+          )
           .timeout(
             const Duration(seconds: 10),
             onTimeout: () {
@@ -627,7 +634,13 @@ class PrayerTimesService {
       );
 
       final response = await http
-          .get(Uri.parse(url))
+          .get(
+            Uri.parse(url),
+            headers: {
+              'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            },
+          )
           .timeout(
             const Duration(seconds: 10),
             onTimeout: () {

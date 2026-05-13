@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hijri/hijri_calendar.dart';
-import '../searchpage/search_page.dart';
+import '../../../utils/hijri_utils.dart';
 import 'notifications_page.dart';
 
 class HomepageAppBar extends StatelessWidget {
@@ -46,7 +45,7 @@ class HomepageAppBar extends StatelessWidget {
       'Zulkaedah',
       'Zulhijjah',
     ];
-    final hijri = HijriCalendar.fromDate(now);
+    final hijri = getMalaysiaHijriCalendar(now);
     final hijriDate =
         '${hijri.hDay} ${hijriMonths[hijri.hMonth - 1]} ${hijri.hYear}';
 
@@ -112,16 +111,6 @@ class HomepageAppBar extends StatelessWidget {
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const NotificationsPage()),
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.03),
-              _buildIconButton(
-                context,
-                Icons.search_rounded,
-                screenWidth,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SearchPage()),
                 ),
               ),
             ],

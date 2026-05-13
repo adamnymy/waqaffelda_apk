@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../utils/page_transitions.dart';
 import '../../program/program_page.dart';
 
 class PeluangBersamaWidget extends StatelessWidget {
@@ -39,69 +38,35 @@ class PeluangBersamaWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Peluang Bersama',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.048,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.003),
-                    Text(
-                      'Jangan lepaskan peluang ini',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.032,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
+              Text(
+                'Peluang Bersama',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.048,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1A1A2E),
+                  letterSpacing: 0.3,
                 ),
               ),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder:
-                            (context, animation, secondaryAnimation) =>
-                                const ProgramPage(),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero,
-                      ),
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Lihat Lagi',
-                        style: TextStyle(
-                          color: const Color(0xFF9CA3AF),
-                          fontWeight: FontWeight.w700,
-                          fontSize: screenWidth * 0.035,
-                          letterSpacing: 0.3,
-                          decoration: TextDecoration.underline,
-                          decorationColor: const Color(0xFF9CA3AF),
-                          decorationThickness: 1.5,
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.015),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: const Color(0xFF9CA3AF),
-                        size: screenWidth * 0.035,
-                      ),
-                    ],
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder:
+                          (context, animation, secondaryAnimation) =>
+                              const ProgramPage(),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                },
+                child: Text(
+                  'Lihat lagi',
+                  style: TextStyle(
+                    color: const Color(0xFFC49B28),
+                    fontWeight: FontWeight.w700,
+                    fontSize: screenWidth * 0.035,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
@@ -145,7 +110,7 @@ class PeluangBersamaWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha:0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -162,7 +127,7 @@ class PeluangBersamaWidget extends StatelessWidget {
               height: double.infinity,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  color: const Color(0xFF00897B).withOpacity(0.3),
+                  color: const Color(0xFF00897B).withValues(alpha:0.3),
                   child: Center(
                     child: Icon(
                       Icons.image_not_supported,
@@ -187,7 +152,7 @@ class PeluangBersamaWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: badgeColor.withOpacity(0.4),
+                        color: badgeColor.withValues(alpha:0.4),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

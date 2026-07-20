@@ -151,6 +151,13 @@ flutter:
     - assets/images/Manfaat/Kluster4.png
     - assets/images/Manfaat/Kluster5.png
     - assets/images/Manfaat/Kluster6.png
+    - assets/images/bacaan_doa.png
+    - assets/images/bacaan_tahlil.png
+    - assets/images/calendar_hijrah.png
+    - assets/images/masjid_terdekat.png
+
+    # Gambar produk kedai
+    - assets/images/kedai/
 
 
   # For details regarding adding assets from package dependencies, see

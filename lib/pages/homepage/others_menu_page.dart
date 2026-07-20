@@ -9,18 +9,21 @@ import '../masjid_terdekat/masjid_terdekat.dart';
 import '../hadis40/hadis40.dart';
 import '../kalendar/kalendar_islam.dart';
 
+const _gold = Color(0xFFC49B28);
+const _goldLight = Color(0xFFF5EDD5);
+const _goldBorder = Color(0xFFD4B896);
+const _textDark = Color(0xFF3A3A5C);
+
 class MenuItemData {
   final String title;
   final String description;
-  final IconData icon;
-  final Color iconBgColor;
+  final String imagePath;
   final Widget page;
 
   MenuItemData({
     required this.title,
     required this.description,
-    required this.icon,
-    required this.iconBgColor,
+    required this.imagePath,
     required this.page,
   });
 }
@@ -37,15 +40,96 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 
+  static const _sections = [
+    {
+      'title': 'Ibadah',
+      'icon': Icons.mosque_outlined,
+    },
+    {
+      'title': 'Al-Quran & Ilmu',
+      'icon': Icons.menu_book_rounded,
+    },
+    {
+      'title': 'Kemudahan',
+      'icon': Icons.location_on_outlined,
+    },
+  ];
+
+  List<List<MenuItemData>> _getItems() => [
+        // Ibadah
+        [
+          MenuItemData(
+            title: 'Waktu Solat',
+            description: 'Jadual waktu solat harian',
+            imagePath: 'assets/images/solat_newtest2.png',
+            page: const PrayerTimesPage(),
+          ),
+          MenuItemData(
+            title: 'Arah Kiblat',
+            description: 'Cari arah kiblat dengan mudah',
+            imagePath: 'assets/images/kaabah_newtest2.png',
+            page: const KiblatPage(),
+          ),
+          MenuItemData(
+            title: 'Tasbih Digital',
+            description: 'Kira zikir dan tasbih',
+            imagePath: 'assets/images/tasbih_newtest.png',
+            page: const ZikirCounterPage(),
+          ),
+          MenuItemData(
+            title: 'Doa Harian',
+            description: 'Koleksi doa harian lengkap',
+            imagePath: 'assets/images/bacaan_doa.png',
+            page: const DoaHarianPage(),
+          ),
+          MenuItemData(
+            title: 'Bacaan Tahlil',
+            description: 'Panduan bacaan tahlil',
+            imagePath: 'assets/images/bacaan_tahlil.png',
+            page: const TahlilPage(),
+          ),
+        ],
+        // Al-Quran & Ilmu
+        [
+          MenuItemData(
+            title: "Al-Quran",
+            description: "Baca Al-Quran dengan terjemahan",
+            imagePath: 'assets/images/Quran_newTest3.png',
+            page: const QuranPage(),
+          ),
+          MenuItemData(
+            title: 'Hadith 40',
+            description: 'Hadith 40 Imam Nawawi',
+            imagePath: 'assets/images/Hadith_newTest.png',
+            page: const Hadis40Page(),
+          ),
+        ],
+        // Kemudahan
+        [
+          MenuItemData(
+            title: 'Masjid Terdekat',
+            description: 'Cari masjid atau surau',
+            imagePath: 'assets/images/masjid_terdekat.png',
+            page: const MasjidTerdekatPage(),
+          ),
+          MenuItemData(
+            title: 'Kalendar Islam',
+            description: 'Kalendar Hijriah',
+            imagePath: 'assets/images/calendar_hijrah.png',
+            page: const CombinedCalendarPage(),
+          ),
+        ],
+      ];
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final allSections = _getItems();
 
     return Container(
       height: screenHeight * 0.85,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFAF8F3),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -55,150 +139,121 @@ class OthersMenuPage extends StatelessWidget {
         children: [
           // Drag handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 16),
+            margin: const EdgeInsets.only(top: 12, bottom: 4),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: _goldBorder,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Menu Utama',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.grey.shade900,
-                    decoration: TextDecoration.none,
-                    fontFamily: 'Inter',
+                const Expanded(
+                  child: Text(
+                    'Menu Utama',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: _textDark,
+                      fontFamily: 'Inter',
+                      decoration: TextDecoration.none,
+                    ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.grey.shade600),
-                  onPressed: () => Navigator.pop(context),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: _goldLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.close, size: 18, color: _gold),
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          // Divider
+          Container(height: 1, color: _goldBorder.withOpacity(0.3)),
           // Content
           Expanded(
-            child: DefaultTextStyle(
-              style: TextStyle(
-                fontFamily: 'Inter',
-                color: Colors.black87,
-                decoration: TextDecoration.none,
-              ),
-              child: ListView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: 8,
-                ),
-                children: [
-                  // Ibadah Section
-                  _buildSection(
-                    context,
-                    title: 'Ibadah',
-                    icon: Icons.mosque_outlined,
-                    items: [
-                      MenuItemData(
-                        title: 'Waktu Solat',
-                        description: 'Jadual waktu solat harian',
-                        icon: Icons.access_time_rounded,
-                        iconBgColor: const Color(0xFF4B5563),
-                        page: const PrayerTimesPage(),
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              itemCount: _sections.length,
+              itemBuilder: (context, sectionIndex) {
+                final section = _sections[sectionIndex];
+                final items = allSections[sectionIndex];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section header
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 3,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: _gold,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              section['icon'] as IconData,
+                              size: 16,
+                              color: _gold,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              section['title'] as String,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: _gold,
+                                fontFamily: 'Inter',
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      MenuItemData(
-                        title: 'Arah Kiblat',
-                        description: 'Cari arah kiblat dengan mudah',
-                        icon: Icons.explore_rounded,
-                        iconBgColor: const Color(0xFF5D6B7A),
-                        page: const KiblatPage(),
-                      ),
-                      MenuItemData(
-                        title: 'Tasbih Digital',
-                        description: 'Kira zikir dan tasbih',
-                        icon: Icons.repeat_rounded,
-                        iconBgColor: const Color(0xFF6F7A8B),
-                        page: const ZikirCounterPage(),
-                      ),
-                      MenuItemData(
-                        title: 'Doa Harian',
-                        description: 'Koleksi doa harian lengkap',
-                        icon: Icons.auto_stories_rounded,
-                        iconBgColor: const Color(0xFF818C9A),
-                        page: const DoaHarianPage(),
-                      ),
-                      MenuItemData(
-                        title: 'Bacaan Tahlil',
-                        description: 'Panduan bacaan tahlil',
-                        icon: Icons.people_outline_rounded,
-                        iconBgColor: const Color(0xFF929DAA),
-                        page: const TahlilPage(),
-                      ),
-                    ],
-                    screenWidth: screenWidth,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Al-Quran & Ilmu Section
-                  _buildSection(
-                    context,
-                    title: 'Al-Quran & Ilmu',
-                    icon: Icons.menu_book_rounded,
-                    items: [
-                      MenuItemData(
-                        title: 'Al-Quran',
-                        description: 'Baca Al-Quran dengan terjemahan',
-                        icon: Icons.auto_stories_rounded,
-                        iconBgColor: const Color(0xFF4B5563),
-                        page: const QuranPage(),
-                      ),
-                      MenuItemData(
-                        title: 'Hadith 40',
-                        description: 'Hadith 40 Imam Nawawi',
-                        icon: Icons.book_rounded,
-                        iconBgColor: const Color(0xFF5D6B7A),
-                        page: const Hadis40Page(),
+                      // Items
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: _goldBorder.withOpacity(0.4), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: List.generate(items.length, (i) {
+                            final item = items[i];
+                            final isLast = i == items.length - 1;
+                            return _buildListTile(context, item, isLast);
+                          }),
+                        ),
                       ),
                     ],
-                    screenWidth: screenWidth,
                   ),
-                  const SizedBox(height: 24),
-
-                  // Kemudahan Section
-                  _buildSection(
-                    context,
-                    title: 'Kemudahan',
-                    icon: Icons.location_on_outlined,
-                    items: [
-                      MenuItemData(
-                        title: 'Masjid Terdekat',
-                        description: 'Cari masjid atau surau',
-                        icon: Icons.mosque,
-                        iconBgColor: const Color(0xFF6F7A8B),
-                        page: const MasjidTerdekatPage(),
-                      ),
-                      MenuItemData(
-                        title: 'Kalendar Islam',
-                        description: 'Kalendar Hijriah',
-                        icon: Icons.calendar_month_rounded,
-                        iconBgColor: const Color(0xFF818C9A),
-                        page: const CombinedCalendarPage(),
-                      ),
-                    ],
-                    screenWidth: screenWidth,
-                  ),
-
-                  const SizedBox(height: 20),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -206,133 +261,81 @@ class OthersMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required List<MenuItemData> items,
-    required double screenWidth,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section header
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: Colors.grey.shade700),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
-                  decoration: TextDecoration.none,
-                  fontFamily: 'Inter',
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Menu items in grid
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.85,
-            crossAxisSpacing: screenWidth * 0.04,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return _buildMenuCardCompact(
-              context: context,
-              data: item,
-              screenWidth: screenWidth,
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenuCardCompact({
-    required BuildContext context,
-    required MenuItemData data,
-    required double screenWidth,
-  }) {
+  Widget _buildListTile(
+      BuildContext context, MenuItemData item, bool isLast) {
     return GestureDetector(
       onTap: () {
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => data.page),
+          MaterialPageRoute(builder: (_) => item.page),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: isLast
+              ? null
+              : Border(
+                  bottom: BorderSide(
+                      color: _goldBorder.withOpacity(0.25), width: 1)),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
           children: [
+            // Icon
             Container(
-              width: screenWidth * 0.12,
-              height: screenWidth * 0.12,
+              width: 46,
+              height: 46,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: data.iconBgColor.withOpacity(0.15),
+                color: _goldLight,
+                border: Border.all(color: _goldBorder, width: 1.5),
               ),
-              child: Icon(
-                data.icon,
-                size: screenWidth * 0.06,
-                color: data.iconBgColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-              child: Text(
-                data.title,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.032,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade900,
-                  decoration: TextDecoration.none,
-                  fontFamily: 'Inter',
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Image.asset(
+                  item.imagePath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.widgets_rounded,
+                    color: _gold,
+                    size: 20,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-              child: Text(
-                data.description,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.024,
-                  color: Colors.grey.shade600,
-                  decoration: TextDecoration.none,
-                  fontFamily: 'Inter',
-                ),
+            const SizedBox(width: 14),
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: _textDark,
+                      fontFamily: 'Inter',
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.description,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Inter',
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
               ),
             ),
+            // Arrow
+            Icon(Icons.chevron_right_rounded,
+                size: 20, color: _goldBorder),
           ],
         ),
       ),

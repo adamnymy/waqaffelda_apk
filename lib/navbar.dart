@@ -91,6 +91,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = widget.currentIndex == index;
+    const goldColor = Color(0xFFC49B28);
+    const goldLight = Color(0xFFFDF3D7);
 
     return Expanded(
       child: InkWell(
@@ -111,43 +113,34 @@ class _BottomNavBarState extends State<BottomNavBar> {
             );
           }
         },
-        splashColor: const Color(0xFF00897B).withOpacity(0.1),
+        splashColor: goldColor.withOpacity(0.1),
         highlightColor: Colors.transparent,
         borderRadius: BorderRadius.circular(18),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutBack,
-              transform: Matrix4.translationValues(
-                0,
-                isSelected ? -4 : 0,
-                0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+              decoration: BoxDecoration(
+                color: isSelected ? goldLight : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                scale: isSelected ? 1.15 : 1.0,
-                child: Icon(
-                  icon,
-                  size: 22,
-                  color: isSelected 
-                      ? const Color(0xFF00897B) // Teal when selected
-                      : Colors.grey.shade300, // Grey when not selected
-                ),
+              child: Icon(
+                icon,
+                size: 22,
+                color: isSelected ? goldColor : Colors.grey.shade400,
               ),
             ),
-            const SizedBox(height: 1), // ✅ Dikecilkan dari 5 ke 1
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFF00897B)
-                    : Colors.grey.shade400,
-                fontSize: 8.5,
+                color: isSelected ? goldColor : Colors.grey.shade400,
+                fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                letterSpacing: 0.3,
+                letterSpacing: 0.2,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

@@ -108,6 +108,15 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
+### Windows note for `keytool`
+If PowerShell says `keytool` is not recognized, run it directly from your JDK bin folder or add that folder to `PATH`:
+
+```powershell
+& 'C:\Program Files\Java\jdk-26.0.1\bin\keytool.exe' -list -v -keystore 'android/app/my-release-key.jks'
+```
+
+If you prefer using `keytool` without the full path, add `C:\Program Files\Java\jdk-26.0.1\bin` to your user or system `PATH`.
+
 ---
 
 ## 📋 Requirements
